@@ -5,7 +5,7 @@
 .acn{display:flex;align-items:center;gap:6px}.acn b{flex:1}.acn .ski{width:30px;height:30px}
 .aci{width:18px;color:#c9a45a;font:bold 12px sans-serif;text-align:center}
 .acm,.aco{margin-top:4px}.aco .dim{font-size:11px}
-#skbar{position:relative;z-index:7;display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}
+#skbar{position:relative;z-index:7;display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px;height:38px;box-sizing:border-box}/* 固定高度：防止技能栏 35↔38px 抖动推动下方 */
 .skb{position:relative;flex:none;padding:0;border:0;background:none;width:30px}
 .skb .ski{width:29px;height:29px;border-width:1px}.skb small{position:absolute;left:0;right:0;bottom:-2px;font:9px sans-serif;color:#ffe9a8;text-shadow:0 0 2px #000;text-align:center}
 .skb.off .ski{filter:grayscale(1) brightness(.5)}.skb.nm .ski{box-shadow:inset 0 0 0 40px rgba(20,40,120,.45)}
