@@ -44,9 +44,14 @@ if(typeof EG_LP!=='undefined'){
   if(id==='bshout'&&egLp('shout_iron')){v.dur*=2;v.def=Math.round(v.def*1.5);v.txt+='（钢铁战吼）'}
   if(id==='mcl'&&egLp('cl_fork')){v.n+=3;v.dmg=v.dmg.map(x=>Math.round(x*1.2));v.txt+='（叉形闪电）'}
   return v}}
- {const bash=CLS_CAST.bbash;CLS_CAST.bbash=function(ms,v){const tg=target(ms);const r=bash([tg],v);if(egLp('bash_quake')&&!tg.boss&&tg.hp>0&&rnd()<0.3)tg.stun=Math.max(tg.stun||0,1.5);return r}}
- {const howl=CLS_CAST.bhowl;CLS_CAST.bhowl=function(ms,v){const r=howl(ms,v);if(egLp('howl_blood'))H.life=Math.min(ST.life,H.life+ST.life*0.02*ms.length);return r}}
- {const met=CLS_CAST.mmet;CLS_CAST.mmet=function(ms,v){const r=met(ms,v);if(egLp('met_twin')&&rnd()<0.35){const L=liveMon();if(L.length)met(L,v)}return r}}
- {const fb=CLS_CAST.mfb;CLS_CAST.mfb=function(ms,v){const tg=target(ms);const r=fb(ms,v);if(egLp('fb_split')){for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))hitMon(m,{fire:R(v.dmg[0],v.dmg[1])*0.5},'hero','#f84')}return r}}
- {const f=step;step=function(dt){const h0=H.life;const r=f(dt);if(curCls()==='sor'&&egLp('ice_shell')&&H.cb&&H.cb.id==='mfa'&&H.cb.until>GT&&H.life<h0&&H.life>0)H.life=Math.min(ST.life,H.life+(h0-H.life)*0.2);return r}}
+ // 技能引擎施放后钩子（classes.js clsCast 调用）：职业传说威能
+ {const f=typeof clsAfterCast==='function'?clsAfterCast:null;window.clsAfterCast=function(s,v,ms,L){if(f)f(s,v,ms,L);const tg=L[0];
+  if(s.id==='bbash'&&egLp('bash_quake')&&tg&&!tg.boss&&tg.hp>0&&rnd()<0.3)tg.stun=Math.max(tg.stun||0,1.5);
+  if(s.id==='bhowl'&&egLp('howl_blood'))H.life=Math.min(ST.life,H.life+ST.life*0.02*ms.length);
+  if(s.id==='mmet'&&egLp('met_twin')&&rnd()<0.35){const l=liveMon();if(l.length)CLS_TY.aoe(s,v,l,l[0])}
+  if(s.id==='mfb'&&egLp('fb_split'))for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))clsHit(m,'fire',rr(v.dmg)*0.5)}}
+ {const f=step;step=function(dt){const h0=H.life;const r=f(dt);if(curCls()==='sor'&&egLp('ice_shell')&&buffOn('mfa')&&H.life<h0&&H.life>0)H.life=Math.min(ST.life,H.life+(h0-H.life)*0.2);return r}}
 }
+
+// 职业技能音效：每个新技能有独立音效 id（技能定义 sfx 字段，形如 sfx_<id>）。音乐 bot 往 AUDIO_SK.table 里加 sfx_<id> 配方即生效；没有配方时静默
+if(window.AUDIO_SK&&AUDIO_SK.table){const T=AUDIO_SK.table;for(const s of CLS_SKILLS)if(!T[s.id]&&s.sfx!==s.id)T[s.id]=(D,t)=>{const f=T[s.sfx];if(f)f(D,t)}}
