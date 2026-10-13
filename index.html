@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>暗夜挂机 · 亡灵术士</title><link rel="stylesheet" href="style.css"></head>
+<body><div id="app">
+<section id="fightv">
+ <div id="fbattle">
+  <div id="ftop"></div>
+  <div id="mgrid"></div>
+  <div id="arow"></div>
+  <canvas id="fx"></canvas>
+ </div>
+ <div id="hud">
+  <div class="orb red" id="orbL"><span>0</span></div>
+  <div id="pots">
+   <button id="pb_hp"><i>🧪</i>红药<b id="p_hp">0</b></button><button id="pb_mp"><i class="b">🧪</i>蓝药<b id="p_mp">0</b></button>
+   <button id="pb_rej"><i class="v">💜</i>瞬回<b id="p_rej">0</b></button><button id="pb_tp"><i>📜</i>回城<b id="p_tp">0</b></button>
+  </div>
+  <div class="orb blue" id="orbR"><span>0</span></div>
+ </div>
+ <div id="flog"></div>
+ <div id="fquest"></div>
+ <div id="fzone"></div>
+</section>
+<main id="panel" class="hide"></main>
+<nav id="tabs"><button data-t="fight"><i>⚔</i>战斗</button><button data-t="hero"><i>☠</i>角色</button><button data-t="skill"><i>✦</i>技能</button><button data-t="bag"><i>⚱</i>背包</button><button data-t="map"><i>⌖</i>地图</button></nav>
+<div id="modal" class="hide"></div><div id="toast"></div>
+</div><script src="data.js"></script><script src="game.js"></script></body></html>
