@@ -9,7 +9,11 @@
 const SKP=[['weapon','武器'],['armor','护甲'],['shield','盾牌'],['helm','头盔']];
 function skDefault(){return{n:{weapon:0,armor:0,shield:0,helm:0},elite:0,sup:0}}
 function skNorm(){if(!S||!S.rcy)return;const d=skDefault();const s=S.rcy.sk&&typeof S.rcy.sk==='object'?S.rcy.sk:{};s.n=Object.assign({},d.n,s.n||{});for(const k in s.n)s.n[k]=Math.max(0,Math.min(6,+s.n[k]||0));s.elite=s.elite?1:0;s.sup=s.sup?1:0;S.rcy.sk=s}
-{const f=ensureLoot;ensureLoot=function(){f.apply(this,arguments);skNorm()}}
+// 默认自动回收（dv=2，一次性迁移，新旧角色都生效）：开启自动回收，破旧/普通/超强/魔法品质默认回收；
+// 带凹槽白/超强底材、精英底材、带亡灵技能、未收录暗金/套装、锁定物品仍受保护。迁移时顺带把背包里已有的符合规则的杂物回收一次。
+function rcyMigrate(){const r=S&&S.rcy;if(!r||r.dv>=2)return;r.dv=2;r.on=1;r.q=Object.assign({},r.q||{},{0:1,1:1,2:1,3:1});
+ if(!Array.isArray(S.bag))return;const keep=[];for(const it of S.bag){if(it&&!it.k&&!it.lk&&shouldRecycle(it,false))doRecycle(it);else keep.push(it)}S.bag=keep}
+{const f=ensureLoot;ensureLoot=function(){f.apply(this,arguments);skNorm();rcyMigrate()}}
 function skPart(b){if(!b)return null;if(b.s==='weapon')return'weapon';if(b.s==='armor')return'armor';if(b.s==='shield')return'shield';if(b.s==='helm')return'helm';return null}
 // 返回 true=回收 / false=保留 / null=不适用（交给原规则）
 function skRule(it){const r=S.rcy;if(!r||!r.on||!r.sk||!it||it.k||it.lk)return null;if(!(it.q<=1||(it.q===2&&r.sk.sup))||!it.sock||(it.soc&&it.soc.length)||it.rw!=null)return null;
