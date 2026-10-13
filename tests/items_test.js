@@ -3,7 +3,9 @@ const fs=require('fs'),vm=require('vm'),path=require('path');
 const root=path.join(__dirname,'..');
 const stub=()=>new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>'' :k==='readyState'?'loading':stub(),apply:()=>stub(),construct:()=>stub(),set:()=>true});
 const store={};
-const ctx={console,Math,Date,JSON,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},requestAnimationFrame:()=>0,
+// 固定随机种子（mulberry32）：游戏代码在加载时捕获 Math.random，故在此替换上下文的 Math，保证每次运行结果一致
+const SEED=Number(process.env.SEED||20261013)>>>0;let _sd=SEED;const SMath=Object.create(Math);SMath.random=()=>{_sd=(_sd+0x6D2B79F5)>>>0;let t=_sd;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
+const ctx={console,Math:SMath,Date,JSON,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},requestAnimationFrame:()=>0,
  localStorage:{getItem:k=>store[k]??null,setItem:(k,v)=>{store[k]=v},removeItem:k=>{delete store[k]}},
  document:stub(),Image:function(){return stub()},navigator:{},location:{search:''},addEventListener(){},performance:{now:()=>Date.now()}};
 ctx.window=ctx;vm.createContext(ctx);
@@ -140,7 +142,7 @@ sec('自动回收 / 自动存仓');
 G(`S.bag=[];S.rcy=rcyDefault();S.rcy.on=1;S.rcy.q={0:1,1:1,2:1,3:1,4:0,5:0,6:0};S.rcy.mode='ess'`);
 let rc=0,kept=0;for(let i=0;i<500;i++){const r=G(`addBag(genItem(40,{q:${1+(i%3)}}))`);r?kept++:rc++}
 ok(G(`S.bag.filter(x=>!x.k).every(it=>(it.sock&&it.q<=2)||BASEM[it.b].tier>=2||hasNecroSkill(it))`),'只保留受保护物品');ok(G('matCount("ess")')>0,'回收成精华');
-G(`S.rcy.mode='gold';window._g0=S.gold;addBag(genItem(10,{q:1,base:BASEM.arm1}))`);ok(G('S.gold>_g0'),'回收得金币');
+G(`S.rcy.mode='gold';window._g0=S.gold;window._ri=genItem(10,{q:1,base:BASEM.arm1});_ri.sock=0;addBag(_ri)`);ok(G('S.gold>_g0'),'回收得金币');
 G(`S.rcy.on=0;S.ast={on:1,dest:'s',t:{gem:1,rune:1}};window._n0=ACCT.shared.flat().length;addBag({uid:S.uid++,k:'rune',r:2});addBag({uid:S.uid++,k:'gem',g:'top',lv:1})`);ok(G('ACCT.shared.flat().length-_n0')===2,'自动存仓');
 G(`S.rcy.on=1;S.rcy.c.rune=1;S.rcy.runeMax=5;window._n1=ACCT.shared.flat().length;addBag({uid:S.uid++,k:'rune',r:1})`);ok(G('ACCT.shared.flat().length')===G('_n1'),'回收优先于存仓');
 G('S.rcy.on=0;S.ast.on=0');
