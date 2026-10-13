@@ -20,6 +20,13 @@ with sync_playwright() as p:
         if js: run(pg,js)
         if tab: run(pg,f"TAB='{tab}';render()")
         pg.wait_for_timeout(wait); pg.screenshot(path=name); print('shot',name)
+    LC=[0]
+    def loadchar(f):
+        import json as _j
+        d=open(f).read(); LC[0]+=1; tok='egl%d'%LC[0]
+        pg.add_init_script("if(!sessionStorage.%s){sessionStorage.%s=1;localStorage.clear();localStorage.setItem('anye_d2_v2',%s)}"%(tok,tok,_j.dumps(d)))
+        pg.goto('http://localhost:8090/'); pg.wait_for_timeout(800); run(pg,SIMJS); run(pg,"closeM();SPEED=0")
+        print('loaded',run(pg,"S.lvl"))
     out={}
     if W in('bounty','all'):
         hero(30)
@@ -32,5 +39,21 @@ with sync_playwright() as p:
         run(pg,"EG().bounty.caches=Math.max(1,EG().bounty.caches);egOpenCache(0)"); shot('p5_bounty_cache.png')
         run(pg,"closeM();SPEED=1")
         shot('p5_bounty_fight.png','fight',"egBountyGo(EG().bounty.d.findIndex(b=>!b.done)>=0?EG().bounty.d.findIndex(b=>!b.done):0)",2000)
+    if W in('rift','all'):
+        import os
+        loadchar(os.environ.get('EGCHAR','tests/eg_char_normal.json'))
+        run(pg,"SPEED=0;EG_RIFT.auto=1")
+        res=[]
+        for T in [0,0,1,1,3,3,5,5,8,8,10,10,15,15,20,20]:
+            r=run(pg,"""(()=>{EG().rift.max=Math.max(EG().rift.max,TT);EG().rift.keys+=1;egRiftStart(TT);const run=EGM;let s=0;while(EGM===run&&s<900){egSim(5);s+=5}
+              return JSON.stringify({T:TT,t:Math.round(run.t),el:Math.round(run.el||0),kills:S.kills,ok:run.res?run.res.ok:null,done:!!run.gdone,deaths:run.deaths,prog:run.prog,up:run.res&&run.res.up,lv:S.lvl,life:ST.life})})()""".replace('TT',str(T)))
+            print('rift',r); res.append(r)
+        out['rift']=res
+        run(pg,"EG_RIFT.auto=0;SPEED=1;closeM()")
+        shot('p5_rift.png','eg',"EGT='rift'")
+        run(pg,"EG().rift.keys+=1;egRiftStart(3)"); pg.wait_for_timeout(3000); shot('p5_rift_fight.png')
+        run(pg,"EGM.prog=100;MON=[];spawnT=0.1"); pg.wait_for_timeout(1500); shot('p5_rift_guard.png')
+        run(pg,"EGM.guard.hp=1;hitMon(EGM.guard,{magic:99},'hero')"); pg.wait_for_timeout(500); shot('p5_rift_done.png')
+        run(pg,"closeM()")
     print('errors',errs)
     b.close()

@@ -21,20 +21,20 @@ function egHellDone(){return egDone(2,ACTS.length-1)}
 // EGM={k,name,bg,spawn(),next(),onKill(m),onDie(),top(),quit()}；不入存档（刷新即中止且不扣钥石）
 let EGM=null;
 function egEnter(m){if(EGM)egLeave(1);S.dz=0;EGM=m;MON=[];CORPSE=[];S.wave=0;spawnT=1.5;calc();H.life=ST.life;H.mana=ST.mana;if(m.start)m.start();log(`<b class="egm">进入 ${m.name}</b>`);if(typeof TAB!=='undefined'){TAB='fight';render()}}
-function egLeave(silent){const m=EGM;if(!m)return;EGM=null;MON=[];CORPSE=[];S.wave=0;spawnT=1.5;if(m.quit)m.quit();if(!silent)log(`<span class="dim">离开 ${m.name}</span>`);if(typeof TAB!=='undefined'&&TAB==='fight')render()}
+function egLeave(silent){const m=EGM;if(!m)return;EGM=null;MON=[];CORPSE=[];S.wave=0;spawnT=1.5;if(m.quit)m.quit();calc();if(!silent)log(`<span class="dim">离开 ${m.name}</span>`);if(typeof TAB!=='undefined'&&TAB==='fight')render()}
 const _eg_spawnWave=spawnWave;spawnWave=function(){if(EGM&&EGM.spawn)return EGM.spawn();return _eg_spawnWave()};
 const _eg_nextWave=nextWave;nextWave=function(){if(EGM)return EGM.next?EGM.next():EGM.spawn();return _eg_nextWave()};
-const _eg_die=die;die=function(){const m=EGM;if(m){S.dz=0;egStat('egdie')}_eg_die();if(m&&EGM===m&&m.onDie)m.onDie()};
+const _eg_die=die;die=function(){const m=EGM;if(m){S.dz=0;egStat('egdie');MON=[]}_eg_die();if(m&&EGM===m&&m.onDie)m.onDie()};
 const _eg_goZone=goZone;goZone=function(i){if(EGM)egLeave();return _eg_goZone(i)};
 const _eg_goAct=goAct;goAct=function(a,d,q){if(EGM)egLeave(1);return _eg_goAct(a,d,q)};
 // 事件钩子（各子系统注册）
-const EG_HOOK={kill:[],clear:[],tick:[],sec:[],calc:[],item:[],xp:[]};
+const EG_HOOK={kill:[],clear:[],tick:[],sec:[],calc:[],pre:[],item:[],xp:[]};
 function egOn(k,f){EG_HOOK[k].push(f)}
 const _eg_killMon=killMon;killMon=function(m){const ctx={d:S.diff,a:S.act,z:S.zone,mode:EGM};_eg_killMon(m);egStat('kills');if(m.boss)egStat('boss');if(EGM&&EGM.onKill)EGM.onKill(m);for(const f of EG_HOOK.kill)f(m,ctx)};
 const _eg_zoneClear=zoneClear;zoneClear=function(){const ctx={d:S.diff,a:S.act,z:S.zone};_eg_zoneClear();egStat('clears');for(const f of EG_HOOK.clear)f(ctx)};
 let EG_secT=0;
 const _eg_step=step;step=function(dt){_eg_step(dt);if(!S||!ST)return;const e=EG();e.clock+=dt;for(const f of EG_HOOK.tick)f(dt);EG_secT+=dt;if(EG_secT>=1){EG_secT=0;for(const f of EG_HOOK.sec)f()}};
-const _eg_calc=calc;calc=function(){const o=_eg_calc();if(S)for(const f of EG_HOOK.calc)f(o);ST=o;return o};
+const _eg_calc=calc;calc=function(){const und=S?EG_HOOK.pre.map(f=>f()).filter(Boolean):[];let o;try{o=_eg_calc()}finally{for(const u of und)u()}if(S)for(const f of EG_HOOK.calc)f(o);ST=o;return o};
 const _eg_addBag=addBag;addBag=function(it){for(const f of EG_HOOK.item)f(it);return _eg_addBag(it)};
 const _eg_gainXp=gainXp;gainXp=function(x){let v=x;for(const f of EG_HOOK.xp)v=f(v);return _eg_gainXp(v)};
 const _eg_questLine=questLine;questLine=function(){if(EGM&&EGM.quest)return EGM.quest();return _eg_questLine()};
