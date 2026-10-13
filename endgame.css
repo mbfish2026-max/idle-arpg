@@ -1,0 +1,23 @@
+/* 第五阶段：终局系统 */
+#tabs button[data-t=eg] i{color:#ff9a50}
+.egtabs{flex-wrap:wrap}.egtabs button{position:relative;min-width:0;flex:1 0 22%}
+.egdot{position:absolute;top:3px;right:4px;width:7px;height:7px;border-radius:50%;background:#ff4a2a;box-shadow:0 0 4px #f40}
+.egb{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #2a2016}
+.egb.ok{opacity:.55}.egb.ok b{color:#7fd07f}.egbr{display:flex;flex-direction:column;align-items:flex-end;gap:3px;white-space:nowrap}
+.egrw{font-size:11px;color:#e8c070}
+.egpb{height:6px;background:#1a120a;border:1px solid #4a3820;border-radius:3px;overflow:hidden;margin-top:3px}.egpb i{display:block;height:100%;background:linear-gradient(90deg,#a06a20,#f0c060)}
+.egpb.rift i{background:linear-gradient(90deg,#5a2aa0,#c080ff)}.egpb.time i{background:linear-gradient(90deg,#a02020,#ff7050)}.egpb.tide i{background:linear-gradient(90deg,#801010,#ff3030)}
+.egm{color:#d090ff}
+#egbar{margin:2px 0 4px;font-size:11px;position:relative;z-index:3}
+#egbar .egline{display:flex;justify-content:space-between;align-items:center;gap:6px;background:rgba(20,8,30,.75);border:1px solid #5a3a80;border-radius:3px;padding:2px 6px;margin-bottom:2px}
+#egbar .egline.tide{background:rgba(50,5,5,.8);border-color:#a02020}#egbar .egline.wb{background:rgba(50,30,5,.8);border-color:#c08020}
+#egbar .egline .egpb{flex:1;margin:0}
+.egintro{margin-top:6px;font-size:12px;color:#b8a888;line-height:1.5}
+.egrank{width:100%;border-collapse:collapse;font-size:12px}.egrank td,.egrank th{padding:3px 2px;border-bottom:1px dashed #2a2016;text-align:center}.egrank th{color:#c9a45a}
+.egcat{display:grid;grid-template-columns:1fr 1fr;gap:6px}.egcat .gp{margin:0}
+.egpt{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;border-bottom:1px dashed #2a2016}.egpt b{color:#f3d78a}
+.eglp{color:#ff7a2a}.egslot{border:1px dashed #8a5a2a;border-radius:4px;padding:6px;margin:4px 0;font-size:12px}
+.egach{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed #2a2016;font-size:12px}.egach.ok i{filter:none;opacity:1}.egach i{font-style:normal;font-size:18px;opacity:.35;filter:grayscale(1)}
+.egcx{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;font-size:11px}.egcx span{padding:2px 4px;border:1px solid #2a2016;border-radius:3px;color:#5a4a3a}.egcx span.ok{color:#c8a050;border-color:#6b5230}.egcx span.ok.set{color:#3fdc4f;border-color:#2a6030}
+.egtitle{color:#ff9a50;font-size:12px;margin-left:4px}
+.egb>div:first-child{flex:1;min-width:0}
