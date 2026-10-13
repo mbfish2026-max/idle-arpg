@@ -5,8 +5,11 @@
 // 存档：全部字段在 S.merc 下：{_v,t,v,nm,lvl,xp,hd,eq:{weapon,helm,armor},dead,off,auto,ar,prev,hires}
 //   off=1 表示已解雇（S.merc 保持非 null，避免 acts.js migrate 自动重新赠送）；prev=上一位被解雇佣兵(可召回)。
 // ===================================================================================
-const MERC_V=1,MX={slot:null,auT:0,conv:0,auras:[],flt:'all'};
-const MERC_SLOTS=['weapon','helm','armor'];
+const MERC_V=2,MX={slot:null,auT:0,conv:0,auras:[],flt:'all'};
+const MERC_SLOTS=['weapon','shield','helm','armor','gloves','belt','boots','amulet','ring1','ring2'];
+// 副手：原版仅铁狼(单手剑+盾)可持盾；弓/长柄/矛为双手，剑士不持盾。缩颅(head)为角色职业物品，不可用
+const MERC_SHIELD={mage:1};
+const mslotBase=k=>k==='ring1'||k==='ring2'?'ring':k;
 // 原版武器类型限制：罗格=弓；沙漠卫兵=长柄/矛；铁狼=单手剑(+盾，本游戏佣兵无副手)；野蛮人=剑
 const MERC_WCATS={archer:['bow'],guard:['polearm','spear'],mage:['sword'],barb:['sword']};
 // 原版 1.10 雇佣等级（按营地章节 × 难度）；实际等级不超过角色
@@ -59,7 +62,9 @@ function mercNorm(){if(typeof S==='undefined'||!S)return;const m=S.merc;if(!m||m
  if(!mercVarDef(m.t,m.v)||!mercVars(m.t,m.hd)[m.v]){const vs=mercVars(m.t,m.hd);m.v=vs[m.v]?m.v:(vs[MERCS[m.t].vd]?MERCS[m.t].vd:Object.keys(vs)[0])}
  m._v=MERC_V;for(const k of MERC_SLOTS){const it=m.eq[k];if(it&&!mercFits(it,k,m.t)){S.bag.push(it);delete m.eq[k];log&&log(`佣兵无法使用 ${itemName(it)}（类型限制），已放回背包`)}}
  for(const k in m.eq)if(!MERC_SLOTS.includes(k))delete m.eq[k]}
-function mercFits(it,k,t){if(!it||it.k)return false;const b=BASEM[it.b];if(!b||b.s!==k)return false;if(k==='weapon')return(MERC_WCATS[t]||[]).includes(b.cat);return true}
+function mercFits(it,k,t,eq){if(!it||it.k)return false;const b=BASEM[it.b];if(!b||b.s!==mslotBase(k))return false;if(k==='weapon')return(MERC_WCATS[t]||[]).includes(b.cat)&&!(b.th&&!MERC_WCATS[t].includes('sword')&&false);
+ if(k==='shield'){if(!MERC_SHIELD[t]||b.cat!=='shield')return false;const w=(eq||(S.merc&&S.merc.eq)||{}).weapon;return!(w&&BASEM[w.b]&&BASEM[w.b].th)}return true}
+function mercSlotFor(it,pref){const b=BASEM[it.b];if(b.s!=='ring')return b.s;if(pref==='ring1'||pref==='ring2')return pref;const e=S.merc.eq;return!e.ring1?'ring1':!e.ring2?'ring2':(power(e.ring1)<=power(e.ring2)?'ring1':'ring2')}
 const _mx_load=load;load=function(){_mx_load();mercNorm()};
 
 // ---------- 属性 ----------
@@ -121,14 +126,19 @@ const _mx_kill=killMon;killMon=function(m){const r=_mx_kill(m);if(mercUp()&&!S.m
 const _mx_gx=gainXp;gainXp=function(x){const l0=S.lvl;_mx_gx(x);if(S.lvl>l0&&mercUp())mercGainXp(0.0001)};
 
 // ---------- 装备 ----------
-canMercEquip=function(it){if(!mercUp()||!it||it.k)return false;const b=BASEM[it.b];if(!b||!MERC_SLOTS.includes(b.s)||!mercFits(it,b.s,S.merc.t))return false;const r=itemReq(it),ms=mercStats();return ms.L>=r.lv&&ms.str>=r.str&&ms.dex>=r.dex};
-function mercWhyNot(it){const b=BASEM[it.b];if(!mercFits(it,b.s,S.merc.t))return'类型不符';const r=itemReq(it),ms=mercStats();const w=[];if(ms.L<r.lv)w.push('需等级'+r.lv);if(ms.str<r.str)w.push('需力量'+r.str);if(ms.dex<r.dex)w.push('需敏捷'+r.dex);return w.join(' ')}
-mercEquip=function(uid){let f=findItem(uid);if(!f||f.slot||!canMercEquip(f.it))return false;const k=BASEM[f.it.b].s,cur=S.merc.eq[k];
+canMercEquip=function(it,k){if(!mercUp()||!it||it.k)return false;const b=BASEM[it.b];if(!b)return false;k=k||mercSlotFor(it);if(!MERC_SLOTS.includes(k)||!mercFits(it,k,S.merc.t))return false;const r=itemReq(it),ms=mercStats();return ms.L>=r.lv&&ms.str>=r.str&&ms.dex>=r.dex};
+function mercWhyNot(it,k){if(!mercFits(it,k||mercSlotFor(it),S.merc.t))return BASEM[it.b].s==='shield'?'双手武器/类型不能持盾':'类型不符';const r=itemReq(it),ms=mercStats();const w=[];if(ms.L<r.lv)w.push('需等级'+r.lv);if(ms.str<r.str)w.push('需力量'+r.str);if(ms.dex<r.dex)w.push('需敏捷'+r.dex);return w.join(' ')}
+mercEquip=function(uid,slot){let f=findItem(uid);if(!f||f.slot)return false;const k=mercSlotFor(f.it,slot||MX.slot);if(!canMercEquip(f.it,k))return false;const cur=S.merc.eq[k];
  const obj=f.it;if(f.stash){if(typeof withdrawUid!=='function'||withdrawUid(uid,1)===false)return false}
- const bi=S.bag.indexOf(obj);if(bi<0)return false;const it=S.bag.splice(bi,1)[0];if(cur)S.bag.push(cur);S.merc.eq[k]=it;calc();log(`佣兵装备：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);if(!window.__NOUI){closeM();render()}return true};
+ const bi=S.bag.indexOf(obj);if(bi<0)return false;const it=S.bag.splice(bi,1)[0];if(cur)S.bag.push(cur);S.merc.eq[k]=it;
+ if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield){S.bag.push(S.merc.eq.shield);delete S.merc.eq.shield}
+ calc();log(`佣兵装备：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);if(!window.__NOUI){closeM();render()}return true};
 mercUnequip=function(k){if(!S.merc||!S.merc.eq[k])return false;if(bagFull()){toast('背包已满');return false}S.bag.push(S.merc.eq[k]);delete S.merc.eq[k];calc();if(!window.__NOUI){closeM();render()}return true};
-mercAutoEq=function(){if(!mercUp()||!S.autoEq||!S.merc.auto)return;for(const it of S.bag.slice()){if(it.k||!canMercEquip(it))continue;const k=BASEM[it.b].s,c=S.merc.eq[k];
- if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`)}}};
+mercAutoEq=function(){if(!mercUp()||!S.autoEq||!S.merc.auto)return;for(const it of S.bag.slice()){if(it.k)continue;const b=BASEM[it.b];if(!b)continue;
+ const ks=b.s==='ring'?['ring1','ring2']:[b.s];for(const k of ks){if(!canMercEquip(it,k))continue;const c=S.merc.eq[k];
+  if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
+// items2.js 的命中特效(压碎/撕裂/偷取等)只统计了 3 格，扩展到全身
+if(typeof attackerMods==='function'){const _mx_am=attackerMods;attackerMods=function(src){if(src&&src.kind==='merc'&&S.merc&&S.merc.eq){const M={};for(const k of MERC_SLOTS){const it=S.merc.eq[k];if(!it)continue;const m=allMods(it);for(const x in m)if(typeof m[x]==='number')M[x]=(M[x]||0)+m[x]}return M}return _mx_am(src)}}
 
 // ---------- 战斗 ----------
 const ELC={fire:'#f84',cold:'#8cf',light:'#ff6',pois:'#8f6'};
@@ -166,8 +176,8 @@ function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<
  if(mercUp()){const ms=mercStats(),T=MERCS[m.t],V=mercVarDef(m.t,m.v),need0=mercXpNeed(m.lvl),need1=mercXpNeed(m.lvl+1);const pct=m.lvl>=S.lvl?100:Math.max(0,Math.min(100,(m.xp-need0)/Math.max(1,need1-need0)*100));
   h+=`<div class="gp mhead">${mercPortrait(m.t,m.v,1)}<div class="minfo"><div class="mname">${m.nm}${m.dead?' <span class="bad">阵亡</span>':''}</div><div class="dim">${T.n} · ${T.kind}</div><div class="mver"><b class="diff d${m.hd}">${DIFFS[m.hd].n}</b> ${V.n}</div>
    <div class="mlv">Lv.<b>${m.lvl}</b> <small class="dim">/ 上限 ${S.lvl}（角色等级）</small></div><div class="mxp"><i style="width:${pct.toFixed(1)}%"></i><span>${m.lvl>=S.lvl?'已达角色等级':fmt(m.xp-need0)+' / '+fmt(need1-need0)}</span></div></div></div>`;
-  h+=`<div class="gp"><h3>装备</h3><div class="mdoll">${MERC_SLOTS.map(k=>{const it=m.eq[k];return`<div class="mslot" onclick="mercSlotUI('${k}')"><small>${SLOTN[k]}${k==='weapon'?'·'+MERC_WCATS[m.t].map(c=>CATN?CATN[c]:c).join('/'):''}</small>${it?cell(it,''):`<div class="cell empty"><small>空</small></div>`}</div>`}).join('')}</div>
-   ${Object.keys(ms.sets).length?`<div class="dim">套装：${Object.entries(ms.sets).map(([s,n])=>SETS[s].n+' '+n+'件').join('、')}</div>`:''}<div class="dim">点格子：从背包/仓库穿戴、卸下、对比属性。武器限制按原版：${T.n}只能使用${MERC_WCATS[m.t].map(c=>CATN[c]).join('/')}。</div></div>`;
+  h+=`<div class="gp"><h3>装备</h3><div class="mdoll">${MERC_SLOTS.map(k=>{const it=m.eq[k];return`<div class="mslot ms_${k} ${k==='shield'&&!MERC_SHIELD[m.t]?'lock':''}" onclick="mercSlotUI('${k}')"><small>${SLOTN[k]}${k==='shield'&&!MERC_SHIELD[m.t]?'·不可用':''}${k==='weapon'?'·'+MERC_WCATS[m.t].map(c=>CATN?CATN[c]:c).join('/'):''}</small>${it?cell(it,''):`<div class="cell empty"><small>空</small></div>`}</div>`}).join('')}</div>
+   ${Object.keys(ms.sets).length?`<div class="dim">套装：${Object.entries(ms.sets).map(([s,n])=>SETS[s].n+' '+n+'件').join('、')}</div>`:''}<div class="dim">点格子：从背包/仓库穿戴、卸下、对比属性。武器限制按原版：${T.n}只能使用${MERC_WCATS[m.t].map(c=>CATN[c]).join('/')}${MERC_SHIELD[m.t]?'，可持盾(双手武器时不可)':'，不能持盾'}。</div></div>`;
   h+=`<div class="gp"><h3>属性</h3><div class="mstats">${mercStatsHTML(ms)}</div></div>`;
   h+=`<div class="gp"><h3>技能与光环</h3>${V.sk.map(s=>`<div class="msk"><b>${s}</b> <span class="dim">Lv.${ms.skl}</span></div>`).join('')}${V.d?`<div class="dim">${V.d}</div>`:''}
    ${ms.auras.length?ms.auras.map(a=>`<div class="maura"><b>✺ ${AURAS[a.id].n}</b> Lv.${a.lv} <small class="dim">来源：${a.src}</small><div>${AURAS[a.id].t(a.e)}</div></div>`).join(''):'<div class="dim">无光环</div>'}
@@ -179,7 +189,7 @@ function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<
   const p=m&&m.off&&m.prev;if(p)h+=`<div class="mhire"><span>↺ 召回 <b>${p.nm}</b> ${MERCS[p.t].n}·${mercVarDef(p.t,p.v).n} Lv.${Math.min(p.lvl,S.lvl)}</span><button class="btn xs gold" onclick="mercRecall()">${fmt(mercHireCost(Math.min(p.lvl,S.lvl)))}◈</button></div>`;
   for(const t of mercAvail()){const T=MERCS[t],L=mercHireLv(t);h+=`<div class="mhire"><span>${T.ic} ${T.n} <span class="dim">Lv.${L} · ${ACTS[T.act].camp}</span></span><span class="btns">${Object.entries(mercVars(t,S.diff)).map(([v,V])=>`<button class="btn xs" onclick="hireMerc('${t}','${v}')">${V.n} ${fmt(mercHireCost(L))}◈</button>`).join('')}</span></div>`}h+='</div>'}
  P.innerHTML=h+'</div>'}
-function mercCands(k){const out=[];const add=(it,src)=>{if(!it||it.k)return;const b=BASEM[it.b];if(b&&b.s===k&&mercFits(it,k,S.merc.t))out.push({it,src})};
+function mercCands(k){const out=[];const add=(it,src)=>{if(!it||it.k)return;const b=BASEM[it.b];if(b&&b.s===mslotBase(k)&&(mercFits(it,k,S.merc.t)||(k==='shield'&&MERC_SHIELD[S.merc.t]&&b.cat==='shield')))out.push({it,src})};
  for(const it of S.bag)add(it,'背包');if(S.pst)S.pst.forEach((pg,i)=>pg.forEach(it=>add(it,'仓库'+(i+1))));if(typeof ACCT!=='undefined'&&ACCT&&ACCT.shared)ACCT.shared.forEach((pg,i)=>pg.forEach(it=>add(it,'共享'+(i+1))));for(const it of S.stash||[])add(it,'仓库');return out.sort((a,b)=>power(b.it)-power(a.it))}
 function mercDelta(k,it){const a=mercStats(),eq=Object.assign({},S.merc.eq);if(it)eq[k]=it;else delete eq[k];const b=mercStats(eq);
  const f=(n,x,y,u='')=>{const d=Math.round(y-x);return d?`<span class="${d>0?'g':'bad'}">${n}${d>0?'+':''}${d}${u}</span>`:''};
@@ -188,7 +198,7 @@ function mercDelta(k,it){const a=mercStats(),eq=Object.assign({},S.merc.eq);if(i
 function mercSlotUI(k){if(!mercUp())return;MX.slot=k;const cur=S.merc.eq[k],cs=mercCands(k);
  const desc=it=>`${it.rw!=null?`<div class="g">符文之语「${RUNEWORDS[it.rw].n}」${RW_AURA[RUNEWORDS[it.rw].n]?' · 光环 '+AURAS[RW_AURA[RUNEWORDS[it.rw].n][0]].n:''}</div>`:''}<div class="dim small">${modsTxt(allMods(it))}</div>`;
  modal(`<div class="mtitle">佣兵 · ${SLOTN[k]}</div><div class="gp mslotm">${cur?`<div class="mcur">${cell(cur,`showItem(${cur.uid})`)}<div><b style="color:${itemColor(cur)}">${itemName(cur)}</b>${desc(cur)}<div>${mercDelta(k,null)}</div><button class="btn sm" onclick="mercUnequip('${k}')">卸下到背包</button></div></div>`:'<div class="dim">未装备</div>'}
- <h4>可用物品（${cs.length}）</h4>${cs.length?cs.map(({it,src})=>{const why=canMercEquip(it)?'':mercWhyNot(it);return`<div class="mcand">${cell(it,`showItem(${it.uid})`)}<div><b style="color:${itemColor(it)}">${itemName(it)}</b> <small class="dim">[${src}]</small>${desc(it)}<div>${mercDelta(k,it)}</div>${why?`<span class="bad">${why}</span>`:`<button class="btn sm gold" onclick="mercEquip(${it.uid})">穿戴</button>`}</div></div>`}).join(''):'<div class="dim">背包和仓库中没有可用物品</div>'}
+ <h4>可用物品（${cs.length}）</h4>${cs.length?cs.map(({it,src})=>{const why=canMercEquip(it,k)?'':mercWhyNot(it,k);return`<div class="mcand">${cell(it,`showItem(${it.uid})`)}<div><b style="color:${itemColor(it)}">${itemName(it)}</b> <small class="dim">[${src}]</small>${desc(it)}<div>${mercDelta(k,it)}</div>${why?`<span class="bad">${why}</span>`:`<button class="btn sm gold" onclick="mercEquip(${it.uid},'${k}')">穿戴</button>`}</div></div>`}).join(''):'<div class="dim">背包和仓库中没有可用物品</div>'}
  <div class="btns c"><button class="btn" onclick="closeM()">关闭</button></div></div>`)}
 const _mx_render=render;render=function(){if(typeof TAB==='undefined'||TAB!=='merc')return _mx_render();
  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==='merc'));$('#fightv').classList.add('hide');$('#panel').classList.remove('hide');renderMercPage()};

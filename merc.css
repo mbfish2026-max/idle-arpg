@@ -40,3 +40,9 @@
 .ac.merc .pt .mport{border-radius:4px}
 .mau{color:#ffd76a;font-style:normal;margin-right:2px}
 .mrow.wide{grid-column:1/-1}
+/* 纸娃娃（与角色装备页同构） */
+.mdoll{grid-template-columns:repeat(3,1fr);grid-template-areas:". helm amulet" "weapon armor shield" "weapon armor shield" "ring1 belt ring2" "gloves . boots";gap:6px}
+.mdoll .ms_weapon{grid-area:weapon}.mdoll .ms_shield{grid-area:shield}.mdoll .ms_helm{grid-area:helm}.mdoll .ms_armor{grid-area:armor}
+.mdoll .ms_gloves{grid-area:gloves}.mdoll .ms_belt{grid-area:belt}.mdoll .ms_boots{grid-area:boots}.mdoll .ms_amulet{grid-area:amulet}.mdoll .ms_ring1{grid-area:ring1}.mdoll .ms_ring2{grid-area:ring2}
+.mdoll .ms_weapon .cell,.mdoll .ms_armor .cell,.mdoll .ms_shield .cell{height:100%;min-height:118px}
+.mdoll .mslot.lock{opacity:.4}
