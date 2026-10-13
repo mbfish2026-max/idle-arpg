@@ -10,6 +10,7 @@ function egSecretStart(){const s=egSec(),d=S.diff;if(!s.staff[d])return toast('�
    if(last){const b=mkMon(EG_SECRET.boss,ml+3);b.egKing=1;MON.push(b);log(`<b class="bossn">${b.n}</b>：噗——谁踩了我的菌床！`);for(let i=0;i<4;i++)MON.push(egSecMon(ml,'champ'));return}
    const n=R(6,8);const ch=this.w%4===0;for(let i=0;i<n;i++)MON.push(egSecMon(ml,ch&&i<3?'champ':''));MON=MON.slice(0,8)},
   onKill(m){if(m.egKing){s.king++;egStat('king');log('<b class="quest">菌伞大王倒下了，王冠滚落在地！</b>');for(let i=0;i<2;i++)addBag(egLpApply(genItem(Math.min(99,ml+3),{q:5}),2));addBag(rollRune(ml+6));this.won=1}},
+  onDie(){this.deaths=(this.deaths||0)+1;this.w=Math.max(0,this.w-1);if(this.deaths>=5){log('<b style="color:#f84">菌群太过凶猛，你被赶出了蘑菇王国</b>');egLeave(1)}},
   wave(){return`第 ${this.w}/${EG_SECRET.waves} 波`},quest(){return`【${EG_SECRET.n}】肃清菌群，讨伐菌伞大王 (${this.w}/${EG_SECRET.waves})`},
   top(){return`<div class="egline"><span>🍄 秘径</span>${egPbar(this.w,EG_SECRET.waves)}<span>${this.w}/${EG_SECRET.waves}</span></div>`}};
  egEnter(run)}
