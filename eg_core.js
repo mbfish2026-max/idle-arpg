@@ -1,7 +1,7 @@
 'use strict';
 // ===== 终局系统核心（第五阶段）：存档字段 S.eg、终局页签、特殊战斗模式框架、游戏时钟 =====
 // 全部通过包装 game.js / acts.js 的全局函数实现；所有全局名以 EG/eg 开头避免冲突。
-// 存档：角色对象新字段 S.eg（缺失字段一律用默认值补齐，兼容多角色存档）；跨角色的本地排行在 localStorage 'anye_eg_rank'。
+// 存档：角色对象新字段 S.eg（缺失字段一律用默认值补齐，兼容多角色存档）；跨角色排行在 GS 'anye_eg_rank'（随账号云存档）。
 const EG_DEF=()=>({v:1,clock:0,
  bounty:{day:'',week:'',d:[],w:[],caches:0,wcaches:0,auto:0,done:0,ret:null},
  rift:{keys:0,max:1,best:0,runs:0,ok:0},

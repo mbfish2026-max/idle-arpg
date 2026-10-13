@@ -96,7 +96,7 @@ ok(G("BASEM.bow1.th===1&&BASEM.pole1.th===1&&!BASEM.jav1.th"),'双手标记');ok
 console.log(`  底材 ${BASES.length}  暗金 ${UNIQUES.length}  套装 ${Object.keys(SETS).length}/${SETITEMS.length}件  符文之语 ${RUNEWORDS.length}`);
 
 sec('护身符 / 珠宝 / 战斗属性');
-G('localStorage.clear&&0');for(const k in store)delete store[k];G('load();calc()');
+G('GS.clear()');G('load();calc()');
 let cq=0;for(let i=0;i<3000;i++){const it=G(`genItem(60,{base:BASEM.cha_l})`);if(it.q!==3&&it.q!==5)cq++}ok(cq===0,'护身符只能是魔法/暗金 '+cq);
 G(`S.bag=[];calc();window._l0=ST.life;const c=genItem(60,{base:BASEM.cha_l,q:3});c.m={life:40};S.bag.push(c);calc();window._l1=ST.life;S.pst[0].push(S.bag.pop());calc();window._l2=ST.life`);
 ok(G('_l1')===G('_l0')+40&&G('_l2')===G('_l0'),'护身符背包生效/仓库不生效 '+G('[_l0,_l1,_l2]'));
@@ -108,7 +108,7 @@ G(`calc();window._u=genItem(30,{base:BASES.find(b=>b.s==='weapon'&&b.tier===0&&n
 const un=G('_u.name');ok(G('cubeUpgrade(0,_u.uid)')&&G('BASEM[_u.b].tier===1&&_u.name')===un&&G('S.bag.length')===1,'暗金升级配方');
 
 sec('堆叠 / 仓库存取守恒');
-for(const k in store)delete store[k];G('load();calc()');
+G('GS.clear()');G('load();calc()');
 G(`S.bag=[];for(let i=0;i<7;i++)S.bag.push({uid:S.uid++,k:'rune',r:3});for(let i=0;i<5;i++)S.bag.push({uid:S.uid++,k:'gem',g:'rub',lv:2});for(let i=0;i<30;i++)S.bag.push(genItem(30))`);
 ok(G('slotsUsed(S.bag)')===32,'堆叠占格 '+G('slotsUsed(S.bag)'));
 G(`takeBag(x=>x.k==='rune'&&x.r===3,1)`);ok(G(`S.bag.filter(x=>x.k==='rune').length`)===6,'消耗一次只扣 1');
@@ -125,9 +125,9 @@ G(`S.pst[1].push({uid:S.uid++,k:'mat',id:'ess',n:5},{uid:S.uid++,k:'mat',id:'ess
 const c2=census();G('sortPages(S.pst)');ok(census()===c2,'整理守恒');
 
 sec('多角色隔离 / 共享仓库 / 旧存档迁移');
-for(const k in store)delete store[k];
+G('GS.clear()');
 const old=JSON.parse(G('JSON.stringify((()=>{const s=newSave();s.lvl=17;s.autoCast=1;s.bf={x:1};s.stash=[];for(let i=0;i<10;i++)s.stash.push(genItem(20));s.bag=[genItem(10)];return s})())'));
-store[G('KEY')]=JSON.stringify(old);G('ACCT=null;load();calc()');
+G('GS').setItem(G('KEY'),JSON.stringify(old));G('ACCT=null;load();calc()');
 ok(G('ACCT.chars.length')===1&&G('S.lvl')===17,'旧存档成为第一个角色');ok(G('S.pst[0].length')===10&&G('S.stash.length')===0,'旧 48 格储物箱迁移到个人仓库');
 ok(G('S.autoCast===1&&S.bf.x===1'),'同事新增字段保留');
 G(`window._sid=S.pst[0][0].uid;depositUid(S.bag[0].uid,'s')`);ok(G('ACCT.shared.flat().length')===1,'存入共享');

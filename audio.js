@@ -2,7 +2,7 @@
 // 背景音乐：五章各一首 + 城镇 + 首领战，按小节前瞻调度，无缝循环、换曲交叉淡入淡出。
 // 音效：普攻 / 技能 / 掉落(按品质，暗金/套装/符文之语特殊) / 升级 / UI 点击。
 // 接入方式：沿用项目惯例包装全局函数(fx / rollTC / gainXp / goZone / goAct / townPortal / renderHero)，不改 game.js。
-// 设置保存在存档 S.audio 中，随 save() 写入 localStorage。
+// 设置保存在存档 S.audio 中，随 save() 写入云端存档（cloud.js）。
 (function(){
 'use strict';
 const AC=window.AudioContext||window.webkitAudioContext;

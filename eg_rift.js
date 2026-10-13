@@ -1,8 +1,8 @@
 'use strict';
 // ===== 2. 虚隙 / 深渊虚隙：随机章节怪物池，击杀积累进度 → 守望者现身；深渊虚隙限时、层数无限，层数越高怪越强奖励越好；钥石可升级；本地排行「虚隙碑」 =====
 const EG_RKEY='anye_eg_rank';
-function egRank(){try{return JSON.parse(localStorage.getItem(EG_RKEY))||[]}catch(e){return[]}}
-function egRankAdd(r){const L=egRank();L.push(r);L.sort((a,b)=>b.t-a.t||a.s-b.s);localStorage.setItem(EG_RKEY,JSON.stringify(L.slice(0,20)))}
+function egRank(){try{return JSON.parse(GS.getItem(EG_RKEY))||[]}catch(e){return[]}}
+function egRankAdd(r){const L=egRank();L.push(r);L.sort((a,b)=>b.t-a.t||a.s-b.s);GS.setItem(EG_RKEY,JSON.stringify(L.slice(0,20)))}
 function egRiftLock(){return egNormalDone()?null:'击败普通难度第五章首领后，雪峰要塞的裂隙术士将为你开启虚隙'}
 function egRiftMl(T){return Math.min(99,Math.max(S.lvl,10)+Math.floor(T/8))}
 function egRiftPool(a){const s=new Set();for(const z of ACTS[a].zones)for(const m of z.mons||[])if(MONS[m])s.add(m);return[...s]}

@@ -9,10 +9,10 @@
 let ACCT_KEY='anye_d2_acct',CH_PRE='anye_d2_ch_',ACCT_NS=null;const PST_PAGES=20,SH_PAGES=20,PAGE_SZ=48,BAG_SZ=400,BAG_PG=48;
 let ACCT=null,STV='bag',STP=0,SHP=0,STMOVE=1,ST_RESET=0,BGP=0,STF={q:'all',t:'all',s:''};
 function mkPages(n){return Array.from({length:n},()=>[])}
-function acctSave(){try{ACCT.t=Date.now();localStorage.setItem(ACCT_KEY,JSON.stringify(ACCT))}catch(e){}}
-function acctLoad(){try{ACCT=JSON.parse(localStorage.getItem(ACCT_KEY))}catch(e){ACCT=null}
+function acctSave(){try{ACCT.t=Date.now();GS.setItem(ACCT_KEY,JSON.stringify(ACCT))}catch(e){}}
+function acctLoad(){try{ACCT=JSON.parse(GS.getItem(ACCT_KEY))}catch(e){ACCT=null}
  if(!ACCT||ACCT.v!==1){ACCT={v:1,cur:1,nid:2,suid:1e9,chars:[{id:1,name:'亡灵术士',cls:'亡灵术士',lvl:1,t:Date.now()}],shared:mkPages(SH_PAGES)};
-  const old=ACCT_NS?null:localStorage.getItem(KEY);if(old){localStorage.setItem(CH_PRE+1,old);try{const o=JSON.parse(old);ACCT.chars[0].lvl=o.lvl||1}catch(e){}}acctSave()}
+  const old=ACCT_NS?null:GS.getItem(KEY);if(old){GS.setItem(CH_PRE+1,old);try{const o=JSON.parse(old);ACCT.chars[0].lvl=o.lvl||1}catch(e){}}acctSave()}
  while(ACCT.shared.length<SH_PAGES)ACCT.shared.push([]);if(!ACCT.chars.length)ACCT.chars.push({id:ACCT.nid++,name:'亡灵术士',cls:'亡灵术士',lvl:1,t:Date.now()});
  for(const p of ACCT.shared)mergeMats(p)}
 // 存档命名空间：游客 = 默认 key；登录账号 = key 带 user_id（数据按账号隔离）
@@ -29,13 +29,13 @@ function mergeMats(arr){const m={};for(let i=arr.length-1;i>=0;i--){const x=arr[
 function pushInto(arr,it){if(it.k==='mat'){const e=arr.find(x=>x.k==='mat'&&x.id===it.id);if(e){e.n+=it.n;return}}arr.push(it)}
 function bagFits(it){return fits(S.bag,it,BAG_SZ)}
 // ---------- 账号 / 角色：load/save 包装 ----------
-const _st_load=load;load=function(){acctLoad();const c=curChar()||ACCT.chars[0];ACCT.cur=c.id;const d=localStorage.getItem(CH_PRE+c.id);
- if(d)localStorage.setItem(KEY,d);else localStorage.removeItem(KEY);_st_load();migrateChar(c)};
+const _st_load=load;load=function(){acctLoad();const c=curChar()||ACCT.chars[0];ACCT.cur=c.id;const d=GS.getItem(CH_PRE+c.id);
+ if(d)GS.setItem(KEY,d);else GS.removeItem(KEY);_st_load();migrateChar(c)};
 function migrateChar(c){if(!S.pst){S.pst=mkPages(PST_PAGES);let p=0;for(const it of (S.stash||[])){while(p<PST_PAGES-1&&!fits(S.pst[p],it,PAGE_SZ))p++;S.pst[p].push(it)}S.stash=[]}
  while(S.pst.length<PST_PAGES)S.pst.push([]);if(!S.stash)S.stash=[];drainOld();for(const p of S.pst)mergeMats(p);mergeMats(S.bag);
  S.name=S.name||c.name;S.cid=c.id;S.cls=S.cls||c.cid||'nec';S.mode=S.mode||c.mode||'normal';if(S.eg&&S.eg.season&&S.mode!=='season')S.mode='season';if(S.mode==='season')c.mode='season';if(S.cls!=='nec'&&!S.ci&&typeof clsInit==='function')clsInit();if(!S.ast)S.ast={on:0,dest:'p',t:{gem:1,rune:1,mat:1,jewel:0,charm:0,unique:0,set:0,rare:0,sock:0}}}
 function drainOld(){if(S.stash&&S.stash.length){for(const it of S.stash.splice(0)){const p=S.pst.findIndex(pg=>fits(pg,it,PAGE_SZ));(S.pst[p<0?0:p]).push(it)}}}
-const _st_save=save;save=function(){if(ST_RESET)return;if(S.pst)drainOld();_st_save();try{const raw=localStorage.getItem(KEY);if(raw)localStorage.setItem(CH_PRE+ACCT.cur,raw);const c=curChar();if(c){c.lvl=S.lvl;c.t=Date.now();c.name=S.name||c.name}acctSave()}catch(e){}};
+const _st_save=save;save=function(){if(ST_RESET)return;if(S.pst)drainOld();_st_save();try{const raw=GS.getItem(KEY);if(raw)GS.setItem(CH_PRE+ACCT.cur,raw);const c=curChar();if(c){c.lvl=S.lvl;c.t=Date.now();c.name=S.name||c.name}acctSave()}catch(e){}};
 function resetRuntime(){MON=[];ALLY=[];CORPSE=[];killWin=[];spawnT=2;LOGS.length=0;LOGDIRTY=1;Object.assign(H,{cb:null,abs:0,castT:0,atkT:0,potT:0,mpT:0,curse:0});if(typeof ACX!=='undefined')ACX.mercOn=0}
 function switchChar(id){if(!ACCT.chars.some(c=>c.id===id))return false;if(id!==ACCT.cur){save();ACCT.cur=id;acctSave()}resetRuntime();load();S.last=Date.now();calc();H.life=ST.life;H.mana=ST.mana;save();
  if(typeof syncNow==='function')try{syncNow()}catch(e){}
@@ -45,10 +45,10 @@ const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与�
 let NEWCLS='nec',NEWMODE='normal';
 function newChar(name,cls,mode){cls=cls||'nec';const C=CLASSES.find(c=>c.id===cls);if(!C||!C.open){if(!window.__NOUI)toast('该职业敬请期待');return 0}
  name=(name||'').trim().slice(0,12)||(C.n+ACCT.nid);const id=ACCT.nid++;ACCT.chars.push({id,name,cls:C.n,cid:cls,mode:mode||'normal',lvl:1,t:Date.now()});save();acctSave();
- localStorage.removeItem(CH_PRE+id);switchChar(id);S.name=name;S.cls=cls;S.mode=mode||'normal';save();if(!window.__NOUI)log('新角色 <b>'+name+'</b> 踏上了暮土。');return id}
+ GS.removeItem(CH_PRE+id);switchChar(id);S.name=name;S.cls=cls;S.mode=mode||'normal';save();if(!window.__NOUI)log('新角色 <b>'+name+'</b> 踏上了暮土。');return id}
 function deleteChar(id,force){if(ACCT.chars.length<=1){if(!window.__NOUI)toast('至少保留一个角色');return false}const c=ACCT.chars.find(x=>x.id===id);if(!c)return false;
  if(!force&&!confirm(`确定删除角色「${c.name}」？其个人仓库与装备将一并删除（共享仓库不受影响）。`))return false;
- if(id===ACCT.cur){const o=ACCT.chars.find(x=>x.id!==id);switchChar(o.id)}ACCT.chars=ACCT.chars.filter(x=>x.id!==id);localStorage.removeItem(CH_PRE+id);acctSave();if(!window.__NOUI)charUI();return true}
+ if(id===ACCT.cur){const o=ACCT.chars.find(x=>x.id!==id);switchChar(o.id)}ACCT.chars=ACCT.chars.filter(x=>x.id!==id);GS.removeItem(CH_PRE+id);acctSave();if(!window.__NOUI)charUI();return true}
 function charUI(){const L=ACCT.chars.map(c=>`<div class="chrow ${c.id===ACCT.cur?'cur':''}"><div class="chic">${(CLASSES.find(x=>x.id===(c.cid||'nec'))||CLASSES[0]).ic}</div><div class="chi"><b>${c.name}</b><div class="dim">${c.cls}${c.mode==='season'?' · 赛季':''} · Lv.${c.id===ACCT.cur?S.lvl:c.lvl} · ${new Date(c.t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
  ${c.id===ACCT.cur?'<span class="tag ok">当前</span>':`<button class="btn xs gold" onclick="switchChar(${c.id})">进入</button>`}<button class="btn xs" onclick="deleteChar(${c.id})" ${ACCT.chars.length<=1?'disabled':''}>删除</button></div>`).join('');
  modal(`<div class="mtitle">角色选择</div><div class="gp chsel">${L}<div class="btns c"><button class="btn gold" onclick="newCharUI()">＋ 新建角色</button></div>
@@ -60,7 +60,7 @@ function newCharUI(){modal(`<div class="mtitle">新建角色</div><div class="gp
 // 角色页：显示角色名 + 角色按钮；重置存档只重置当前角色
 const _st_hero=renderHero;renderHero=function(){_st_hero();const h=document.querySelector('#panel .gp h3');if(h)h.innerHTML=`${S.name} · `+h.innerHTML+` <button class="btn xs gold r chsw" onclick="charUI()">🔄 切换角色</button>`;
  const b=[...document.querySelectorAll('#panel button')].find(x=>x.textContent==='重置存档');if(b)b.setAttribute('onclick','resetChar()')};
-function resetChar(){if(!confirm('确定重置当前角色「'+S.name+'」？（共享仓库保留）'))return;const nm=S.name;ST_RESET=1;localStorage.removeItem(CH_PRE+ACCT.cur);localStorage.removeItem(KEY);ST_RESET=0;resetRuntime();load();S.name=nm;calc();H.life=ST.life;H.mana=ST.mana;save();render()}
+function resetChar(){if(!confirm('确定重置当前角色「'+S.name+'」？（共享仓库保留）'))return;const nm=S.name;ST_RESET=1;GS.removeItem(CH_PRE+ACCT.cur);GS.removeItem(KEY);ST_RESET=0;resetRuntime();load();S.name=nm;calc();H.life=ST.life;H.mana=ST.mana;save();render()}
 // ---------- 查找 / 移动 ----------
 const _st_find=findItem;findItem=function(uid){const f=_st_find(uid);if(f)return f;if(!S.pst)return null;
  for(let p=0;p<S.pst.length;p++){const i=S.pst[p].findIndex(x=>x.uid===uid);if(i>=0)return{it:S.pst[p][i],i:null,stash:1,where:'p',pg:p,si:i}}
