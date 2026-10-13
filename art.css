@@ -3,3 +3,13 @@
 .cell .ii.art{width:34px;height:34px}
 .ih .ii.art{width:56px;height:56px;border:2px solid #8a6a3a;background-color:#0d0907;border-radius:2px;box-shadow:inset 0 0 12px #000}
 .ii.art.chm{filter:drop-shadow(0 1px 2px #000)}
+/* ---- UI 9宫格纹理（assets/ui/*_9s.png，2x 资源；只覆盖外观，不改布局逻辑） ---- */
+.gp,.ipanel{border:1px solid transparent;border-image:url(assets/ui/panel_9s.png) 60 fill / 30px / 6px stretch;padding:14px 14px 12px;background:#0f0c0a}
+.ipanel{box-shadow:0 0 24px #000}
+.gp:before,.gp:after,.ipanel:before,.ipanel:after{display:none}
+.gp h3{border:0;border-image:url(assets/ui/title_9s.png) 18 56 fill / 9px 26px stretch;padding:7px 22px 7px 24px;margin:-4px -6px 8px;min-height:34px;text-shadow:0 1px 2px #000,0 0 6px #000}
+.btn{border:1px solid transparent;border-image:url(assets/ui/btn_9s.png) 22 fill / 10px stretch;background:#1a1612;border-radius:0;box-shadow:none;text-shadow:0 1px 2px #000;color:#f2dca6}
+.btn.on,.btn.gold{border-image-source:url(assets/ui/btn_on_9s.png);color:#fff6d8}
+.btn:active{filter:brightness(1.25)}
+#tabs{border-top:0;border-image:url(assets/ui/nav_9s.png) 40 40 8 fill / 20px 20px 4px stretch;padding-top:10px}
+#tabs button{text-shadow:0 1px 2px #000}
