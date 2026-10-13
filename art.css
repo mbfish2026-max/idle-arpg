@@ -35,3 +35,38 @@
 .tree{border:1px solid transparent;border-image:url(assets/ui2/panel_9s.webp) 56 fill / 22px / 8px stretch;background:none;margin:14px 14px;padding:10px 8px}
 .skc,.zc,.rc{border:1px solid transparent;border-image:url(assets/ui2/btn_9s.webp) 14 fill / 8px stretch;background:none;border-radius:0;box-shadow:none;padding:10px}
 .zc.cur{box-shadow:0 0 0 2px #c9a45a,0 0 8px #806020}.zc.bz{border-left:1px solid transparent;box-shadow:inset 3px 0 0 #f0a020}
+/* ===== UI2 批次二：生命/法力球、怪物/角色卡框、血条/经验条/分割线、日志羊皮纸、快捷栏药水、炼金匣图标 ===== */
+.orb{width:60px;height:80px;border:0;border-radius:0;overflow:visible;box-shadow:none;background:url(assets/ui2/orb_red_empty.webp) center/100% 100% no-repeat}
+.orb.blue{background-image:url(assets/ui2/orb_blue_empty.webp)}
+.orb:before{left:14.67%;top:11.44%;bottom:auto;width:69.33%;height:51.74%;background:url(assets/ui2/orb_red_liq.webp) center/100% 100% no-repeat;clip-path:inset(calc((1 - var(--p))*100%) 0 0 0);transition:none}
+.orb.blue:before{background:url(assets/ui2/orb_blue_liq.webp) center/100% 100% no-repeat}
+.orb:after{display:none}
+.orb span{inset:auto;left:0;right:0;top:11.44%;height:51.74%;font-size:13px;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 6px #000}
+#hud{background:linear-gradient(#1c150f,#0b0806);border:0;padding:2px 4px}
+.mc,.ac{border:10px solid transparent;border-image:url(assets/ui2/card_n_9s.webp) 32 fill / 12px / 2px stretch;background:none;border-radius:0;box-shadow:none;padding:0}
+.mc.champ{border-image-source:url(assets/ui2/card_champ_9s.webp);box-shadow:none}
+.mc.uniq{border-image-source:url(assets/ui2/card_uniq_9s.webp);box-shadow:none}
+.mc.boss{border-image-source:url(assets/ui2/card_boss_9s.webp);box-shadow:none}
+#arow .ac{border-color:transparent;box-shadow:none}#arow .ac.hero{border-color:transparent;box-shadow:none;border-image-source:url(assets/ui2/card_uniq_9s.webp)}
+.mc .pt,.ac .pt{border:0}.mc .lv,.ac .lv{left:-8px;top:-8px}
+.bar{height:12px;background:#0b0605;border:0;box-shadow:none;overflow:hidden}
+.bar:after{content:'';position:absolute;inset:0;border-style:solid;border-width:3px 7px;border-image:url(assets/ui2/bar_frame.webp) 20 44 / 3px 7px stretch;pointer-events:none;z-index:1}
+.bar i{top:2px;bottom:2px;background:url(assets/ui2/bar_red_fill.webp) left center/240px 100% repeat-x;transition:none}
+.bar.xp i{background-image:url(assets/ui2/bar_gold_fill.webp)}
+.bar.g i{background:linear-gradient(#5d5,#185)}
+.bar span{z-index:2;line-height:12px;font-size:9px}.bar.big{height:15px}.bar.big span{line-height:15px;font-size:11px}
+.xpb .bar{height:11px}.bar.xp span{line-height:11px;font-size:8px}
+hr{border:0;height:16px;margin:6px 0;background:url(assets/ui2/divider.webp) center/100% 100% no-repeat}
+#flog{background:linear-gradient(rgba(10,6,3,.55),rgba(10,6,3,.55)),url(assets/ui2/parch.webp) center/180px repeat;color:#eadcbc;text-shadow:0 1px 1px #000;border-top:1px solid #3a2a18}
+#pots{gap:4px}
+#pots button{border:1px solid transparent;border-image:url(assets/ui2/btn_9s.webp) 14 fill / 7px stretch;background:none;border-radius:0;min-height:52px;padding:2px 0;text-shadow:0 1px 2px #000}
+#pots button:active{border-image-source:url(assets/ui2/btn_down_9s.webp)}
+#pots i,#pots i.b,#pots i.v{width:22px;height:30px;margin:0 auto;font-size:0;color:transparent;filter:none;background:center/contain no-repeat}
+#pots #pb_hp i{background-image:url(assets/ui2/pot_hp.webp)}#pots #pb_mp i{background-image:url(assets/ui2/pot_mp.webp)}#pots #pb_rej i{background-image:url(assets/ui2/pot_rej.webp)}#pots #pb_tp i{background-image:url(assets/ui2/pot_tp.webp)}
+#pots b{top:2px;right:5px;font:bold 11px sans-serif;text-shadow:0 0 2px #000,0 0 2px #000}
+.uapot{display:inline-block;width:18px;height:24px;vertical-align:middle;margin-right:4px;background:center/contain no-repeat}
+.uapot.hp{background-image:url(assets/ui2/pot_hp.webp)}.uapot.mp{background-image:url(assets/ui2/pot_mp.webp)}.uapot.rej{background-image:url(assets/ui2/pot_rej.webp)}.uapot.tp{background-image:url(assets/ui2/pot_tp.webp)}
+.uacr{display:flex;align-items:center;gap:6px}.uacr>.ii.art{flex:none;width:30px;height:30px;filter:none}
+#arow .ac{width:70px;border-width:8px}#arow .ac.hero{width:78px}
+#modal .mtitle+.gp{margin-top:20px}
+#toast{border:1px solid transparent;border-image:url(assets/ui2/title_9s.webp) 24 80 fill / 10px 30px stretch;background:none;padding:10px 30px;text-shadow:0 1px 2px #000}
