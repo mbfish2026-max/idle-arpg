@@ -1,12 +1,12 @@
 'use strict';
 // ===== 美术资源映射：替换 assets/ 下同名文件即可生效；缺失时使用程序占位绘制 =====
 const ASSETS={
- hero:'assets/char/necromancer_idle.png',
- skeleton:'assets/summon/skeleton_warrior.png', skmage:'assets/summon/skeleton_mage.png',
- golem_cg:'assets/summon/golem_clay.png', golem_bg:'assets/summon/golem_blood.png', golem_ig:'assets/summon/golem_iron.png', golem_fg:'assets/summon/golem_fire.png', bonewall:'assets/summon/bone_wall.png',
- m_imp:'assets/monster/imp.png', m_shaman:'assets/monster/imp_shaman.png', m_rat:'assets/monster/quill_rat.png', m_zombie:'assets/monster/zombie.png', m_skel:'assets/monster/skeleton_enemy.png',
- m_rogue:'assets/monster/fallen_huntress.png', m_archer:'assets/monster/shadow_archer.png', m_ape:'assets/monster/rock_ape.png', m_ghost:'assets/monster/ghost.png', m_bat:'assets/monster/cave_bat.png',
- b_raven:'assets/boss/blood_raven_huntress.png', b_smith:'assets/boss/smith_ghost.png', b_countess:'assets/boss/tower_mistress.png', b_butcher:'assets/boss/hammer_butcher.png', b_queen:'assets/boss/thorn_mother.png',
+ hero:'assets/char/necromancer_idle.webp',
+ skeleton:'assets/summon/skeleton_warrior.webp', skmage:'assets/summon/skeleton_mage.webp',
+ golem_cg:'assets/summon/golem_clay.webp', golem_bg:'assets/summon/golem_blood.webp', golem_ig:'assets/summon/golem_iron.webp', golem_fg:'assets/summon/golem_fire.webp', bonewall:'assets/summon/bone_wall.webp', revive:'assets/summon/revive.webp',
+ m_imp:'assets/monster/imp.webp', m_shaman:'assets/monster/imp_shaman.webp', m_rat:'assets/monster/quill_rat.webp', m_zombie:'assets/monster/zombie.webp', m_skel:'assets/monster/skeleton_enemy.webp',
+ m_rogue:'assets/monster/fallen_huntress.webp', m_archer:'assets/monster/shadow_archer.webp', m_ape:'assets/monster/rock_ape.webp', m_ghost:'assets/monster/ghost.webp', m_bat:'assets/monster/cave_bat.webp',
+ b_raven:'assets/boss/blood_raven_huntress.webp', b_smith:'assets/boss/smith_ghost.webp', b_countess:'assets/boss/tower_mistress.webp', b_butcher:'assets/boss/hammer_butcher.webp', b_queen:'assets/boss/thorn_mother.webp',
  bg_moor:'assets/bg/moor.png', bg_cave:'assets/bg/cave.png', bg_grave:'assets/bg/graveyard.png', bg_forest:'assets/bg/forest.png', bg_village:'assets/bg/ruined_village.png',
  bg_tower:'assets/bg/tower.png', bg_monastery:'assets/bg/monastery.png', bg_jail:'assets/bg/jail.png', bg_cathedral:'assets/bg/cathedral.png', bg_catacomb:'assets/bg/catacomb.png',
  sk_sheet0:'assets/icon/skills_summon.png', sk_sheet1:'assets/icon/skills_bone.png', sk_sheet2:'assets/icon/skills_curse.png',

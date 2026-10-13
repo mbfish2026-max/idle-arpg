@@ -282,7 +282,7 @@ function bar(v,m,cls){const p=m>0?clamp(v/m*100,0,100):0;return`<div class="bar 
 function monCard(m){const cur=m.cur&&m.cur.until>GT?`<em class="cur">${SKM[m.cur.id].n.slice(0,2)}</em>`:'';
  return`<div class="mc ${m.fl} ${m.hitT>0?'hit':''} ${m.stun>0?'stun':''}" id="c${m.uid}"><b class="lv">${m.lv}</b>${cur}${m.pois&&m.pois.left>0?'<em class="psn">毒</em>':''}
  <div class="pt">${art(m.a,m.ic)}</div><div class="nm">${m.n}</div>${bar(m.hp,m.max,'hp')}</div>`}
-function allyCard(a){const ic={skel:'💀',mage:'🔮',golem:SKM[a.sub||'cg']?.ic||'🗿',wall:'🧱',rev:a.ic}[a.kind];const key={skel:'skeleton',mage:'skmage',golem:'golem_'+a.sub,wall:'bonewall',rev:a.a}[a.kind];
+function allyCard(a){const ic={skel:'💀',mage:'🔮',golem:SKM[a.sub||'cg']?.ic||'🗿',wall:'🧱',rev:a.ic}[a.kind];const key={skel:'skeleton',mage:'skmage',golem:'golem_'+a.sub,wall:'bonewall',rev:(IMG[a.a]?a.a:'revive')}[a.kind];
  const t=a.until?`<em class="tm">${Math.max(0,Math.ceil(a.until-GT))}s</em>`:'';return`<div class="ac ${a.hitT>0?'hit':''}" id="ca${a.uid}">${t}<div class="pt">${art(key,ic)}</div><div class="nm">${a.n}</div>${bar(a.hp,a.max,'hp g')}</div>`}
 function questLine(){const z=zoneData();const q=z.quest||Object.keys(QUESTS).find(k=>!S.q[k]);if(!q)return'【主线】第一章已完成，第二章将于下一阶段开放';const Q=QUESTS[q];return`【主线】${Q.d} (${S.q[q]?1:0}/1)`}
 function renderFight(){const z=zoneData(),boss=MON.find(m=>m.boss&&m.hp>0),tgt=boss||liveMon()[0];
@@ -327,7 +327,7 @@ function drawFX(dt){const cv=$('#fx');if(!cv)return;const b=$('#fbattle'),W=b.cl
 // ===== 角色页 =====
 function renderHero(){const s=ST,A=s.attr,P=$('#panel');const row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
  const at=[['str','力量','装备需求 · 武器伤害+1%/点'],['dex','敏捷','命中+5 · 防御+1/4'],['vit','体力','生命+2/点'],['ene','精力','法力+2/点']];
- P.innerHTML=`<div class="gp"><h3>亡灵术士 · Lv.${S.lvl}</h3><div class="sub">经验 ${fmt(S.xp)} / ${fmt(xpNeed(S.lvl+1))} · 难度 ${DIFFS[S.diff].n}</div>
+ P.innerHTML=`<div class="gp"><div class="heroart">${art('hero','🧙‍♂️')}</div><h3>亡灵术士 · Lv.${S.lvl}</h3><div class="sub">经验 ${fmt(S.xp)} / ${fmt(xpNeed(S.lvl+1))} · 难度 ${DIFFS[S.diff].n}</div>
  <div class="pts">可用属性点 <b>${S.sp}</b> · 技能点 <b>${S.kp}</b></div>
  ${at.map(([k,n,d])=>`<div class="attr"><div><b>${n}</b> <span class="v">${A[k]}</span>${A[k]!==S.at[k]?`<span class="plus"> (+${A[k]-S.at[k]})</span>`:''}<div class="dim">${d}</div></div>
   <div><button class="btn sm" onclick="addStat('${k}',1)" ${S.sp?'':'disabled'}>+1</button><button class="btn sm" onclick="addStat('${k}',5)" ${S.sp>=5?'':'disabled'}>+5</button></div></div>`).join('')}</div>
