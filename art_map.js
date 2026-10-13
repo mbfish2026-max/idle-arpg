@@ -37,5 +37,5 @@ function artZoneBg(ai,zi){const A=ACTS[ai];if(!A||!A.zones[zi])return null;const
 const ART_BG={};
 {const _art_rf=renderFight;renderFight=function(){_art_rf();const fb=document.getElementById('fbattle');if(!fb)return;
   const z=zoneData(),zi=ACTS[S.act]?ACTS[S.act].zones.indexOf(z):-1;const u=zi>=0?artZoneBg(S.act,zi):null;if(!u)return;
-  const apply=()=>{if(fb.dataset.artbg!==u||!fb.style.backgroundImage.includes(u)){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.15) 35%,rgba(0,0,0,.65)),url(${u})`;fb.style.backgroundSize='cover';fb.style.backgroundRepeat='no-repeat';fb.style.backgroundPosition='center';fb.dataset.artbg=u}};
+  const apply=()=>{if(fb.dataset.artbg!==u||!fb.style.backgroundImage.includes(u)){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.15) 35%,rgba(0,0,0,.65)),url(${u})`;fb.style.backgroundSize='cover';fb.style.backgroundRepeat='no-repeat';fb.style.backgroundPosition='center';if(fb.dataset.artbg!==u)fb.dataset.artbg=u}};
   if(ART_BG[u]===1)apply();else if(!ART_BG[u]){ART_BG[u]=2;const i=new Image();i.onload=()=>{ART_BG[u]=1;if(TAB==='fight')renderFight()};i.onerror=()=>{ART_BG[u]=3};i.src=u}}}

@@ -295,13 +295,16 @@ function renderFight(){const z=zoneData(),boss=MON.find(m=>m.boss&&m.hp>0),tgt=b
  <div class="xpb"><b>EXP</b>${bar(S.xp-xpNeed(S.lvl),xpNeed(S.lvl+1)-xpNeed(S.lvl),'xp')}<span class="lvt">Lv.${S.lvl}</span><span class="gold">◈${fmt(S.gold)}</span></div>`;
  const ms=MON.filter(m=>m.hp>0);$('#mgrid').innerHTML=ms.map(monCard).join('')+(ms.length?'':'<div class="empty">· 静 ·</div>');
  $('#arow').innerHTML=`<div class="ac hero" id="chero"><b class="lv">${S.lvl}</b><div class="pt">${heroArt()}</div><div class="nm">${clsName()}</div>${H.abs>0?`<div class="abs">骨铠 ${Math.round(H.abs)}</div>`:''}</div>`+ALLY.map(allyCard).join('')+`<div class="corpse">尸体×${CORPSE.length}</div>`;
- $('#orbL').style.setProperty('--p',clamp(H.life/ST.life,0,1));$('#orbR').style.setProperty('--p',clamp(H.mana/ST.mana,0,1));
- $('#orbL span').textContent=Math.max(0,Math.round(H.life));$('#orbR span').textContent=Math.round(H.mana);
- for(const k of['hp','mp','rej','tp'])$('#p_'+k).textContent=S.pot[k];
+ setVar($('#orbL'),'--p',clamp(H.life/ST.life,0,1).toFixed(3));setVar($('#orbR'),'--p',clamp(H.mana/ST.mana,0,1).toFixed(3));
+ setTxt($('#orbL span'),Math.max(0,Math.round(H.life)));setTxt($('#orbR span'),Math.round(H.mana));
+ for(const k of['hp','mp','rej','tp'])setTxt($('#p_'+k),S.pot[k]);
  if(LOGDIRTY){const L=$('#flog');L.innerHTML=LOGS.map(x=>`<div>${x}</div>`).join('');L.scrollTop=L.scrollHeight;LOGDIRTY=0}
  $('#fquest').innerHTML=`<span class="qtag">${questLine()}</span>`;
  $('#fzone').innerHTML=`<button onclick="goZone(Math.max(0,S.zone-1))">◀</button><span>${z.n} <small>mlvl ${z.ml}</small></span><button onclick="goZone(Math.min(S.unl,S.zone+1))">▶</button><button class="auto ${S.auto?'on':''}" onclick="S.auto^=1;render()">${S.auto?'自动推进':'原地挂机'}</button>`;
- const bgk=z.bg;$('#fbattle').style.backgroundImage=IMG[bgk]?`linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.6)),url(${IMG[bgk]})`:'';$('#fbattle').dataset.bg=bgk}
+ const bgk=z.bg;$('#fbattle').style.backgroundImage=IMG[bgk]?`linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.6)),url(${IMG[bgk]})`:'';if($('#fbattle').dataset.bg!==bgk)$('#fbattle').dataset.bg=bgk}
+// 省电：值没变就不写 DOM（避免无谓的样式重算）
+function setTxt(e,v){v=String(v);if(e&&e.textContent!==v)e.textContent=v}
+function setVar(e,k,v){v=String(v);if(e&&e.style.getPropertyValue(k)!==v)e.style.setProperty(k,v)}
 // ===== 特效层 =====
 const FX=[];
 function rectOf(id){const e=document.getElementById(id),b=$('#fbattle');if(!e||!b)return null;const r=e.getBoundingClientRect(),o=b.getBoundingClientRect();return{x:r.left-o.left+r.width/2,y:r.top-o.top+r.height/2,w:r.width,h:r.height}}
@@ -472,13 +475,15 @@ function needStr(){let n=0;for(const it of S.bag)if(it&&!it.k&&BASEM[it.b]){cons
 // 我方行可横向滑动：右侧还有内容时加渐隐遮罩提示
 function arowHint(){const a=$('#arow');if(a)a.classList.toggle('ovf',a.scrollLeft+a.clientWidth<a.scrollWidth-2)}
 // ===== 主循环 =====
-let lastT=performance.now(),autoT=0,acc=0,uiT=0,saveT=0;
+let arowN=0,lastT=performance.now(),autoT=0,acc=0,uiT=0,saveT=0;
 // 主循环出错时也要继续调度下一帧，否则单个坏数据会让整个游戏停住
 // 省电：限帧（普通 30fps / 省电 15fps）；息屏或后台时不推进、不渲染（回来后按离线公式结算，见 power.js）
 const PWRF={fps:30,ui:0.25,paused:0};
-function loop(now){if(!PWRF.paused&&now-lastT>=1000/PWRF.fps-2){try{loop0(now)}catch(e){console.error(e)}}else if(PWRF.paused)lastT=now;requestAnimationFrame(loop)}
+// 暂停（息屏/后台）时彻底停掉 rAF，不空转；恢复时调用 PWRF.resume()
+PWRF.stopped=0;PWRF.resume=()=>{if(!PWRF.stopped)return;PWRF.stopped=0;lastT=performance.now();requestAnimationFrame(loop)};
+function loop(now){if(PWRF.paused){PWRF.stopped=1;return}if(now-lastT>=1000/PWRF.fps-2){try{loop0(now)}catch(e){console.error(e)}}requestAnimationFrame(loop)}
 function loop0(now){let dt=Math.min(0.1,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
- uiT+=dt;if(uiT>PWRF.ui){uiT=0;if(TAB==='fight'){renderFight();arowHint()}}drawFX(dt);
+ uiT+=dt;if(uiT>PWRF.ui){uiT=0;if(TAB==='fight'){renderFight();if(++arowN%4===0)arowHint()}}drawFX(dt);
  autoT+=dt*SPEED;if(autoT>1){autoT=0;autoTick()}saveT+=dt;if(saveT>5){saveT=0;killWin=killWin.filter(t=>GT-t<120);if(GT>60)S.kpm=killWin.length/Math.min(2,GT/60);save()}}
 function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render()});

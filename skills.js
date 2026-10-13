@@ -119,8 +119,8 @@ const _fx=fx;fx=function(kind,tg=[]){if(TAB!=='fight')return;const k=FXS[kind],i
  else if(kind==='summon'){const dur=Math.round(650/sp);sprite('pillar',img,h.x,h.y-30,90,`animation-duration:${dur}ms`,dur)}};
 // 持续特效：诅咒法阵（怪物脚下旋转，诅咒期间一直显示）、骨铠环绕（护盾 >0 时）；卡片重绘后按全局时间对齐动画相位
 function persistFX(){const ph=`animation-delay:-${(performance.now()%6000)/1000}s`;
- if(IMG.fx_curse)for(const m of MON){if(m.hp<=0||!m.cur||m.cur.until<=GT)continue;const c=document.getElementById('c'+m.uid);if(c&&!c.querySelector('.fxcur'))c.insertAdjacentHTML('beforeend',`<i class="fxcur" style="background-image:url(${IMG.fx_curse});${ph}"></i>`)}
- const hc=$('#chero');if(hc&&IMG.fx_armor&&H.abs>0&&!hc.querySelector('.fxarm'))hc.insertAdjacentHTML('beforeend',`<i class="fxarm" style="background-image:url(${IMG.fx_armor});${ph}"></i>`)}
+ if(IMG.fx_curse)for(const m of MON){if(m.hp<=0||!m.cur||m.cur.until<=GT){const c=document.getElementById('c'+m.uid),x=c&&c.querySelector('.fxcur');if(x)x.remove();continue}const c=document.getElementById('c'+m.uid);if(c&&!c.querySelector('.fxcur'))c.insertAdjacentHTML('beforeend',`<i class="fxcur" style="background-image:url(${IMG.fx_curse});${ph}"></i>`)}
+ const hc=$('#chero');if(hc&&!(H.abs>0)){const x=hc.querySelector('.fxarm');if(x)x.remove()}if(hc&&IMG.fx_armor&&H.abs>0&&!hc.querySelector('.fxarm'))hc.insertAdjacentHTML('beforeend',`<i class="fxarm" style="background-image:url(${IMG.fx_armor});${ph}"></i>`)}
 // 飘字：暴击（装备「致命一击」几率，伤害 ×2）放大黄色
 let CRIT=0;
 const _hitMon=hitMon;hitMon=function(m,d,src,fxc){if(src==='hero'&&ST.dsx&&rnd()*100<ST.dsx){const d2={};for(const k in d)d2[k]=d[k]*2;CRIT=1;try{return _hitMon(m,d2,src,'#ffd23a')}finally{CRIT=0}}return _hitMon(m,d,src,fxc)};

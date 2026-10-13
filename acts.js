@@ -198,7 +198,7 @@ const _showItem=showItem;showItem=function(uid){_showItem(uid);const f=findItem(
  if(h)box.insertAdjacentHTML('afterbegin',h)};
 
 // ---------- UI：战斗页、角色页随从、地图页 ----------
-const _renderFight=renderFight;renderFight=function(){_renderFight();{const fb=$('#fbattle'),bk='bg_act'+(S.act+1);if(fb&&IMG[bk]){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.25) 35%,rgba(0,0,0,.7)),url(${IMG[bk]})`}}const e=document.querySelector('#ftop .zn');if(e&&S.diff)e.innerHTML=`<b class="diff d${S.diff}">${DIFFS[S.diff].n}</b> `+e.innerHTML};
+const _renderFight=renderFight;renderFight=function(){_renderFight();{const fb=$('#fbattle'),bk='bg_act'+(S.act+1);if(fb&&IMG[bk]){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.25) 35%,rgba(0,0,0,.7)),url(${IMG[bk]})`}}const e=document.querySelector('#ftop .zn');if(e&&S.diff&&!e.querySelector('.diff'))e.innerHTML=`<b class="diff d${S.diff}">${DIFFS[S.diff].n}</b> `+e.innerHTML};
 function mercPanel(){if(!S.mercU&&!S.merc)return`<div class="gp"><h3>随从</h3><div class="dim">完成第一章任务「堕落女猎手」后可获得随从。</div></div>`;
  let h='<div class="gp"><h3>随从</h3>';
  if(S.merc){const T=MERCS[S.merc.t],ms=mercStats();const row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;

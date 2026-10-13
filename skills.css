@@ -21,9 +21,9 @@
 @keyframes fxpil{0%{transform:translate(-50%,-50%) scaleY(.2);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scaleY(1.4);opacity:0}}
 .mc,.ac.hero{position:relative}
 .fxcur{position:absolute;left:50%;top:56px;width:100%;aspect-ratio:1;margin-top:-50%;filter:drop-shadow(0 0 3px #c0f);background:center/contain no-repeat;pointer-events:none;z-index:2;opacity:.9}
-.fxcur{animation:fxspin 6s linear infinite}
+.fxcur{transform:translateX(-50%) scaleY(.7)}/* 省电：去掉常驻旋转，改静态 */
 @keyframes fxspin{from{transform:translateX(-50%) scaleY(.7) rotate(0)}to{transform:translateX(-50%) scaleY(.7) rotate(360deg)}}
-.fxarm{position:absolute;left:50%;top:42%;width:120%;aspect-ratio:1;background:center/contain no-repeat;pointer-events:none;z-index:3;opacity:.8;animation:fxarm 3s linear infinite}
+.fxarm{position:absolute;left:50%;top:42%;width:120%;aspect-ratio:1;background:center/contain no-repeat;pointer-events:none;z-index:3;opacity:.8;transform:translate(-50%,-50%)}/* 省电：去掉常驻旋转，改静态 */
 @keyframes fxarm{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 .mc.hit .pt img,.mc.hit .pt .glyph,.ac.hit .pt img{filter:brightness(2.6) saturate(.3)}
 .fl.crit{color:#ffd23a;font-size:23px;font-weight:900;text-shadow:0 0 4px #000,0 0 8px #a60}
