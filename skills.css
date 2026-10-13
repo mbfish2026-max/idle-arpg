@@ -1,0 +1,30 @@
+/* 第四阶段：技能图标 / 自动施法 / 技能栏 / 特效 */
+.ski.img{background-size:cover;background-position:center;font-size:0}
+.acp .acr{border:1px solid #4a3820;border-radius:6px;padding:6px;margin:6px 0;background:rgba(0,0,0,.25)}
+.acp .acr.off{opacity:.55}
+.acn{display:flex;align-items:center;gap:6px}.acn b{flex:1}.acn .ski{width:30px;height:30px}
+.aci{width:18px;color:#c9a45a;font:bold 12px sans-serif;text-align:center}
+.acm,.aco{margin-top:4px}.aco .dim{font-size:11px}
+#skbar{position:relative;z-index:7;display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px}
+.skb{position:relative;flex:none;padding:0;border:0;background:none;width:30px}
+.skb .ski{width:29px;height:29px;border-width:1px}.skb small{position:absolute;left:0;right:0;bottom:-2px;font:9px sans-serif;color:#ffe9a8;text-shadow:0 0 2px #000;text-align:center}
+.skb.off .ski{filter:grayscale(1) brightness(.5)}.skb.nm .ski{box-shadow:inset 0 0 0 40px rgba(20,40,120,.45)}
+#fxl{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.fxs{position:absolute;background:center/contain no-repeat;mix-blend-mode:screen;will-change:transform,opacity;transform:translate(-50%,-50%)}
+.fxs.fly{animation:fxfly linear forwards}
+@keyframes fxfly{from{transform:translate(-50%,-50%) rotate(var(--a)) scale(.7)}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--a)) scale(1)}}
+.fxs.pop{animation:fxpop ease-out forwards}
+@keyframes fxpop{from{transform:translate(-50%,-50%) scale(.3);opacity:1}to{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+.fxs.ring{animation:fxring ease-out forwards}
+@keyframes fxring{from{transform:translate(-50%,-50%) scale(.2);opacity:1}to{transform:translate(-50%,-50%) scale(3.2);opacity:0}}
+.fxs.pillar{animation:fxpil ease-out forwards;transform-origin:50% 100%}
+@keyframes fxpil{0%{transform:translate(-50%,-50%) scaleY(.2);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scaleY(1.4);opacity:0}}
+.mc,.ac.hero{position:relative}
+.fxcur{position:absolute;left:50%;top:56px;width:100%;aspect-ratio:1;margin-top:-50%;filter:drop-shadow(0 0 3px #c0f);background:center/contain no-repeat;pointer-events:none;z-index:2;opacity:.9}
+.fxcur{animation:fxspin 6s linear infinite}
+@keyframes fxspin{from{transform:translateX(-50%) scaleY(.7) rotate(0)}to{transform:translateX(-50%) scaleY(.7) rotate(360deg)}}
+.fxarm{position:absolute;left:50%;top:42%;width:120%;aspect-ratio:1;background:center/contain no-repeat;pointer-events:none;z-index:3;opacity:.8;animation:fxarm 3s linear infinite}
+@keyframes fxarm{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.mc.hit .pt img,.mc.hit .pt .glyph,.ac.hit .pt img{filter:brightness(2.6) saturate(.3)}
+.fl.crit{color:#ffd23a;font-size:23px;font-weight:900;text-shadow:0 0 4px #000,0 0 8px #a60}
+@media (prefers-reduced-motion:reduce){.fxs,.fxcur,.fxarm{animation-duration:1ms!important}}
