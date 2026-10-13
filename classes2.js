@@ -49,7 +49,7 @@ if(typeof EG_LP!=='undefined'){
   if(s.id==='bbash'&&egLp('bash_quake')&&tg&&!tg.boss&&tg.hp>0&&rnd()<0.3)tg.stun=Math.max(tg.stun||0,1.5);
   if(s.id==='bhowl'&&egLp('howl_blood'))H.life=Math.min(ST.life,H.life+ST.life*0.02*ms.length);
   if(s.id==='mmet'&&egLp('met_twin')&&rnd()<0.35){const l=liveMon();if(l.length)CLS_TY.aoe(s,v,l,l[0])}
-  if(s.id==='mfb'&&egLp('fb_split'))for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))clsHit(m,'fire',rr(v.dmg)*0.5)}}
+  if(s.id==='mfb'&&egLp('fb_split'))for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))clsHit(m,'fire',clsRR(v.dmg)*0.5)}}
  {const f=step;step=function(dt){const h0=H.life;const r=f(dt);if(curCls()==='sor'&&egLp('ice_shell')&&buffOn('mfa')&&H.life<h0&&H.life>0)H.life=Math.min(ST.life,H.life+(h0-H.life)*0.2);return r}}
 }
 
