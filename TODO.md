@@ -41,6 +41,7 @@
 - [x] 精英/小首领手绘立绘、手绘技能特效 fx2、地图缩略图（美术2）
 - [ ] 装备图标改为手绘生成图（美术） (防具/饰品已完成 by 美术2)
 - [x] 武器图标手绘：12 类武器 × 普通/扩展/精英 共 36 张（assets/icon2，icon2.js 映射）（美术）
+- [x] emoji 占位换手绘：赌博未鉴定格 unid.webp、空装备栏 slot_{9 槽}.webp、角色列表/新建角色职业头像 assets/char/*_portrait.webp（icon2.js icon2Fix3 MutationObserver + art.css，未改 shop/game/stash.js）（美术）
 - [ ] 宝石、符文图标改为手绘（美术）
 - [ ] UI 九宫格、背景改为手绘（美术）
 - [x] 二到五章逐区域手绘背景（替换 38 张占位图）（美术）

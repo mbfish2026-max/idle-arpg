@@ -13,3 +13,8 @@
 .btn:active{filter:brightness(1.25)}
 #tabs{border-top:0;border-image:url(assets/ui/nav_9s.png) 40 40 8 fill / 20px 20px 4px stretch;padding-top:10px}
 #tabs button{text-shadow:0 1px 2px #000}
+/* fix3：未鉴定/空装备栏/职业头像（icon2.js icon2Fix3） */
+.ii.art.fx3{background-size:contain;background-position:center}
+.cell.empty .ii.art.fx3{opacity:.55}
+.chic.fx3 img.fx3p{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:50% 20%;border:1px solid #8a6a3a;display:block;background:#0d0907}
+.clsc>i.fx3 img.fx3p{width:56px;height:56px;border-radius:8px;object-fit:cover;object-position:50% 20%;border:1px solid #8a6a3a;display:block;background:#0d0907}

@@ -25,3 +25,13 @@ function icon2Tier(it){const b=it&&BASEM[it.b];if(!b)return'n';return'nxe'[b.jew
 function icon2Url(it){if(!it||it.k)return null;const b=BASEM[it.b];if(!b)return null;return ICON2[it.b]||ICON2[b.cat+'_'+icon2Tier(it)]||null}
 {const _icon2=itemIcon;itemIcon=function(it){const u=icon2Url(it);if(!u)return _icon2(it);const b=BASEM[it.b],t='nxe'.indexOf(icon2Tier(it));
   return`<i class="ii art eq t${t} ic2${b.s==='charm'?' chm c'+b.sz:''}" style="background-image:url(${u});background-size:contain;background-position:center;background-repeat:no-repeat"></i>`}}
+// ---------- fix3：emoji 占位替换为手绘图（渲染后用 MutationObserver 替换，不改 shop.js/game.js/stash.js）----------
+// 赌博未鉴定格 .cell.unid → unid.webp；背包空装备栏 .cell.empty（按 SLOTN 文本反查槽位）→ slot_{key}.webp；角色列表 .chic / 新建角色 .clsc（按 CLASSES.ic 反查职业）→ assets/char/{id}_portrait.webp
+function icon2Fix3(root){try{
+ (root||document).querySelectorAll('.cell.unid>i.ii:not(.art)').forEach(i=>{i.className='ii art fx3';i.style.backgroundImage='url(assets/icon2/unid.webp)';i.textContent=''});
+ const SN={};if(typeof SLOTN!=='undefined')for(const k in SLOTN)SN[SLOTN[k]]=k.startsWith('ring')?'ring':k;
+ (root||document).querySelectorAll('.cell.empty>i.ii:not(.art)').forEach(i=>{const k=SN[(i.parentNode.querySelector('small')||{}).textContent];if(!k)return;i.className='ii art fx3';i.style.backgroundImage=`url(assets/icon2/slot_${k}.webp)`;i.textContent=''});
+ if(typeof CLASSES!=='undefined'){const CI={};CLASSES.forEach(c=>CI[c.ic]=c);
+  (root||document).querySelectorAll('.chic:not(.fx3),.clsc>i:not(.fx3)').forEach(el=>{if(el.querySelector('img'))return;const C=CI[el.textContent.trim()];if(!C)return;el.classList.add('fx3');el.innerHTML=`<img class="fx3p" src="assets/char/${C.id}_portrait.webp" alt="${C.n}">`})}
+}catch(e){console.warn('icon2Fix3',e)}}
+if(typeof MutationObserver!=='undefined'&&document.body){new MutationObserver(()=>icon2Fix3()).observe(document.body,{childList:true,subtree:true});icon2Fix3()}
