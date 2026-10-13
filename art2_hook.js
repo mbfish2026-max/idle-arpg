@@ -31,3 +31,6 @@ const ART2_REDIRECT={
  'assets/icon/skills_summon.png':null,'assets/icon/skills_bone.png':null,'assets/icon/skills_curse.png':null,
  'assets/icon/items_sheet.png':null,'assets/icon/runes_gems_sheet.png':null,'assets/ui/stone_panel.png':null,'assets/ui/gold_frame.png':null};
 if(typeof ASSETS!=='undefined')for(const k in ASSETS){const u=ASSETS[k];if(u in ART2_REDIRECT){if(ART2_REDIRECT[u])ASSETS[k]=ART2_REDIRECT[u];else delete ASSETS[k]}}
+// ---------- 透明底重绘立绘（monster/boss/char）在卡片中垫暗色底，避免露出米色 .pt 背景 ----------
+if(typeof document!=='undefined'&&!document.getElementById('art2css')){const st=document.createElement('style');st.id='art2css';
+ st.textContent='.pt img[src*="assets/monster/"],.pt img[src*="assets/boss/"],.pt img[src*="assets/char/"]{background:radial-gradient(circle at 50% 60%,#2a1c14,#0d0907 75%);object-fit:contain}';document.head.appendChild(st)}
