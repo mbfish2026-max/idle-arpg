@@ -1,0 +1,10 @@
+/* art2_atmo.css — 美术2：战斗氛围层（静态，无动画/过渡；只作用于 #fbattle）
+   层级：#fbattle 背景 < 氛围层(z1) < 单位/血条(#ftop #mgrid #arow z2) < 特效/伤害数字(#fx z5) */
+#fbattle>.a2atmo{position:absolute;left:0;right:0;pointer-events:none;z-index:1;background-repeat:no-repeat}
+#fbattle>.a2atmo.vig{top:0;bottom:0;background-image:url(assets/atmo/vignette_ground.webp);background-size:100% 100%;opacity:.85}
+#fbattle>.a2atmo.fog{bottom:0;height:42%;background-image:url(assets/atmo/fog_front.webp);background-size:100% 100%;background-position:bottom;opacity:.5}
+#fbattle>#ftop,#fbattle>#mgrid,#fbattle>#arow{position:relative;z-index:2}
+/* 单位脚下光环：卡片底部扁平椭圆，压在卡片后面 */
+#mgrid .mc::after,#arow .ac.hero::after{content:'';position:absolute;left:-14%;right:-14%;bottom:-11px;height:24px;z-index:-1;pointer-events:none;
+ background:url(assets/atmo/ring_enemy.webp) center/100% 100% no-repeat}
+#arow .ac.hero::after{background-image:url(assets/atmo/ring_hero.webp);left:-18%;right:-18%;height:28px;bottom:-12px}
