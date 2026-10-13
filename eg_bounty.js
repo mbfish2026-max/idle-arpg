@@ -31,7 +31,7 @@ function egGoBounty(b){if(EGM)egLeave(1);const B=EG().bounty;if(!B.ret)B.ret={d:
 function egBountyGo(i){const b=EG().bounty.d[i];if(!b||b.done)return;egGoBounty(b);TAB='fight';render()}
 function egBountyReturn(){const B=EG().bounty,r=B.ret;B.ret=null;if(!r)return;if(r.d!==S.diff||r.a!==S.act)goAct(r.a,r.d,1);S.auto=r.auto;goZone(Math.min(r.z,S.unl));log('<span class="dim">悬赏告一段落，返回原处继续</span>')}
 egOn('sec',()=>{egBountyReset();const B=EG().bounty;if(!B.auto||EGM||egBountyLock())return;
- const here=B.d.find(b=>!b.done&&b.d===S.diff&&b.a===S.act&&b.i===S.zone);if(here){if(S.auto)S.auto=0;return}
+ const here=B.d.find(b=>!b.done&&b.d===S.diff&&b.a===S.act&&b.i===S.zone);if(here){if(S.auto){if(!B.ret)B.ret={d:S.diff,a:S.act,z:S.zone,auto:1};S.auto=0}return}/* 修复：原先直接关掉自动推进且不记录，悬赏完成后不会恢复 */
  const nx=B.d.find(b=>!b.done&&actOpen(b.a,b.d));if(nx){egGoBounty(nx);log(`<b class="quest">自动悬赏：前往 ${nx.zn}</b>`)}else if(B.ret)egBountyReturn()});
 function egBountyLock(){return S.actU&&(S.actU[0]||0)>=1||S.diffU>0?null:'完成普通难度第一章后，营地告示板开放悬赏令'}
 function egBountyPage(){egBountyReset();const B=EG().bounty;const typeC={kill:'⚔',clear:'🔥',boss:'☠'};
