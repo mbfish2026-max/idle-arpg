@@ -6,15 +6,17 @@
 .mportw.big{width:132px;height:170px;flex:none;border:1px solid #5fa0e0;box-shadow:0 0 12px rgba(95,160,224,.35) inset}
 .mportw .mglyph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;opacity:.25;z-index:0}
 .mport{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
-/* 立绘占位：怪物/召唤图 + filter 色调处理，等待正式美术 */
-.mport.t_archer{filter:hue-rotate(-35deg) saturate(1.3) brightness(1.1) contrast(1.05)}
-.mport.t_guard{filter:sepia(.75) hue-rotate(-8deg) saturate(1.6) brightness(1.08)}
-.mport.t_mage{filter:hue-rotate(195deg) saturate(1.4) brightness(1.15)}
-.mport.t_barb{filter:sepia(.4) hue-rotate(160deg) saturate(.8) brightness(1.2) contrast(1.15)}
-.mport.v_fire{filter:hue-rotate(-35deg) saturate(1.4) brightness(1.1) drop-shadow(0 0 6px #f84)}
-.mport.v_cold{filter:hue-rotate(160deg) saturate(1.3) brightness(1.15) drop-shadow(0 0 6px #8cf)}
-.mport.v_light{filter:hue-rotate(195deg) saturate(1.4) brightness(1.2) drop-shadow(0 0 6px #ff6)}
-.mport.t_guard.v_hfz,.mport.t_guard.v_thorns,.mport.t_guard.v_baim{filter:sepia(.6) hue-rotate(170deg) saturate(1.3) brightness(1.1)}
+/* 正式立绘 512×640（4:5）：按人物上半身裁切；版本仅以轻微边框光区分 */
+.mport{object-position:50% 12%}
+.mportw.big{width:136px;height:170px}
+.mportw.big .mport{object-position:50% 0}
+.mportw:has(.v_fire){box-shadow:0 0 6px rgba(255,136,68,.45)}
+.mportw:has(.v_cold){box-shadow:0 0 6px rgba(136,204,255,.45)}
+.mportw:has(.v_light){box-shadow:0 0 6px rgba(255,255,102,.45)}
+.mportw:has(.v_might),.mportw:has(.v_pray),.mportw:has(.v_defi),.mportw:has(.v_hfz),.mportw:has(.v_thorns),.mportw:has(.v_baim){box-shadow:0 0 6px rgba(255,215,106,.4)}
+.mminih{display:flex;gap:8px;align-items:center}
+.mminih .mportw{width:48px;height:60px;flex:none}
+.ac.merc .pt .mport{object-fit:cover;object-position:50% 10%}
 .minfo{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
 .mname{font-size:18px;color:#ffd76a;font-weight:bold}
 .mlv b{font-size:20px;color:#fff}

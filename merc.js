@@ -17,7 +17,7 @@ const MERC_HIRELV={0:[[3,7],[36,40],[67,71]],1:[[9,13],[43,47],[75,79]],2:[[15,1
 // 原版 hireling.txt ExpPerLvl（普通/噩梦/地狱），按本游戏经验曲线缩放：需求(L)=xpNeed(L)*ExpPerLvl/100
 const MERC_XPR={archer:[100,105,110],guard:[110,115,120],mage:[110,115,120],barb:[120,125,130]};
 const MERC_NAMES={archer:['莉娅','卡拉','艾琳','苏菲','萝拉','妮可'],guard:['阿兹','哈卡','萨米','莫拉','吉恩','法鲁'],mage:['奥兰','维克','赛门','诺曼','伊万','塔隆'],barb:['布恩','卡格','欧瑞','索尔','格拉','罗尔']};
-const MERC_ART={archer:'assets/monster/fallen_huntress.webp',guard:'assets/monster/knight.webp',mage:'assets/monster/tombmage.webp',barb:'assets/summon/skeleton_warrior.webp'};
+const MERC_ART={archer:'assets/merc/merc_archer_moor.webp',guard:'assets/merc/merc_spear_port.webp',mage:'assets/merc/merc_mage_ironwolf.webp',barb:'assets/merc/merc_barb_snow.webp'};
 // 光环：lv=光环等级；返回效果。dmg=伤害%（佣兵+召唤物），def=防御%，ar=命中%，ias，heal=每秒回复，mreg=回蓝%，thorns=反伤%，conv=降敌抗，tick={元素:每秒伤害}，slow
 const AURAS={
  might:{n:'力量',f:a=>({dmg:40+10*a}),t:e=>`伤害 +${e.dmg}%`},
@@ -167,8 +167,8 @@ const _mx_allyCard=allyCard;allyCard=function(a){if(a.kind!=='merc'||!mercUp())r
 function mercPortrait(t,v,big){return`<div class="mportw ${big?'big':''}"><img class="mport t_${t} v_${v}" src="${MERC_ART[t]}" onerror="this.style.display='none'"><span class="mglyph">${MERCS[t].ic}</span></div>`}
 mercPanel=function(){mercNorm();if(!S.mercU&&!mercUp())return`<div class="gp"><h3>佣兵</h3><div class="dim">完成第一章任务「堕落女猎手」后可获得佣兵。</div></div>`;
  const m=S.merc;if(!mercUp())return`<div class="gp"><h3>佣兵</h3><div class="dim">当前没有佣兵。</div><div class="btns"><button class="btn sm gold" onclick="TAB='merc';render()">前往佣兵页雇佣</button></div></div>`;
- const ms=mercStats();return`<div class="gp mercmini" onclick="TAB='merc';render()"><h3>佣兵</h3><div class="row"><span><b>${m.nm}</b> <span class="dim">${MERCS[m.t].n}·${mercVarDef(m.t,m.v).n}</span></span><b>${m.dead?'<span class="bad">阵亡</span>':'Lv.'+m.lvl}</b></div>
- <div class="row"><span>光环</span><b>${ms.auras.map(a=>AURAS[a.id].n+' '+a.lv).join('、')||'无'}</b></div><div class="btns"><button class="btn sm gold">佣兵详情 ›</button></div></div>`};
+ const ms=mercStats();return`<div class="gp mercmini" onclick="TAB='merc';render()"><h3>佣兵</h3><div class="mminih">${mercPortrait(m.t,m.v)}<div style="flex:1"><div class="row"><span><b>${m.nm}</b> <span class="dim">${MERCS[m.t].n}·${mercVarDef(m.t,m.v).n}</span></span><b>${m.dead?'<span class="bad">阵亡</span>':'Lv.'+m.lvl}</b></div>
+ <div class="row"><span>光环</span><b>${ms.auras.map(a=>AURAS[a.id].n+' '+a.lv).join('、')||'无'}</b></div></div></div><div class="btns"><button class="btn sm gold">佣兵详情 ›</button></div></div>`};
 function mercStatsHTML(ms){const row=(a,b,w)=>`<div class="mrow${w?' wide':''}"><span>${a}</span><b>${b}</b></div>`;const T=MERCS[S.merc.t];
  return row('生命',ms.life)+row('防御',ms.def)+row(T.spell?'法术伤害':'伤害',Math.round(ms.dmg[0])+'-'+Math.round(ms.dmg[1]))+row('攻击间隔',ms.atk.toFixed(2)+'s'+(ms.ias?` <small>(+${ms.ias}%)</small>`:''))+row('命中',ms.ar)+row('力量 / 敏捷',ms.str+' / '+ms.dex)+
  row('火 / 冰 / 电 / 毒抗',`<span class="mrf">${ms.res.fire}</span>/<span class="mrc">${ms.res.cold}</span>/<span class="mrl">${ms.res.light}</span>/<span class="mrp">${ms.res.pois}</span>`,1)+row('偷取生命',ms.ll+'%')+row('+所有技能',ms.allsk)+row('压碎打击',ms.cb+'%')}
