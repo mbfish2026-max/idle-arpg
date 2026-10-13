@@ -19,6 +19,7 @@ with sync_playwright() as p:
         pg.evaluate("""S.bag.length=0;for(const g in GEMS)for(let l=0;l<5;l++)S.bag.push({uid:S.uid++,k:'gem',g,lv:l});
           for(let r=0;r<33;r++)S.bag.push({uid:S.uid++,k:'rune',r});addMat&&addMat('ess',12);TAB='bag';STV='bag';render()""")
         shot('p_gems_bag',True)
+        pg.evaluate("document.querySelectorAll('*').forEach(e=>{if(e.scrollHeight>e.clientHeight+50)e.scrollTop=e.scrollHeight})");shot('p_gems_runes')
         pg.evaluate("showItem(S.bag[40].uid)");shot('p_gems_detail');pg.evaluate("closeM()")
     if st in('bg','all'):
         for a,z in [(0,0),(0,4),(0,10),(0,18),(1,3),(2,5),(3,1),(4,10)]:

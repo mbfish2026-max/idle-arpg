@@ -7,6 +7,9 @@
 const ART={
  // 装备精灵表：行=类型（与 tools/art/gen_items.py TYPES 一致），列=底材档次 0普通 1扩展 2精英
  eqSheet:'assets/icon/equip_sheet.webp',
+ gemSheet:'assets/icon/gems_sheet.webp',gemRows:['ame','top','sap','eme','rub','dia','sku'],// 列=品级 lv0-4
+ runeSheet:'assets/icon/runes_sheet.webp',// 11列×3行，序号 r=0..32
+ craftSheet:'assets/icon/craft_sheet.webp',craftCols:['ess','cube','anvil','socket','scroll','recycle'],// 工匠/材料
  eqRows:['sword','axe','mace','polearm','spear','bow','xbow','wand','staff','dagger','shield','head','helm','armor','gloves','boots','belt','ring','amulet','scha','mcha','lcha','jewel','jav','throw'],
 };
 // 首饰类无档次：按品质取色（普通/魔法+/暗金及以上）
@@ -15,4 +18,9 @@ function artSprite(url,col,row,cols,rows,cls){return`<i class="ii art ${cls||''}
 {const _art_icon=itemIcon;itemIcon=function(it){
   if(it&&!it.k){const b=BASEM[it.b];const r=b?ART.eqRows.indexOf(b.cat):-1;
    if(r>=0)return artSprite(ART.eqSheet,artTier(it,b),r,3,ART.eqRows.length,'eq t'+artTier(it,b)+(b.s==='charm'?' chm c'+b.sz:''))}
+  if(it&&it.k==='gem'){const r=ART.gemRows.indexOf(it.g);if(r>=0)return artSprite(ART.gemSheet,Math.max(0,Math.min(4,it.lv|0)),r,5,7,'gm')}
+  if(it&&it.k==='rune'&&it.r>=0&&it.r<33)return artSprite(ART.runeSheet,it.r%11,Math.floor(it.r/11),11,3,'rn')
+  if(it&&it.k==='mat'){const c=ART.craftCols.indexOf(it.id||it.m||'ess');return artSprite(ART.craftSheet,c<0?0:c,0,ART.craftCols.length,1,'mt')}
   return _art_icon(it)}}
+// 工匠图标（供其它面板按需调用）：artCraft('cube')
+function artCraft(k,cls){const c=Math.max(0,ART.craftCols.indexOf(k));return artSprite(ART.craftSheet,c,0,ART.craftCols.length,1,'mt '+(cls||''))}
