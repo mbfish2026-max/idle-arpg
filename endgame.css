@@ -21,3 +21,4 @@
 .egcx{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;font-size:11px}.egcx span{padding:2px 4px;border:1px solid #2a2016;border-radius:3px;color:#5a4a3a}.egcx span.ok{color:#c8a050;border-color:#6b5230}.egcx span.ok.set{color:#3fdc4f;border-color:#2a6030}
 .egtitle{color:#ff9a50;font-size:12px;margin-left:4px}
 .egb>div:first-child{flex:1;min-width:0}
+.egsep{margin:8px 0;padding:6px;border:1px solid #6a3010;border-radius:4px;background:rgba(80,30,5,.25);font-size:12px}

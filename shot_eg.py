@@ -64,5 +64,22 @@ with sync_playwright() as p:
         shot('p5_para.png','eg',"EGT='para'")
         run(pg,"egParaReset();EG().para.auto=0;calc()"); shot('p5_para_free.png','eg')
         print('reset ok',run(pg,"JSON.stringify({free:egPfree(),vit:ST.attr.vit,base:S.at.vit})"))
+    if W in('power','all'):
+        loadchar('tests/eg_char_normal.json')
+        # 掉落率：章节首领/精英/普通各 3000 次 TC
+        r=run(pg,"""(()=>{const c={u:0,ulp:0,leg:0,n:0};const z=ACTS[4].zones[3];for(const fl of ['','champ','boss'])for(let i=0;i<3000;i++){const m=fl==='boss'?mkMon('eldron',45):mkMon(z.mons[0],45,fl);for(const it of rollTC(m)){if(it.k)continue;c.n++;if(it.q===5){c.u++;if(it.lp)c.ulp++}if(it.leg)c.leg++}}S.bag=S.bag.filter(x=>!x.lp);return JSON.stringify(c)})()""")
+        print('lp drops',r)
+        # 战力对比：同一区域 30 分钟击杀数，无威能 vs 各组合
+        base="(()=>{const k0=S.kills;goAct(4,0,1);S.auto=0;goZone(3);egSim(1800);return S.kills-k0})()"
+        for combo in [[],['bs_split'],['skel_burst','legion'],['curse_spread','curse_wide'],['bs_split','legion','soul_feast']]:
+            run(pg,"EG().lp.cube={w:null,a:null,j:null};EG().lp.arch={};"+";".join("EG().lp.arch['%s']=1;EG().lp.cube[EG_LP['%s'].c]='%s'"%(k,k,k) for k in combo)+";calc()")
+            print('combo',combo,'kills/30min',run(pg,base),'deaths',run(pg,"EG().stat.egdie||0"))
+        run(pg,"EG().lp.cube={w:null,a:null,j:null};calc()")
+        run(pg,"const it=egLpApply(genItem(45,{base:BASEM[pick(Object.keys(BASEM).filter(k=>BASEM[k].s==='weapon'))],q:4}),999);S.bag.push(it);window._lpu=it.uid;S.bag.push({uid:S.uid++,k:'gem',g:'rub',lv:1});S.gold+=1e6")
+        shot('p5_lp_item.png','bag',"showItem(window._lpu)")
+        run(pg,"EG_LPNOCONF=1;egLpExtract(window._lpu)"); print('extract',run(pg,"JSON.stringify(EG().lp)"))
+        run(pg,"for(const k of ['skel_burst','curse_spread','ce_ember'])EG().lp.arch[k]=1;egLpSet('a','skel_burst');egLpSet('j','curse_spread');const u=egLpApply(genItem(45,{q:5}),99);S.bag.push(u)")
+        shot('p5_lp_cube.png','eg',"EGT='power'")
+        shot('p5_lp_skill.png','skill',"SKT=0")
     print('errors',errs)
     b.close()
