@@ -3,6 +3,8 @@
 // 通过包装 game.js 中的函数实现，尽量不改动 game.js 本体。
 const ACX={};const HSOFT=0.008,DSOFT=0.018;// 高等级怪物生命/伤害成长软化(近似调校)
 const GATE=4;let MAPD=null;
+// 地狱后期章节收紧等级宽限：第3/4章 2 级，第5章 0 级(世界之心/毁灭王座需≈84–85级)，让地狱曲线平滑、终章稳定通关
+function gateOf(a,d){return d===2?HELL_GATE[a]:GATE}
 const MSLOT=['weapon','helm','armor'];
 const ELK=['fire','cold','light','pois'],ELN={phys:'物',fire:'火',cold:'冰',light:'电',pois:'毒',magic:'魔'};
 function curPen(){return DIFFS[S.diff].pen}
@@ -42,25 +44,31 @@ const _mkMon=mkMon;mkMon=function(key,lv,flag){const m=_mkMon(key,lv,flag),T=MON
  if(flag==='uniq'){const ks=Object.keys(ELITE_AFF).filter(k=>!(k==='mb'&&false));const n=Math.min(3,D.naff||1);const aff=[];
   while(aff.length<n){const k=pick(ks);if(!aff.includes(k))aff.push(k)}for(const k of aff)ELITE_AFF[k].f(m);m.aff=aff.map(k=>ELITE_AFF[k].n);m.n=pick(UNIQ_T)+'·'+T.n}
  if(flag==='champ'){const v=pick(CHAMP_V);v.f(m);m.n=v.n+'·'+T.n}
+ if(!BOSSES[key]){m.max=m.hp=Math.max(1,Math.round(m.max*DENSITY.hp));m.dmg=m.dmg.map(x=>x*DENSITY.dmg);m.exp*=DENSITY.exp}
+ if(S.diff===2)m.exp*=HELL_ACT_EXP[S.act]||1;
+ if(!S.diff&&S.act===0)m.dmg=m.dmg.map(x=>x*NORM_EARLY.dmg);
  m.imm=Object.keys(m.res).filter(k=>m.res[k]>=100);return m};
 // 免疫：抗性≥100。诅咒对免疫怪物只有 1/5 效果（同原版机制），未打破则伤害为 0
 resOf=function(m,k){let r=m.res[k]||0;const c=m.cur&&m.cur.until>GT?m.cur:null;let red=0;
  if(c){if(c.id==='ad'&&k==='phys')red=100;if(c.id==='de'&&k==='phys')red=50;if(c.id==='lr'&&k!=='phys'&&k!=='magic')red=c.x||0}
  if(r>=100){r-=red/5;return r>=100?100:clamp(r,-100,95)}return clamp(r-red,-100,95)};
+const DN=n=>Math.max(1,Math.round(n*DENSITY.n));
 function zoneMons(z){return z.mons&&z.mons.length?z.mons:['imp']}
 spawnWave=function(){const z=zoneData(),wi=S.wave,last=wi>=z.w-1;const mons=zoneMons(z);
  const bw=z.bw&&z.bw[wi];
- if(bw){for(const k of bw.b){const m=mkMon(k,z.ml+2);MON.push(m);log(`<b class="bossn">${m.n}</b> 现身！`)}for(let i=0;i<(bw.n||3);i++)MON.push(mkMon(pick(bw.m||mons),z.ml+1,i===0?'champ':''));MON=MON.slice(0,8);return}
+ if(bw){for(const k of bw.b){const m=mkMon(k,z.ml+2);MON.push(m);log(`<b class="bossn">${m.n}</b> 现身！`)}for(let i=0;i<DN(bw.n||3);i++)MON.push(mkMon(pick(bw.m||mons),z.ml+1,i===0?'champ':''));MON=MON.slice(0,DENSITY.cap);return}
  if(last&&(z.boss||z.bosses)){const list=z.bosses||[z.boss];for(const k of list){const lv=z.ml+(BOSSES[k].actboss?(z.bl||0):2);const m=mkMon(k,lv);m.qb=1;MON.push(m);log(`<b class="bossn">${m.n}</b> 出现了！`)}
-  if(!z.solo)for(let i=0;i<R(2,4);i++)MON.push(mkMon(pick(mons),z.ml));MON=MON.slice(0,8);return}
+  if(!z.solo)for(let i=0;i<DN(R(2,4));i++)MON.push(mkMon(pick(mons),z.ml));MON=MON.slice(0,DENSITY.cap);return}
  const r=rnd();
- if(r<0.1){const k=pick(mons);for(let i=0;i<R(2,3);i++)MON.push(mkMon(k,z.ml+2,'champ'))}
+ if(r<0.1){const k=pick(mons);for(let i=0;i<DN(R(2,3));i++)MON.push(mkMon(k,z.ml+2,'champ'))}
  else if(r<0.15){const k=pick(mons);const L=mkMon(k,z.ml+3,'uniq');MON.push(L);log(`<span class="uniq">${L.n}</span> [${L.aff.join('/')}]${L.imm.length?' <b style="color:#f66">免疫'+L.imm.map(x=>ELN[x]).join('')+'</b>':''}`);
-  for(let i=0;i<R(2,3);i++){const mm=mkMon(k,z.ml+3);if(L.fan)mm.spd*=1.25;MON.push(mm)}}
- else for(let i=0;i<R(2,5);i++)MON.push(mkMon(pick(mons),z.ml));
- MON=MON.slice(0,8)};
+  for(let i=0;i<DN(R(2,3));i++){const mm=mkMon(k,z.ml+3);if(L.fan)mm.spd*=1.25;MON.push(mm)}}
+ else for(let i=0;i<DN(R(2,5));i++)MON.push(mkMon(pick(mons),z.ml));
+ MON=MON.slice(0,DENSITY.cap)};
 // TC 升级：噩梦/地狱中精英与首领按更高一档(每难度 +3 级)的宝藏级别抽取
-const _rollTC=rollTC;rollTC=function(m){const lv=m.lv;const up=(m.boss||m.fl==='uniq'||m.fl==='champ')?3*S.diff:0;m.lv=lv+up;try{return _rollTC(m)}finally{m.lv=lv}};
+const _rollTC=rollTC;rollTC=function(m){if(!m.boss&&rnd()>DENSITY.drop)return[];const lv=m.lv;const up=(m.boss||m.fl==='uniq'||m.fl==='champ')?3*S.diff:0;m.lv=lv+up;try{return _rollTC(m)}finally{m.lv=lv}};
+// 离线击杀金币按掉落表期望值(items.js tcGoldExp)：同步乘上密度掉落系数，避免离线金币随密度虚涨
+if(typeof tcGoldExp==='function'){const _tcg=tcGoldExp;tcGoldExp=function(m){return _tcg(m)*(m.boss?1:DENSITY.drop)}}
 // 多首领：最后一个任务首领倒下时才完成任务
 bossKilled=function(m){if(!m.qb)return;if(MON.some(x=>x!==m&&x.hp>0&&x.qb))return;const z=zoneData();if(z.quest&&!S.q[z.quest]&&!QUESTS[z.quest].clear)questDone(z.quest)};
 // ---------- 怪物技能 ----------
@@ -127,8 +135,8 @@ const _zoneClear=zoneClear;zoneClear=function(){const z=zoneData(),zi=S.zone,a=S
  if(mercDead())mercRevive(1);
  const zs=ACTS[a].zones;
  // 挂机推进门槛：角色等级 ≥ 下一区域怪物等级 - GATE 才自动前进，否则原地历练
- if(S.auto&&S.zone!==zi&&S.lvl<zs[S.zone].ml-GATE){log(`<span class="dim">${zs[S.zone].n} 推荐 ${zs[S.zone].ml-GATE} 级，先在 ${zs[zi].n} 历练</span>`);S.zone=zi}
- if(S.auto&&zi===zs.length-1&&S.q[ACTS[a].fq]){const n=nextStage();if(n){const nz=ACTS[n[0]].zones[0];if(S.lvl>=mlD(nz.ml0,n[1])-GATE)goAct(n[0],n[1],TAB!=='fight')}}};
+ if(S.auto&&S.zone!==zi&&S.lvl<zs[S.zone].ml-gateOf(a,S.diff)){log(`<span class="dim">${zs[S.zone].n} 推荐 ${zs[S.zone].ml-gateOf(a,S.diff)} 级，先在 ${zs[zi].n} 历练</span>`);S.zone=zi}
+ if(S.auto&&zi===zs.length-1&&S.q[ACTS[a].fq]){const n=nextStage();if(n){const nz=ACTS[n[0]].zones[0];if(S.lvl>=mlD(nz.ml0,n[1])-gateOf(n[0],n[1]))goAct(n[0],n[1],TAB!=='fight')}}};
 // 首领"连战受创"：每次在其面前阵亡，该首领(本难度)伤害 ×0.8，最低 ×0.5 —— 保留死亡风险又不形成死墙
 function bfKey(k){return S.diff+'_'+k}
 const _die=die;die=function(){S.bf=S.bf||{};for(const m of MON)if(m.boss&&m.hp>0){const k=bfKey(m.key);S.bf[k]=(S.bf[k]||0)+1;log(`<span class="dim">${m.n} 在连战中受创（伤害 -${Math.round((1-Math.max(0.5,Math.pow(0.8,S.bf[k])))*100)}%）</span>`)}

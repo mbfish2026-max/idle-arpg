@@ -7,13 +7,21 @@
 // pen 抗性惩罚；hp/dmg/exp 为在怪物等级成长之上的难度系数(近似)；dxp 死亡损失“本级所需经验”的比例
 Object.assign(DIFFS[0],{n:'普通',pen:0,hp:1,dmg:1,exp:1,dxp:0,lock:0,naff:1});
 Object.assign(DIFFS[1],{n:'噩梦',pen:-40,hp:1.15,dmg:0.85,exp:2.8,dxp:0.05,lock:0,naff:2});
-Object.assign(DIFFS[2],{n:'地狱',pen:-100,hp:1.8,dmg:1.0,exp:2.6,dxp:0.10,lock:0,naff:3});
+Object.assign(DIFFS[2],{n:'地狱',pen:-100,hp:1.15,dmg:0.9,exp:5.5,dxp:0.10,lock:0,naff:3});
 // 区域怪物等级：普通 ml → 噩梦 36..68 / 地狱 67..85 线性映射（普通最高 45）
 function mlD(ml,d){if(!d)return ml;return d===1?Math.round(36+(ml-1)*32/44):Math.round(67+(ml-1)*18/44)}
 
 // ---------- 经验表（30 级以后改为接近原版走势的近似：31→70 每级 ×1.1476，70→99 每级 ×1.0444） ----------
 xpNeed=function(l){if(l<XPT.length)return XPT[l];const b=XPT[XPT.length-1];if(l<=70)return Math.floor(b*Math.pow(1.1476,l-30));return Math.floor(b*Math.pow(1.1476,40)*Math.pow(1.0444,l-70))};
 // 怪物经验额外成长（mlvl>12 起，近似）
+// 怪物密度：每波小怪数量倍率；单怪血量/经验/掉落相应下调（首领不受影响）。离线结算经 mkMon/rollTC 读取同一组值
+const DENSITY={n:1.75,cap:12,hp:0.52,dmg:0.6,exp:0.62,drop:0.6};
+// 普通难度第1章怪物(含首领)伤害微降，压低开局死亡次数的波动
+const NORM_EARLY={dmg:0.8};
+// 地狱各章自动推进等级宽限(普通/噩梦均为 GATE=4)
+const HELL_GATE=[4,4,2,2,0];
+// 地狱各章经验系数(乘在 DIFFS[2].exp 上)：前两章加快、后三章放慢，平滑地狱曲线
+const HELL_ACT_EXP=[1.15,1.15,0.45,0.45,0.45];
 // 怪物经验额外系数（挂机节奏调校，近似）：ml≤12 ×1；12–20 降到 0.25；20–45 回升到 0.5；45–60 回升到 1；之后 ×1
 function expCurve(lv){return lv<=12?1:lv<=20?1-0.75*(lv-12)/8:lv<=45?0.25+0.25*(lv-20)/25:lv<=60?0.5+0.5*(lv-45)/15:1}
 
