@@ -1,0 +1,4 @@
+/* lock.css — 锁定角标 */
+.cell{position:relative}
+.cell .lkic{position:absolute;left:2px;bottom:2px;z-index:4;font-style:normal;font-size:11px;line-height:1;padding:1px 2px;border-radius:4px;background:rgba(0,0,0,.7);border:1px solid #c9a24a;pointer-events:none}
+.lktag{font-size:11px;color:#ffd76a;font-weight:normal}

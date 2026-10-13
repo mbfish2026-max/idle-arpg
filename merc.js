@@ -84,7 +84,8 @@ mercStats=function(eqOverride){mercNorm();const m=S.merc,T=MERCS[m.t],L=m.lvl,eq
  if(T.spell){const k=1+0.06*skl;mn*=k;mx*=k}
  const pen=curPen(),er=k=>Math.min(75+(M['max'+k]||0),Math.round(T.res*L)+dv*10+(M[k]||0)+(M.allres||0)+pen);const res={fire:er('fres'),cold:er('cres'),light:er('lres'),pois:er('pres')};
  let ias=(M.ias||0)+(m.v==='frenzy'?30:0),ar=40+L*10+dex*2+(M.ar||0);
- const o={L,str,dex,life,def,res,ll:M.ll||0,cb:M.cb||0,ds:M.ds||0,dr:M.dr||0,allsk,skl,M,sets};
+ const sh=eq.shield,blk=sh?Math.min(75,Math.max(0,Math.floor(((BASEM[sh.b].block||0)+(M.block||0))*(dex-15)/(L*2)))):0;
+ const o={L,str,dex,life,def,res,block:blk,ll:M.ll||0,cb:M.cb||0,ds:M.ds||0,dr:M.dr||0,allsk,skl,M,sets};
  o.auras=mercAuraList(o);let dmgP=0,defP=0,arP=0;for(const a of o.auras){dmgP+=a.e.dmg||0;defP+=a.e.def||0;arP+=a.e.ar||0;ias+=a.e.ias||0}
  if(m.t==='mage'&&m.v==='cold')defP+=Math.min(150,30+skl*5);
  mn*=1+dmgP/100;mx*=1+dmgP/100;def=Math.round(def*(1+defP/100));ar=Math.round(ar*(1+arP/100));
@@ -135,7 +136,7 @@ mercEquip=function(uid,slot){let f=findItem(uid);if(!f||f.slot)return false;cons
  calc();log(`佣兵装备：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);if(!window.__NOUI){closeM();render()}return true};
 mercUnequip=function(k){if(!S.merc||!S.merc.eq[k])return false;if(bagFull()){toast('背包已满');return false}S.bag.push(S.merc.eq[k]);delete S.merc.eq[k];calc();if(!window.__NOUI){closeM();render()}return true};
 mercAutoEq=function(){if(!mercUp()||!S.autoEq||!S.merc.auto)return;for(const it of S.bag.slice()){if(it.k)continue;const b=BASEM[it.b];if(!b)continue;
- const ks=b.s==='ring'?['ring1','ring2']:[b.s];for(const k of ks){if(!canMercEquip(it,k))continue;const c=S.merc.eq[k];
+ const ks=b.s==='ring'?['ring1','ring2']:[b.s];if(it.lk)continue;for(const k of ks){if(!canMercEquip(it,k))continue;const c=S.merc.eq[k];if(c&&c.lk)continue;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield&&S.merc.eq.shield.lk)continue;
   if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
 // items2.js 的命中特效(压碎/撕裂/偷取等)只统计了 3 格，扩展到全身
 if(typeof attackerMods==='function'){const _mx_am=attackerMods;attackerMods=function(src){if(src&&src.kind==='merc'&&S.merc&&S.merc.eq){const M={};for(const k of MERC_SLOTS){const it=S.merc.eq[k];if(!it)continue;const m=allMods(it);for(const x in m)if(typeof m[x]==='number')M[x]=(M[x]||0)+m[x]}return M}return _mx_am(src)}}
@@ -171,7 +172,7 @@ mercPanel=function(){mercNorm();if(!S.mercU&&!mercUp())return`<div class="gp"><h
  <div class="row"><span>光环</span><b>${ms.auras.map(a=>AURAS[a.id].n+' '+a.lv).join('、')||'无'}</b></div></div></div><div class="btns"><button class="btn sm gold">佣兵详情 ›</button></div></div>`};
 function mercStatsHTML(ms){const row=(a,b,w)=>`<div class="mrow${w?' wide':''}"><span>${a}</span><b>${b}</b></div>`;const T=MERCS[S.merc.t];
  return row('生命',ms.life)+row('防御',ms.def)+row(T.spell?'法术伤害':'伤害',Math.round(ms.dmg[0])+'-'+Math.round(ms.dmg[1]))+row('攻击间隔',ms.atk.toFixed(2)+'s'+(ms.ias?` <small>(+${ms.ias}%)</small>`:''))+row('命中',ms.ar)+row('力量 / 敏捷',ms.str+' / '+ms.dex)+
- row('火 / 冰 / 电 / 毒抗',`<span class="mrf">${ms.res.fire}</span>/<span class="mrc">${ms.res.cold}</span>/<span class="mrl">${ms.res.light}</span>/<span class="mrp">${ms.res.pois}</span>`,1)+row('偷取生命',ms.ll+'%')+row('+所有技能',ms.allsk)+row('压碎打击',ms.cb+'%')}
+ row('火 / 冰 / 电 / 毒抗',`<span class="mrf">${ms.res.fire}</span>/<span class="mrc">${ms.res.cold}</span>/<span class="mrl">${ms.res.light}</span>/<span class="mrp">${ms.res.pois}</span>`,1)+row('偷取生命',ms.ll+'%')+row('+所有技能',ms.allsk)+row('压碎打击',ms.cb+'%')+row('格挡率',ms.block+'%'+(S.merc.eq.shield?'':' <small class="dim">(无盾)</small>'))}
 function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<div class="mercpg">';
  if(mercUp()){const ms=mercStats(),T=MERCS[m.t],V=mercVarDef(m.t,m.v),need0=mercXpNeed(m.lvl),need1=mercXpNeed(m.lvl+1);const pct=m.lvl>=S.lvl?100:Math.max(0,Math.min(100,(m.xp-need0)/Math.max(1,need1-need0)*100));
   h+=`<div class="gp mhead">${mercPortrait(m.t,m.v,1)}<div class="minfo"><div class="mname">${m.nm}${m.dead?' <span class="bad">阵亡</span>':''}</div><div class="dim">${T.n} · ${T.kind}</div><div class="mver"><b class="diff d${m.hd}">${DIFFS[m.hd].n}</b> ${V.n}</div>
@@ -193,11 +194,11 @@ function mercCands(k){const out=[];const add=(it,src)=>{if(!it||it.k)return;cons
  for(const it of S.bag)add(it,'背包');if(S.pst)S.pst.forEach((pg,i)=>pg.forEach(it=>add(it,'仓库'+(i+1))));if(typeof ACCT!=='undefined'&&ACCT&&ACCT.shared)ACCT.shared.forEach((pg,i)=>pg.forEach(it=>add(it,'共享'+(i+1))));for(const it of S.stash||[])add(it,'仓库');return out.sort((a,b)=>power(b.it)-power(a.it))}
 function mercDelta(k,it){const a=mercStats(),eq=Object.assign({},S.merc.eq);if(it)eq[k]=it;else delete eq[k];const b=mercStats(eq);
  const f=(n,x,y,u='')=>{const d=Math.round(y-x);return d?`<span class="${d>0?'g':'bad'}">${n}${d>0?'+':''}${d}${u}</span>`:''};
- return[f('生命',a.life,b.life),f('防御',a.def,b.def),f('伤害',(a.dmg[0]+a.dmg[1])/2,(b.dmg[0]+b.dmg[1])/2),f('偷取',a.ll,b.ll,'%'),f('技能',a.allsk,b.allsk),f('火抗',a.res.fire,b.res.fire),f('冰抗',a.res.cold,b.res.cold),f('电抗',a.res.light,b.res.light),f('毒抗',a.res.pois,b.res.pois),
+ return[f('生命',a.life,b.life),f('防御',a.def,b.def),f('伤害',(a.dmg[0]+a.dmg[1])/2,(b.dmg[0]+b.dmg[1])/2),f('偷取',a.ll,b.ll,'%'),f('格挡',a.block,b.block,'%'),f('技能',a.allsk,b.allsk),f('火抗',a.res.fire,b.res.fire),f('冰抗',a.res.cold,b.res.cold),f('电抗',a.res.light,b.res.light),f('毒抗',a.res.pois,b.res.pois),
   b.auras.length!==a.auras.length||b.auras.some(x=>!a.auras.find(y=>y.id===x.id))?`<span class="g">光环:${b.auras.map(x=>AURAS[x.id].n).join('/')||'无'}</span>`:''].filter(Boolean).join(' ')||'<span class="dim">无变化</span>'}
 function mercSlotUI(k){if(!mercUp())return;MX.slot=k;const cur=S.merc.eq[k],cs=mercCands(k);
  const desc=it=>`${it.rw!=null?`<div class="g">符文之语「${RUNEWORDS[it.rw].n}」${RW_AURA[RUNEWORDS[it.rw].n]?' · 光环 '+AURAS[RW_AURA[RUNEWORDS[it.rw].n][0]].n:''}</div>`:''}<div class="dim small">${modsTxt(allMods(it))}</div>`;
- modal(`<div class="mtitle">佣兵 · ${SLOTN[k]}</div><div class="gp mslotm">${cur?`<div class="mcur">${cell(cur,`showItem(${cur.uid})`)}<div><b style="color:${itemColor(cur)}">${itemName(cur)}</b>${desc(cur)}<div>${mercDelta(k,null)}</div><button class="btn sm" onclick="mercUnequip('${k}')">卸下到背包</button></div></div>`:'<div class="dim">未装备</div>'}
+ modal(`<div class="mtitle">佣兵 · ${SLOTN[k]}</div><div class="gp mslotm">${cur?`<div class="mcur">${cell(cur,`showItem(${cur.uid})`)}<div><b style="color:${itemColor(cur)}">${itemName(cur)}</b>${desc(cur)}<div>${mercDelta(k,null)}</div><button class="btn sm" onclick="mercUnequip('${k}')">卸下到背包</button> <button class="btn sm ${cur.lk?'gold':''}" onclick="toggleLock&&toggleLock(${cur.uid})">${cur.lk?'🔓 解锁':'🔒 锁定'}</button></div></div>`:'<div class="dim">未装备</div>'}
  <h4>可用物品（${cs.length}）</h4>${cs.length?cs.map(({it,src})=>{const why=canMercEquip(it,k)?'':mercWhyNot(it,k);return`<div class="mcand">${cell(it,`showItem(${it.uid})`)}<div><b style="color:${itemColor(it)}">${itemName(it)}</b> <small class="dim">[${src}]</small>${desc(it)}<div>${mercDelta(k,it)}</div>${why?`<span class="bad">${why}</span>`:`<button class="btn sm gold" onclick="mercEquip(${it.uid},'${k}')">穿戴</button>`}</div></div>`}).join(''):'<div class="dim">背包和仓库中没有可用物品</div>'}
  <div class="btns c"><button class="btn" onclick="closeM()">关闭</button></div></div>`)}
 const _mx_render=render;render=function(){if(typeof TAB==='undefined'||TAB!=='merc')return _mx_render();
@@ -205,3 +206,8 @@ const _mx_render=render;render=function(){if(typeof TAB==='undefined'||TAB!=='me
 function mercAddTab(){if(typeof document==='undefined'||window.__NOUI)return;const nav=$('#tabs');if(!nav||nav.querySelector('[data-t="merc"]'))return;const b=document.createElement('button');b.dataset.t='merc';b.innerHTML='<i>⚜</i>佣兵';b.onclick=()=>{TAB='merc';render()};
  const ref=nav.querySelector('[data-t="bag"]');ref?ref.after(b):nav.appendChild(b)}
 if(typeof document!=='undefined'&&document.addEventListener){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mercAddTab);else mercAddTab()}
+
+// ---------- 格挡（原版公式：总格挡 = (盾牌基础格挡 + 装备格挡) × (敏捷 - 15) / (等级 × 2)，上限 75%） ----------
+// 怪物伤害结算后都会立刻调用 floatNum('a'+uid)（game.js 普攻 / acts.js hurtAlly），在此判定格挡并返还伤害
+{const _mx_fn=floatNum;floatNum=function(id,v,c){if(typeof id==='string'&&id[0]==='a'&&typeof v==='number'&&v>0&&mercUp()){const a=ALLY.find(x=>x.kind==='merc');
+ if(a&&'a'+a.uid===id){const bl=(a.ms||mercStats()).block||0;if(bl>0&&rnd()*100<bl){a.hp+=v;MX.blocks=(MX.blocks||0)+1;return _mx_fn(id,'格挡','#ccc')}}}return _mx_fn(id,v,c)}}
