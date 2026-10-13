@@ -6,7 +6,7 @@
 // ---------- 难度 ----------
 // pen 抗性惩罚；hp/dmg/exp 为在怪物等级成长之上的难度系数(近似)；dxp 死亡损失“本级所需经验”的比例
 Object.assign(DIFFS[0],{n:'普通',pen:0,hp:1,dmg:1,exp:1,dxp:0,lock:0,naff:1});
-Object.assign(DIFFS[1],{n:'噩梦',pen:-40,hp:1.3,dmg:0.85,exp:2.0,dxp:0.05,lock:0,naff:2});
+Object.assign(DIFFS[1],{n:'噩梦',pen:-40,hp:1.15,dmg:0.85,exp:2.8,dxp:0.05,lock:0,naff:2});
 Object.assign(DIFFS[2],{n:'地狱',pen:-100,hp:1.8,dmg:1.0,exp:2.6,dxp:0.10,lock:0,naff:3});
 // 区域怪物等级：普通 ml → 噩梦 36..68 / 地狱 67..85 线性映射（普通最高 45）
 function mlD(ml,d){if(!d)return ml;return d===1?Math.round(36+(ml-1)*32/44):Math.round(67+(ml-1)*18/44)}
@@ -103,9 +103,10 @@ Object.assign(BOSSES,{
 });
 
 // 数值调校(近似，挂机节奏)：第二章起的怪物家族生命 ×HPX；伤害 ×DMX；新首领伤害 ×BDX
-const HPX=1.6,DMX=0.65,BDX=0.5;
+// 难度调整(第四阶段)：怪物伤害 0.65→DMX；章节终点首领单独 ABX，使其有一定阵亡风险
+const HPX=1.6,DMX=0.68,BDX=0.55,ABX=1.25;
 for(const k in MONS)if(MONS[k].fam&&!MONS[k]._t){MONS[k]._t=1;MONS[k].hp*=HPX;MONS[k].dmg=MONS[k].dmg.map(x=>x*DMX)}
-for(const k of ['rotwarden','fangqueen','summoner','kassar','jadeguard','flaychief','tomekeeper','council1','council2','council3','mehet','fallen','forger','seal1','seal2','seal3','valax','siegelord','frostjailer','traitor','anc1','anc2','anc3','tw1','tw2','tw3','tw4','tw5','eldron'])BOSSES[k].dmg=BOSSES[k].dmg.map(x=>x*BDX);
+for(const k of ['rotwarden','fangqueen','summoner','kassar','jadeguard','flaychief','tomekeeper','council1','council2','council3','mehet','fallen','forger','seal1','seal2','seal3','valax','siegelord','frostjailer','traitor','anc1','anc2','anc3','tw1','tw2','tw3','tw4','tw5','eldron'])BOSSES[k].dmg=BOSSES[k].dmg.map(x=>x*(BOSSES[k].actboss?ABX:BDX));
 
 // ---------- 精英词缀（金色首领小队 / 蓝色精英小队） ----------
 const ELITE_AFF={
@@ -243,3 +244,11 @@ Object.assign(QUESTS,{
  a5q5:{act:4,n:'远古试炼',d:'同时击败三位远古英灵',rw:'大量经验'},
  a5q6:{act:4,n:'毁灭前夜',d:'击退王座五波守卫，于世界之心击败 毁灭领主·艾尔德隆',rw:'解锁下一难度',fin:1},
 });
+
+// ---------- 美术：第二~五章怪物/首领头像、章节战斗背景（assets/README.md） ----------
+for(const k of ['beetle','husk','jackal','serpent','fly','vulture','tombmage','leaper','spider','mosq','flayer','flshaman','frog','hulk','zealot','priest','vamp','corrupt',
+ 'fiend','hound','knight','venom','storm','pitlord','yeti','horror','minion','siren','mauler','wolf','wraith']){ASSETS['m_'+k]='assets/monster/'+k+'.webp';MONS[k].a='m_'+k}
+ASSETS.m_scarab='assets/monster/scarab.webp';// 装甲圣甲虫（备用/精英）
+for(const k of ['rotwarden','fangqueen','summoner','kassar','jadeguard','flaychief','tomekeeper','council1','council2','council3','mehet','fallen','forger','seal1','seal2','seal3','valax',
+ 'siegelord','frostjailer','traitor','anc1','anc2','anc3','tw1','tw2','tw3','tw4','tw5','eldron']){ASSETS['b_'+k]='assets/boss/'+k+'.webp';BOSSES[k].a='b_'+k}
+for(let i=1;i<=5;i++)ASSETS['bg_act'+i]='assets/bg/act'+i+'.webp';

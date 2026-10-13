@@ -188,6 +188,8 @@ const NEW_RUNES=[
  ['寂',69,{indestr:1},{indestr:1}],
 ];
 RUNES.length=0;for(const r of NEW_RUNES)RUNES.push(r);
+// 面向玩家的符文名一律用编号（按需求等级顺序：原「晨」=1号 … 33号）；存档只存索引 r，无需迁移
+NEW_RUNES.forEach((r,i)=>{r.orig=r[0];r[0]=(i+1)+'号'});
 // 炼金匣符文升级（原版 1.11+）：前 9 次只需 3 枚；之后需宝石 [宝石, 级别]；Pul(20) 起只需 2 枚
 const RUNE_UP=[null,null,null,null,null,null,null,null,null,['top',0],['ame',0],['sap',0],['rub',0],['eme',0],['dia',0],['top',1],['ame',1],['sap',1],['rub',1],['eme',1],
  ['dia',1],['top',2],['ame',2],['sap',2],['rub',2],['eme',2],['dia',2],['top',3],['ame',3],['sap',3],['rub',3],['eme',3]];

@@ -31,7 +31,7 @@ function itemLocal(it){const b=BASEM[it.b],m=allMods(it),o={};
 function itemReq(it){const b=BASEM[it.b];let l=it.req||0;for(const x of it.soc||[])if(x.r!=null)l=Math.max(l,RUNES[x.r][1]);if(it.rw!=null)l=Math.max(l,RUNEWORDS[it.rw].lv);
  const f=it.q===0?0.8:1;return{lv:l,str:Math.floor((b.str||0)*f),dex:Math.floor((b.dex||0)*f)}}
 function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
-function itemName(it){if(it.k==='gem')return GEMG[it.lv]+GEMS[it.g].n;if(it.k==='rune')return RUNES[it.r][0]+' 符文';return it.rw!=null?RUNEWORDS[it.rw].n:it.name}
+function itemName(it){if(it.k==='gem')return GEMG[it.lv]+GEMS[it.g].n;if(it.k==='rune')return RUNES[it.r][0]+'符文';return it.rw!=null?RUNEWORDS[it.rw].n:it.name}
 function itemColor(it){if(it.k==='gem')return GEMS[it.g].c;if(it.k==='rune')return'#ffa040';if(it.rw!=null)return QC[8];if((it.q===1||it.q===2)&&it.sock)return'#a0a0a0';return QC[it.q]}
 function power(it){if(it.k)return 0;const m=allMods(it),l=itemLocal(it);let p=(l.def||0)*1+((l.min||0)+(l.max||0))*2;
  const w={str:3,dex:3,vit:4,ene:3,life:2,mana:1.5,ar:.2,fres:1.5,cres:1.5,lres:1.5,pres:1.2,allres:6,allsk:120,t0sk:60,t1sk:60,t2sk:60,fcr:3,mf:2,gf:.3,ll:8,ml:6,ias:3,regen:6,mpk:8,undead:.5,firemin:4,coldmin:4,lightmax:2,poisdmg:.3,tdef:1,dr:8,mdr:6,fhr:1.5,block:2,thorns:1,mregen:1,dmgmana:1,sumdmg:2,sumlife:2};
@@ -341,8 +341,8 @@ function addStat(k,n){n=Math.min(n,S.sp);S.at[k]+=n;S.sp-=n;calc();render()}
 
 // ===== 技能页 =====
 function renderSkills(){const P=$('#panel');const tabs=TREES.map((t,i)=>`<button class="${SKT===i?'on':''}" onclick="SKT=${i};render()">${t}</button>`).join('')+`<button class="${SKT===3?'on':''}" onclick="SKT=3;render()">符文图鉴</button>`;
- if(SKT===3){P.innerHTML=`<div class="stabs">${tabs}</div><div class="gp"><h3>符文图鉴</h3><div class="rgrid">${RUNES.map((r,i)=>S.found[i]?`<div class="rc on"><div class="ro">${r[0]}</div><b>${r[0]}符文</b><small>需求 ${r[1]} 级</small><small>武:${modsTxt(r[2])}</small><small>防:${modsTxt(r[3])}</small></div>`:`<div class="rc back"><div class="ro">?</div><small>未发现</small></div>`).join('')}</div></div>
-  <div class="gp"><h3>符文之语</h3>${RUNEWORDS.map(w=>`<div class="rw"><b class="uq">${w.n}</b> <span class="dim">${w.r.map(i=>RUNES[i][0]).join(' + ')} · ${w.cats.map(c=>({wand:'魔杖',dagger:'匕首',sword:'剑',helm:'头盔',armor:'铠甲',shield:'盾',head:'缩颅'})[c]).join('/')} ${w.r.length}孔 · 需求${w.lv}</span><div class="dim">${modsTxt(w.m)}</div></div>`).join('')}</div>`;return}
+ if(SKT===3){P.innerHTML=`<div class="stabs">${tabs}</div><div class="gp"><h3>符文图鉴</h3><div class="rgrid">${RUNES.map((r,i)=>S.found[i]?`<div class="rc on"><div class="ro">${i+1}</div><b>${r[0]}符文</b><small>需求 ${r[1]} 级</small><small>武:${modsTxt(r[2])}</small><small>防:${modsTxt(r[3])}</small></div>`:`<div class="rc back"><div class="ro">?</div><small>未发现</small></div>`).join('')}</div></div>
+  <div class="gp"><h3>符文之语</h3>${RUNEWORDS.map(w=>`<div class="rw"><b class="uq">${w.n}</b> <span class="dim">${w.r.map(i=>RUNES[i][0]).join('+')} · ${w.cats.map(c=>({wand:'魔杖',dagger:'匕首',sword:'剑',helm:'头盔',armor:'铠甲',shield:'盾',head:'缩颅'})[c]).join('/')} ${w.r.length}孔 · 需求${w.lv}</span><div class="dim">${modsTxt(w.m)}</div></div>`).join('')}</div>`;return}
  const list=SKILLS.filter(s=>s.t===SKT).sort((a,b)=>a.r-b.r||a.col-b.col);
  P.innerHTML=`<div class="stabs">${tabs}</div><div class="pts">技能点 <b>${S.kp}</b>　主攻：<b>${S.main?SKM[S.main].n:'自动'}</b>　诅咒：<b>${S.curse?SKM[S.curse].n:'自动'}</b></div>
  <div class="tree">${REQL.map((r,ri)=>`<div class="trow"><span class="rq">${r}</span>${[0,1,2].map(c=>{const s=list.find(x=>x.r===r&&x.col===c);return s?`<div class="tn ${bl(s.id)?'has':''} ${canLearn(s.id)?'can':''}" id="tn_${s.id}" onclick="skPop('${s.id}')">${skIcon(s)}<b>${bl(s.id)||''}</b></div>`:'<div class="tn void"></div>'}).join('')}</div>`).join('')}</div>
@@ -365,7 +365,7 @@ function learn(id){if(!canLearn(id))return;S.sk[id]=bl(id)+1;S.kp--;calc();skPop
 // ===== 背包/装备 =====
 function modsTxt(m){return Object.entries(m).map(([k,v])=>(MODT[k]||k+' {v}').replace('{v}',v)).join('，')}
 const SLOTG={weapon:'🪄',shield:'💀',helm:'⛑',armor:'🥋',gloves:'🧤',belt:'🎗',boots:'🥾',amulet:'📿',ring:'💍'};
-function itemIcon(it){if(it.k==='rune')return`<i class="ii rune">${RUNES[it.r][0]}</i>`;if(it.k==='gem')return`<i class="ii gem" style="--c:${GEMS[it.g].c}">◆</i>`;
+function itemIcon(it){if(it.k==='rune')return`<i class="ii rune">${it.r+1}</i>`;if(it.k==='gem')return`<i class="ii gem" style="--c:${GEMS[it.g].c}">◆</i>`;
  const b=BASEM[it.b];return`<i class="ii">${b.cat==='wand'?'🪄':b.cat==='dagger'?'🗡':b.cat==='sword'?'⚔':b.cat==='shield'?'🛡':SLOTG[slotOf(b)]}</i>`}
 function cell(it,on){return`<div class="cell q${it.q??'x'} ${it.rw!=null?'rw':''}" style="--c:${itemColor(it)}" onclick="${on}">${itemIcon(it)}${it.sock?`<em class="sk">${'●'.repeat((it.soc||[]).length)}${'○'.repeat(it.sock-(it.soc||[]).length)}</em>`:''}<small>${itemName(it)}</small></div>`}
 function renderBag(){const P=$('#panel');const doll=SLOTS.map(k=>{const it=S.eq[k];return it?`<div class="dslot">${cell(it,`showItem(${it.uid},'eq')`)}</div>`:`<div class="dslot"><div class="cell empty"><i class="ii">${SLOTG[k.startsWith('ring')?'ring':k]}</i><small>${SLOTN[k]}</small></div></div>`}).join('');
@@ -387,8 +387,8 @@ function showItem(uid){const f=findItem(uid);if(!f)return;const it=f.it;
  let base='';if(b.dmg){const enh=l.min!==it.dmg[0]||l.max!==it.dmg[1];base+=`<div>单手伤害：<span class="${enh?'g':''}">${l.min}-${l.max}</span>${enh?` <small class="dim">(基础 ${it.dmg[0]}-${it.dmg[1]})</small>`:''}</div>`}
  if(b.def){const enh=l.def!==it.def;base+=`<div>防御：<span class="${enh?'g':''}">${l.def}</span>${enh?` <small class="dim">(基础 ${it.def})</small>`:''}</div>`}if(b.block)base+=`<div>格挡：${b.block}%</div>`;
  const setT=it.set?`<div class="setsec"><b>${SETS[it.set].n}</b>（已装备 ${setCount()[it.set]||0} 件）${Object.entries(SETS[it.set].bonus).map(([n,bo])=>`<div class="${(setCount()[it.set]||0)>=+n?'g':'dim'}">${n}件：${modsTxt(bo)}</div>`).join('')}${SETITEMS.filter(x=>x.set===it.set).map(x=>`<div class="dim">· ${x.n}</div>`).join('')}</div>`:'';
- const rwT=it.rw!=null?`<div class="rwt">符文之语「${RUNEWORDS[it.rw].n}」『${RUNEWORDS[it.rw].r.map(i=>RUNES[i][0]).join('')}』</div><div class="g">${modsTxt(RUNEWORDS[it.rw].m)}</div>`:'';
- const socs=it.sock?`<div class="socks">${[...Array(it.sock)].map((_,i)=>{const x=it.soc[i];return x?`<span class="so on" style="--c:${x.g?GEMS[x.g].c:'#ffa040'}">${x.g?'◆':RUNES[x.r][0]}</span>`:'<span class="so"></span>'}).join('')}</div>
+ const rwT=it.rw!=null?`<div class="rwt">符文之语「${RUNEWORDS[it.rw].n}」『${RUNEWORDS[it.rw].r.map(i=>RUNES[i][0]).join('+')}』</div><div class="g">${modsTxt(RUNEWORDS[it.rw].m)}</div>`:'';
+ const socs=it.sock?`<div class="socks">${[...Array(it.sock)].map((_,i)=>{const x=it.soc[i];return x?`<span class="so on" style="--c:${x.g?GEMS[x.g].c:'#ffa040'}">${x.g?'◆':x.r+1}</span>`:'<span class="so"></span>'}).join('')}</div>
   <div>${it.soc.length?`<span class="g">${modsTxt(Object.fromEntries(Object.entries(sm).filter(([k])=>it.rw==null||!(k in RUNEWORDS[it.rw].m))))}</span>`:'<span class="dim">空凹槽可镶嵌宝石/符文；白色底材按配方顺序镶满符文可组成符文之语</span>'}</div>${rwT}`:'<span class="dim">无凹槽</span>';
  const cmp=f.slot?'':(()=>{const k=slotOf(b)==='ring'?'ring1':slotOf(b);const e=S.eq[k];return e?`<div class="dim">当前已装备：${itemName(e)}（战力 ${power(e)}）</div>`:''})();
  const canSock=it.sock>it.soc.length&&it.rw==null&&S.bag.some(x=>x.k);
@@ -415,9 +415,9 @@ function cubeUI(){const rec=[];const gc={},rc={};for(const x of S.bag){if(x.k===
  for(const k in gc)if(gc[k].length>=3)rec.push([`3×${itemName(gc[k][0])} → ${GEMG[gc[k][0].lv+1]}${GEMS[gc[k][0].g].n}`,`cubeGem('${k}')`]);
  for(const k in rc)if(rc[k].length>=3)rec.push([`3×${RUNES[k][0]}符文 → ${RUNES[+k+1][0]}符文`,`cubeRune(${k})`]);
  const has=(f)=>S.bag.find(f);const amu=has(x=>!x.k&&x.b==='amu'&&x.q===3),rin=has(x=>!x.k&&x.b==='rin'&&x.q===3);
- if(amu&&has(x=>x.k==='rune'&&x.r===7)&&has(x=>x.k==='gem'&&x.g==='ame'))rec.push(['魔法护符+炎符文+紫晶 → 施法护符(合成)',"craft('amu')"]);
- if(rin&&has(x=>x.k==='rune'&&x.r===10)&&has(x=>x.k==='gem'&&x.g==='rub'))rec.push(['魔法戒指+渴符文+赤玉 → 嗜血戒指(合成)',"craft('rin')"]);
- modal(`<div class="mtitle">炼金匣</div><div class="gp"><div class="dim">配方：3 同级同色宝石→升一级；3 同符文→下一枚(前10枚)；魔法护符+炎+紫晶→施法护符；魔法戒指+渴+赤玉→嗜血戒指</div>
+ if(amu&&has(x=>x.k==='rune'&&x.r===7)&&has(x=>x.k==='gem'&&x.g==='ame'))rec.push(['魔法护符+8号符文+紫晶 → 施法护符(合成)',"craft('amu')"]);
+ if(rin&&has(x=>x.k==='rune'&&x.r===10)&&has(x=>x.k==='gem'&&x.g==='rub'))rec.push(['魔法戒指+11号符文+赤玉 → 嗜血戒指(合成)',"craft('rin')"]);
+ modal(`<div class="mtitle">炼金匣</div><div class="gp"><div class="dim">配方：3 同级同色宝石→升一级；3 同符文→下一枚(前10枚)；魔法护符+8号+紫晶→施法护符；魔法戒指+11号+赤玉→嗜血戒指</div>
  ${rec.length?rec.map(([t,f])=>`<div class="row"><span>${t}</span><button class="btn xs gold" onclick="${f}">合成</button></div>`).join(''):'<div class="dim" style="margin:10px 0">背包中没有满足条件的材料</div>'}<div class="btns c"><button class="btn" onclick="closeM()">关闭</button></div></div>`)}
 function takeBag(f,n){for(let i=0;i<n;i++){const j=S.bag.findIndex(f);if(j>=0)S.bag.splice(j,1)}}
 function cubeGem(k){const g=k.slice(0,3),lv=+k.slice(3);takeBag(x=>x.k==='gem'&&x.g===g&&x.lv===lv,3);S.bag.push({uid:S.uid++,k:'gem',g,lv:lv+1});cubeUI();render()}
@@ -452,9 +452,11 @@ function offline(){const sec=(Date.now()-S.last)/1000;if(sec<60)return;const t=M
  modal(`<div class="mtitle">离线收益</div><div class="gp"><div>离线 ${Math.floor(t/3600)}小时${Math.floor(t%3600/60)}分（上限8小时，效率50%）</div><div>于 <b>${z.n}</b> 击杀 ${kills} 只怪物</div><div>经验 +${fmt(xp)}　金币 +${fmt(S.gold-g0)}</div>
  <div class="grid">${got.map(it=>cell(it,'')).join('')}</div><div class="btns c"><button class="btn gold" onclick="closeM()">收下</button></div></div>`)}
 // ===== 挂机自动化：自动加点/换装 =====
-const SK_ORDER=['rs','rs','rs','sm','te','ce','rs','sm','cg','ad','rm','bs','bs','bs','sm','rs','bs','bs','bs','bs','bs','wk','bx','bx','bx','bx','bx'];
+const SK_ORDER=['rs','rs','rs','sm','te','ce','rs','sm','cg','ad','rm','bs','bs','bs','sm','rs','bs','bs','bs','bs','bs','wk'];
+// 列表走完后：骨矛加满(20) → 骨铠/骨墙/骨牢(前置各 1) → 骨魂加满 → 骨巫/骨仆精通/骨仆
+const SK_FILL=()=>bl('bs')<20?['bs','sm','rs','te']:[...['ba','bw','bp'].filter(x=>!bl(x)),'bx','rm','sm','rs','cg','te'];
 function autoTick(){let ch={};ch=0;const learned=[];for(const[k,c]of[['hp',30],['mp',30]])while(S.pot[k]<8&&S.gold>=c*4){S.gold-=c;S.pot[k]++}
- if(S.autoSk)while(S.kp>0){const done={};const id=SK_ORDER.find(x=>{done[x]=(done[x]||0)+1;return bl(x)<done[x]&&canLearn(x)})||['bs','sm','rs','te'].find(canLearn);if(!id)break;S.sk[id]=bl(id)+1;S.kp--;ch=1;learned.push(SKM[id].n)}if(learned.length)log('自动加点：'+learned.join('、'));
+ if(S.autoSk)while(S.kp>0){const done={};const id=SK_ORDER.find(x=>{done[x]=(done[x]||0)+1;return bl(x)<done[x]&&canLearn(x)})||SK_FILL().find(canLearn);if(!id)break;S.sk[id]=bl(id)+1;S.kp--;ch=1;learned.push(SKM[id].n)}if(learned.length)log('自动加点：'+learned.join('、'));
  if(S.autoAt&&S.sp>0){const ns=needStr();while(S.sp>0){if(ST.attr.str<ns)S.at.str++;else if(ST.attr.ene<S.lvl+25&&S.at.ene<S.lvl+15)S.at.ene++;else S.at.vit++;S.sp--;calc()}ch=1}
  if(S.autoEq)for(const it of S.bag.slice()){if(it.k||!canEquip(it))continue;const b=BASEM[it.b];let k=slotOf(b);if(k==='ring')k=!S.eq.ring1?'ring1':!S.eq.ring2?'ring2':(power(S.eq.ring1)<power(S.eq.ring2)?'ring1':'ring2');
   if(!S.eq[k]||power(it)>power(S.eq[k])){const i=S.bag.indexOf(it);S.bag.splice(i,1);if(S.eq[k])S.bag.push(S.eq[k]);S.eq[k]=it;ch=1;log(`自动换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`)}}

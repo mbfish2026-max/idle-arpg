@@ -146,7 +146,7 @@ function cubeRecipes(){const rec=[];const gc={},rc={};
  for(const it of S.bag){if(it.k||it.q!==1||it.sock||it.rw!=null)continue;const b=BASEM[it.b];const cs=b.s==='weapon'?'weapon':b.s==='armor'?'armor':b.s==='helm'?'helm':b.s==='shield'?'shield':null;if(!cs||!maxSock(b,it.il))continue;
   const[r1,r2,g]=SOCKET_RECIPES[cs];if(bagHas(x=>x.k==='rune'&&x.r===r1)&&bagHas(x=>x.k==='rune'&&x.r===r2&&(r1!==r2))&&bagHas(gemOf(g,4)))rec.push([`${RUNES[r1][0]}+${RUNES[r2][0]}+完美${GEMS[g].n} + ${itemName(it)} → 随机凹槽`,`cubeSocket(${it.uid})`])}
  // 拆镶嵌：有镶嵌物的物品 + 简符文 + 回城卷轴 → 清空凹槽（镶嵌物销毁）
- if(bagHas(x=>x.k==='rune'&&x.r===14)&&S.pot.tp>0)for(const it of S.bag.concat(Object.values(S.eq)))if(it&&!it.k&&it.soc&&it.soc.length)rec.push([`${itemName(it)} + 简符文 + 回城卷轴 → 拆除镶嵌（镶嵌物销毁）`,`cubeUnsock(${it.uid})`]);
+ if(bagHas(x=>x.k==='rune'&&x.r===14)&&S.pot.tp>0)for(const it of S.bag.concat(Object.values(S.eq)))if(it&&!it.k&&it.soc&&it.soc.length)rec.push([`${itemName(it)} + 15号符文 + 回城卷轴 → 拆除镶嵌（镶嵌物销毁）`,`cubeUnsock(${it.uid})`]);
  // 合成：魔法底材 + 指定符文 + 完美宝石 + 任意宝石（代替珠宝）
  for(const ck in CRAFTS){const C=CRAFTS[ck];for(const it of S.bag){if(it.k||it.q!==3)continue;const part=C.parts[craftSlot(BASEM[it.b])];if(!part)continue;
   if(bagHas(x=>x.k==='rune'&&x.r===part[0])&&bagHas(gemOf(C.gem,4))&&S.bag.filter(x=>x.k==='gem').length>=2)rec.push([`${C.n}合成：${itemName(it)} + ${RUNES[part[0]][0]} + 完美${GEMS[C.gem].n} + 任意宝石`,`craft2('${ck}',${it.uid})`])}}
@@ -154,8 +154,8 @@ function cubeRecipes(){const rec=[];const gc={},rc={};
  if(S.pot.hp>=3&&S.pot.mp>=3&&chip.length)rec.push(['3 红药 + 3 蓝药 + 碎裂宝石 → 瞬回药剂',"cubePot()"]);
  return rec}
 function recipeHelp(){const C=Object.values(CRAFTS).map(c=>`${c.n}(完美${GEMS[c.gem].n})`).join('、');
- return `3 同级同色宝石→升一级；符文升级 晨~雷 3 枚，霜起 3 枚+宝石，磐起 2 枚+宝石；3 魔法戒指⇄护符；3 完美宝石+魔法=重铸；6 完美颅石+稀有=重铸；3 碎裂宝石+魔法武器=1 孔；
- 普通无孔底材加孔：甲(蚀+渴+完美黄玉)/武器(炎+渴+完美紫晶)/盔(炎+霜+完美蓝玉)/盾(蚀+渴+完美赤玉)；拆镶嵌：物品+简符文+回城卷轴（镶嵌物销毁）；合成：${C} + 部位符文 + 魔法底材 + 任意宝石`}
+ return `3 同级同色宝石→升一级；符文升级 1~9号 3 枚，10号起 3 枚+宝石，21号起 2 枚+宝石；3 魔法戒指⇄护符；3 完美宝石+魔法=重铸；6 完美颅石+稀有=重铸；3 碎裂宝石+魔法武器=1 孔；
+ 普通无孔底材加孔：甲(7号+10号+完美黄玉)/武器(8号+11号+完美紫晶)/盔(8号+10号+完美蓝玉)/盾(7号+11号+完美赤玉)；拆镶嵌：物品+15号符文+回城卷轴（镶嵌物销毁）；合成：${C} + 部位符文 + 魔法底材 + 任意宝石`}
 cubeUI=function(){const rec=cubeRecipes();
  modal(`<div class="mtitle">炼金匣</div><div class="gp"><div class="dim">${recipeHelp()}</div>
  ${rec.length?rec.map(([t,f])=>`<div class="row"><span>${t}</span><button class="btn xs gold" onclick="${f}">合成</button></div>`).join(''):'<div class="dim" style="margin:10px 0">背包中没有满足条件的材料</div>'}<div class="btns c"><button class="btn" onclick="closeM()">关闭</button></div></div>`)};

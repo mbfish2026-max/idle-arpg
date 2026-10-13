@@ -1,7 +1,7 @@
 'use strict';
 // ===== 第二阶段逻辑：章节/难度切换、怪物难度与免疫、精英词缀、怪物技能、多首领/波次首领、任务奖励、随从 =====
 // 通过包装 game.js 中的函数实现，尽量不改动 game.js 本体。
-const ACX={};const HSOFT=0.008,DSOFT=0.012;// 高等级怪物生命/伤害成长软化(近似调校)
+const ACX={};const HSOFT=0.008,DSOFT=0.018;// 高等级怪物生命/伤害成长软化(近似调校)
 const GATE=4;let MAPD=null;
 const MSLOT=['weapon','helm','armor'];
 const ELK=['fire','cold','light','pois'],ELN={phys:'物',fire:'火',cold:'冰',light:'电',pois:'毒',magic:'魔'};
@@ -38,7 +38,7 @@ function resFor(T,d,isBoss){const b=Object.assign({},T.res||{});if(!d)return b;c
  if(o&&!isBoss)Object.assign(r,o);else if(o)for(const k in o)r[k]=Math.min(90,o[k]);return r}
 const _mkMon=mkMon;mkMon=function(key,lv,flag){const m=_mkMon(key,lv,flag),T=MONS[key]||BOSSES[key],D=DIFFS[S.diff]||DIFFS[0];
  Object.assign(m.res,resFor(T,S.diff,!!BOSSES[key]));
- const hg=lv>25?1/(1+HSOFT*(lv-25)):1,dg=lv>25?1/(1+DSOFT*(lv-25)):1;m.max=m.hp=Math.round(m.max*D.hp*hg);m.dmg=m.dmg.map(x=>x*D.dmg*dg);m.exp=m.exp*expCurve(lv)*D.exp;m.sk=(T.sk||[]).slice();m.skT=2.5+rnd()*3;m.demon=T.demon;
+ const hg=lv>25?1/(1+HSOFT*(lv-25)):1,dg=lv>25?1/(1+DSOFT*(lv-25)):1;m.max=m.hp=Math.round(m.max*D.hp*hg);const bfm=BOSSES[key]&&S.bf?Math.max(0.5,Math.pow(0.8,S.bf[bfKey(key)]||0)):1;m.dmg=m.dmg.map(x=>x*D.dmg*dg*bfm);m.exp=m.exp*expCurve(lv)*D.exp;m.sk=(T.sk||[]).slice();m.skT=2.5+rnd()*3;m.demon=T.demon;
  if(flag==='uniq'){const ks=Object.keys(ELITE_AFF).filter(k=>!(k==='mb'&&false));const n=Math.min(3,D.naff||1);const aff=[];
   while(aff.length<n){const k=pick(ks);if(!aff.includes(k))aff.push(k)}for(const k of aff)ELITE_AFF[k].f(m);m.aff=aff.map(k=>ELITE_AFF[k].n);m.n=pick(UNIQ_T)+'·'+T.n}
  if(flag==='champ'){const v=pick(CHAMP_V);v.f(m);m.n=v.n+'·'+T.n}
@@ -129,7 +129,10 @@ const _zoneClear=zoneClear;zoneClear=function(){const z=zoneData(),zi=S.zone,a=S
  // 挂机推进门槛：角色等级 ≥ 下一区域怪物等级 - GATE 才自动前进，否则原地历练
  if(S.auto&&S.zone!==zi&&S.lvl<zs[S.zone].ml-GATE){log(`<span class="dim">${zs[S.zone].n} 推荐 ${zs[S.zone].ml-GATE} 级，先在 ${zs[zi].n} 历练</span>`);S.zone=zi}
  if(S.auto&&zi===zs.length-1&&S.q[ACTS[a].fq]){const n=nextStage();if(n){const nz=ACTS[n[0]].zones[0];if(S.lvl>=mlD(nz.ml0,n[1])-GATE)goAct(n[0],n[1],TAB!=='fight')}}};
-const _die=die;die=function(){const D=DIFFS[S.diff];if(D.dxp){const cur=S.xp-xpNeed(S.lvl),loss=Math.min(cur,Math.floor((xpNeed(S.lvl+1)-xpNeed(S.lvl))*D.dxp));if(loss>0){S.xp-=loss;log(`<b style="color:#f44">${D.n}死亡惩罚：经验 -${fmt(loss)}</b>`)}}
+// 首领"连战受创"：每次在其面前阵亡，该首领(本难度)伤害 ×0.8，最低 ×0.5 —— 保留死亡风险又不形成死墙
+function bfKey(k){return S.diff+'_'+k}
+const _die=die;die=function(){S.bf=S.bf||{};for(const m of MON)if(m.boss&&m.hp>0){const k=bfKey(m.key);S.bf[k]=(S.bf[k]||0)+1;log(`<span class="dim">${m.n} 在连战中受创（伤害 -${Math.round((1-Math.max(0.5,Math.pow(0.8,S.bf[k])))*100)}%）</span>`)}
+const D=DIFFS[S.diff];if(D.dxp){const cur=S.xp-xpNeed(S.lvl),loss=Math.min(cur,Math.floor((xpNeed(S.lvl+1)-xpNeed(S.lvl))*D.dxp));if(loss>0){S.xp-=loss;log(`<b style="color:#f44">${D.n}死亡惩罚：经验 -${fmt(loss)}</b>`)}}
  const keep=ALLY.filter(a=>a.kind==='merc');_die();ALLY=keep;H.curse=0;calc()};
 questLine=function(){const z=zoneData();let q=z.quest&&!S.q[z.quest]?z.quest:Object.keys(QUESTS).find(k=>QUESTS[k].act===S.act&&!S.q[k]);
  if(!q){const n=nextStage();return`【主线】${DIFFS[S.diff].n}·${ACTS[S.act].n.split('·')[1]} 已完成${n?'，可前往 '+DIFFS[n[1]].n+'·'+ACTS[n[0]].n.split('·')[1]:''}`}
@@ -175,8 +178,14 @@ function mercTick(dt){if(!S.merc)return;let a=ALLY.find(x=>x.kind==='merc');
 const _allyCard=allyCard;allyCard=function(a){if(a.kind!=='merc')return _allyCard(a);return`<div class="ac merc ${a.hitT>0?'hit':''}" id="ca${a.uid}"><b class="lv">${S.lvl}</b><div class="pt">${art('merc_'+S.merc.t,a.ic)}</div><div class="nm">${a.n}</div>${bar(a.hp,a.max,'hp g')}</div>`};
 const _monCard=monCard;monCard=function(m){let h=_monCard(m);if(m.imm&&m.imm.length)h=h.replace('<div class="pt">',`<em class="imm">${m.imm.map(x=>ELN[x]).join('')}免</em><div class="pt">`);return h};
 
+// ---------- 防卡死：自动推进时，场上有怪却 STUCK 秒既无击杀、怪物血量也无进展（如治疗型首领群耗尽法力）判定为僵持，撤回上一主线区域历练（不算死亡） ----------
+const STUCK=300;
+function stuckTick(dt){const ms=liveMon();const hp=ms.reduce((a,m)=>a+m.hp/m.max,0);
+ // 有击杀，或怪物总血量比本轮最低点再低 0.5%（仍在推进）则重置计时
+ if(!ms.length||S.kills!==ACX.k0||hp<(ACX.mh??1e9)-0.005){ACX.k0=S.kills;ACX.st=0;ACX.mh=hp;return}ACX.st=(ACX.st||0)+dt;
+ if(ACX.st>STUCK&&S.auto){ACX.st=0;ACX.stuckN=(ACX.stuckN||0)+1;{const k=ACTS[S.act].zones[S.zone].n;(ACX.stz=ACX.stz||{})[k]=(ACX.stz[k]||0)+1}log('<b style="color:#f84">久战不下，暂且撤退历练</b>');let z=Math.max(0,S.zone-1);while(z>0&&ACTS[S.act].zones[z].side)z--;goZone(z)}}
 // ---------- 主循环附加 ----------
-const _step=step;step=function(dt){_step(dt);if(!ST)return;monsTick(dt);mercTick(dt);ACX.eqT=(ACX.eqT||0)+dt;if(ACX.eqT>3){ACX.eqT=0;mercAutoEq()}};
+const _step=step;step=function(dt){_step(dt);if(!ST)return;stuckTick(dt);monsTick(dt);mercTick(dt);ACX.eqT=(ACX.eqT||0)+dt;if(ACX.eqT>3){ACX.eqT=0;mercAutoEq()}};
 
 // ---------- 物品：加凹槽 / 个性化 （任务奖励） ----------
 function addSock(uid){const f=findItem(uid);if(!f||S.sockq<=0)return;const it=f.it,b=BASEM[it.b];if(it.k||!b.sock||it.sock||it.rw!=null)return;
@@ -189,7 +198,7 @@ const _showItem=showItem;showItem=function(uid){_showItem(uid);const f=findItem(
  if(h)box.insertAdjacentHTML('afterbegin',h)};
 
 // ---------- UI：战斗页、角色页随从、地图页 ----------
-const _renderFight=renderFight;renderFight=function(){_renderFight();const e=document.querySelector('#ftop .zn');if(e&&S.diff)e.innerHTML=`<b class="diff d${S.diff}">${DIFFS[S.diff].n}</b> `+e.innerHTML};
+const _renderFight=renderFight;renderFight=function(){_renderFight();{const fb=$('#fbattle'),bk='bg_act'+(S.act+1);if(fb&&IMG[bk]){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.25) 35%,rgba(0,0,0,.7)),url(${IMG[bk]})`}}const e=document.querySelector('#ftop .zn');if(e&&S.diff)e.innerHTML=`<b class="diff d${S.diff}">${DIFFS[S.diff].n}</b> `+e.innerHTML};
 function mercPanel(){if(!S.mercU&&!S.merc)return`<div class="gp"><h3>随从</h3><div class="dim">完成第一章任务「堕落女猎手」后可获得随从。</div></div>`;
  let h='<div class="gp"><h3>随从</h3>';
  if(S.merc){const T=MERCS[S.merc.t],ms=mercStats();const row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
