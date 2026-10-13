@@ -1,0 +1,18 @@
+'use strict';
+// ===================================================================================
+// art_map.js — 原创美术资源映射（只做映射/包装，不改动玩法数据）
+// 生成脚本：tools/art/*.py   资源：assets/icon assets/bg assets/ui assets/merc
+// 必须在其它脚本之后加载（包装 itemIcon / renderFight）
+// ===================================================================================
+const ART={
+ // 装备精灵表：行=类型（与 tools/art/gen_items.py TYPES 一致），列=底材档次 0普通 1扩展 2精英
+ eqSheet:'assets/icon/equip_sheet.webp',
+ eqRows:['sword','axe','mace','polearm','spear','bow','xbow','wand','staff','dagger','shield','head','helm','armor','gloves','boots','belt','ring','amulet','scha','mcha','lcha','jewel','jav','throw'],
+};
+// 首饰类无档次：按品质取色（普通/魔法+/暗金及以上）
+function artTier(it,b){if(b.jew)return it.q>=5?2:it.q>=3?1:0;return Math.max(0,Math.min(2,b.tier|0))}
+function artSprite(url,col,row,cols,rows,cls){return`<i class="ii art ${cls||''}" style="background-image:url(${url});background-size:${cols*100}% ${rows*100}%;background-position:${cols>1?col/(cols-1)*100:0}% ${rows>1?row/(rows-1)*100:0}%"></i>`}
+{const _art_icon=itemIcon;itemIcon=function(it){
+  if(it&&!it.k){const b=BASEM[it.b];const r=b?ART.eqRows.indexOf(b.cat):-1;
+   if(r>=0)return artSprite(ART.eqSheet,artTier(it,b),r,3,ART.eqRows.length,'eq t'+artTier(it,b)+(b.s==='charm'?' chm c'+b.sz:''))}
+  return _art_icon(it)}}
