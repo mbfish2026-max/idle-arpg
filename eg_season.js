@@ -14,7 +14,7 @@ function egJourneyTick(){if(!egSeasonOn())return;const s=EG().season;s.jc=s.jc||
 egOn('sec',()=>{const t=(EG_secN=(EG_secN||0)+1);if(t%5===0)egJourneyTick();const s=EG().season;if(s&&!s.eternal&&Date.now()>egSeasonEnd(s)){s.eternal=1;log('<b class="quest">纪元已结束，角色转入永恒领域</b>')}});
 let EG_secN=0;
 function egNewSeasonChar(){if(typeof newChar!=='function')return toast('多角色存档未就绪，暂不能新建纪元角色');
- const nm=(document.getElementById('egsname')||{}).value||'';const id=newChar((nm||'纪元术士').slice(0,12));
+ const nm=(document.getElementById('egsname')||{}).value||'';const id=newChar((nm||'纪元术士').slice(0,12),'nec','season');if(!id)return;
  const e=EG();e.season={id:EG_SEASON.id,n:EG_SEASON.n,start:Date.now(),jc:{}};
  // 纪元角色从零开始：清零统计，继承不了的东西保持默认
  e.stat={};calc();if(typeof save==='function')save();log(`<b class="quest">${EG_SEASON.n} 开启！纪元角色 ${S.name||''} 踏上旅程</b>`);TAB='eg';EGT='season';render()}

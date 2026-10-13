@@ -33,11 +33,12 @@ const _st_load=load;load=function(){acctLoad();const c=curChar()||ACCT.chars[0];
  if(d)localStorage.setItem(KEY,d);else localStorage.removeItem(KEY);_st_load();migrateChar(c)};
 function migrateChar(c){if(!S.pst){S.pst=mkPages(PST_PAGES);let p=0;for(const it of (S.stash||[])){while(p<PST_PAGES-1&&!fits(S.pst[p],it,PAGE_SZ))p++;S.pst[p].push(it)}S.stash=[]}
  while(S.pst.length<PST_PAGES)S.pst.push([]);if(!S.stash)S.stash=[];drainOld();for(const p of S.pst)mergeMats(p);mergeMats(S.bag);
- S.name=S.name||c.name;S.cid=c.id;S.cls=S.cls||c.cid||'nec';S.mode=S.mode||c.mode||'normal';if(S.cls!=='nec'&&!S.ci&&typeof clsInit==='function')clsInit();if(!S.ast)S.ast={on:0,dest:'p',t:{gem:1,rune:1,mat:1,jewel:0,charm:0,unique:0,set:0,rare:0,sock:0}}}
+ S.name=S.name||c.name;S.cid=c.id;S.cls=S.cls||c.cid||'nec';S.mode=S.mode||c.mode||'normal';if(S.eg&&S.eg.season&&S.mode!=='season')S.mode='season';if(S.mode==='season')c.mode='season';if(S.cls!=='nec'&&!S.ci&&typeof clsInit==='function')clsInit();if(!S.ast)S.ast={on:0,dest:'p',t:{gem:1,rune:1,mat:1,jewel:0,charm:0,unique:0,set:0,rare:0,sock:0}}}
 function drainOld(){if(S.stash&&S.stash.length){for(const it of S.stash.splice(0)){const p=S.pst.findIndex(pg=>fits(pg,it,PAGE_SZ));(S.pst[p<0?0:p]).push(it)}}}
 const _st_save=save;save=function(){if(ST_RESET)return;if(S.pst)drainOld();_st_save();try{const raw=localStorage.getItem(KEY);if(raw)localStorage.setItem(CH_PRE+ACCT.cur,raw);const c=curChar();if(c){c.lvl=S.lvl;c.t=Date.now();c.name=S.name||c.name}acctSave()}catch(e){}};
 function resetRuntime(){MON=[];ALLY=[];CORPSE=[];killWin=[];spawnT=2;LOGS.length=0;LOGDIRTY=1;Object.assign(H,{cb:null,abs:0,castT:0,atkT:0,potT:0,mpT:0,curse:0});if(typeof ACX!=='undefined')ACX.mercOn=0}
 function switchChar(id){if(!ACCT.chars.some(c=>c.id===id))return false;if(id!==ACCT.cur){save();ACCT.cur=id;acctSave()}resetRuntime();load();S.last=Date.now();calc();H.life=ST.life;H.mana=ST.mana;save();
+ if(typeof syncNow==='function')try{syncNow()}catch(e){}
  if(!window.__NOUI){closeM();TAB='hero';render();toast('已切换到 '+S.name)}return true}
 const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与诅咒',ic:'☠',open:1},{id:'ama',n:'荒野射手',d:'弓弩与标枪，元素箭矢',ic:'🏹'},{id:'sor',n:'法师',d:'火焰弹/陨石、霜冻新星/寒冰护甲、连锁闪电',ic:'🔮',open:1},
  {id:'pal',n:'圣誓骑士',d:'光环与神圣近战',ic:'🛡'},{id:'bar',n:'野蛮人',d:'猛击/旋风斩、武器精通、战吼与震慑',ic:'🪓',open:1},{id:'ass',n:'影杀刺客',d:'陷阱、武学与暗影',ic:'🗡'},{id:'dru',n:'变形德鲁尔',d:'变身、召唤自然与元素',ic:'🐺'}];
@@ -57,7 +58,7 @@ function newCharUI(){modal(`<div class="mtitle">新建角色</div><div class="gp
  <h4>模式</h4><div class="btns"><button class="btn sm ${NEWMODE==='normal'?'on':''}" onclick="NEWMODE='normal';newCharUI()">普通</button><button class="btn sm ${NEWMODE==='season'?'on':''}" onclick="NEWMODE='season';newCharUI()">赛季</button></div><div class="dim">赛季规则后续开放（存档已记录模式字段 mode，可扩展）。</div>
  <div class="btns c"><button class="btn gold" onclick="newChar($('#chname').value,NEWCLS,NEWMODE)">创建</button><button class="btn" onclick="charUI()">返回</button></div></div>`)}
 // 角色页：显示角色名 + 角色按钮；重置存档只重置当前角色
-const _st_hero=renderHero;renderHero=function(){_st_hero();const h=document.querySelector('#panel .gp h3');if(h)h.innerHTML=`${S.name} · `+h.innerHTML+` <button class="btn xs r" onclick="charUI()">👤 角色</button>`;
+const _st_hero=renderHero;renderHero=function(){_st_hero();const h=document.querySelector('#panel .gp h3');if(h)h.innerHTML=`${S.name} · `+h.innerHTML+` <button class="btn xs gold r chsw" onclick="charUI()">🔄 切换角色</button>`;
  const b=[...document.querySelectorAll('#panel button')].find(x=>x.textContent==='重置存档');if(b)b.setAttribute('onclick','resetChar()')};
 function resetChar(){if(!confirm('确定重置当前角色「'+S.name+'」？（共享仓库保留）'))return;const nm=S.name;ST_RESET=1;localStorage.removeItem(CH_PRE+ACCT.cur);localStorage.removeItem(KEY);ST_RESET=0;resetRuntime();load();S.name=nm;calc();H.life=ST.life;H.mana=ST.mana;save();render()}
 // ---------- 查找 / 移动 ----------
