@@ -68,3 +68,17 @@ const EG_ACH=[
  ['t1','血潮余生','在血潮中收集 500 枚血烬',e=>[e.ev.emberT||0,500],10],['w1','巨像倒下','击败世界首领',(e,s)=>[s.wboss||0,1],15,'屠巨者'],
 ];
 const EG_CODEX={uMF:0.5,setRes:1,allU:5};// 每件暗金 +0.5% 寻宝；每集齐一套 +1 全抗；暗金全收集 +5% 经验
+// 新精英/首领词缀（并入 ELITE_AFF，蓝/金精英随机抽取；噩梦起首领 50% 附带 1 条）
+const EG_AFF={
+ regen:{n:'血肉再生',f:m=>{m.egRegen=0.03}},
+ bomb:{n:'死亡爆裂',f:m=>{m.egBomb=1}},
+ mirror:{n:'镜像',f:m=>{m.egMirror=1}},
+ ward:{n:'骨盾守护',f:m=>{m.egWard=1;m.egWardT=0}},
+ thorn:{n:'荆棘',f:m=>{m.egThorn=0.06}},
+ frozen:{n:'冰狱',f:m=>{m.egFrz=1;m.egFrzT=4}}};
+const EG_BOSSAFF=['regen','ward','frozen','thorn'];
+// 血潮（定时事件）：每 60 分钟（游戏时间）一轮，前 15 分钟血潮涌动
+const EG_TIDE={n:'血潮',cyc:3600,dur:900,hp:1.3,dmg:1.2,xp:1.5,ember:{n:'血烬',ic:'🩸',n0:1,champ:4,uniq:8,boss:15},chest:{n:'血誓宝箱',cost:250}};
+// 世界首领：每 2 小时（游戏时间）在暮土降临，预告 2 分钟，持续 5 分钟
+const EG_WB={n:'灰烬巨像·莫戈斯',ic:'🗿',cyc:7200,off:3000,warn:120,dur:300,hp:1500,dmg:[14,34],ar:160,def:120,exp:30000,res:{fire:40,cold:40,light:40,pois:40,phys:20},sk:['charge','inferno','stun']};
+BOSSES.wb_mogos={n:EG_WB.n,ic:EG_WB.ic,hp:EG_WB.hp,dmg:EG_WB.dmg,ar:EG_WB.ar,def:EG_WB.def,exp:EG_WB.exp,res:EG_WB.res,sk:EG_WB.sk,eg:1};
