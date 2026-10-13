@@ -122,9 +122,8 @@ mercRevive=function(auto){if(!mercDead())return;const c=reviveCost();if(S.gold<c
 // ---------- 经验 ----------
 function mercGainXp(x){if(!mercUp()||S.merc.dead||x<=0)return;const m=S.merc;m.xp+=x;const cap=mercXpNeed(S.lvl+1)-1;if(S.lvl<99&&m.xp>cap)m.xp=Math.max(cap,mercXpNeed(m.lvl));
  if(m.lvl>S.lvl)m.lvl=S.lvl;let up=0;while(m.lvl<S.lvl&&m.lvl<99&&m.xp>=mercXpNeed(m.lvl+1)){m.lvl++;up=1}if(up){log(`<b style="color:#8cf">佣兵 ${m.nm} 升到 ${m.lvl} 级</b>`);calc()}}
-const _mx_kill=killMon;killMon=function(m){const r=_mx_kill(m);if(mercUp()&&!S.merc.dead){const L=S.merc.lvl,diff=L-m.lv;let f=1;if(diff>5)f=[.81,.62,.43,.24][diff-6]??.05;else if(diff<-5)f=L/m.lv;mercGainXp(Math.max(1,Math.round(m.exp*f)))}return r};
-// 角色升级后，积攒的经验可立即让佣兵追上
-const _mx_gx=gainXp;gainXp=function(x){const l0=S.lvl;_mx_gx(x);if(S.lvl>l0&&mercUp())mercGainXp(0.0001)};
+// 佣兵经验：等量获得角色的全部经验（击杀/任务/离线结算）；升级需求按原版 ExpPerLvl 放大，上限为角色等级
+const _mx_gx=gainXp;gainXp=function(x){_mx_gx(x);if(mercUp()&&x>0)mercGainXp(x)};
 
 // ---------- 装备 ----------
 canMercEquip=function(it,k){if(!mercUp()||!it||it.k)return false;const b=BASEM[it.b];if(!b)return false;k=k||mercSlotFor(it);if(!MERC_SLOTS.includes(k)||!mercFits(it,k,S.merc.t))return false;const r=itemReq(it),ms=mercStats();return ms.L>=r.lv&&ms.str>=r.str&&ms.dex>=r.dex};
