@@ -70,3 +70,6 @@ hr{border:0;height:16px;margin:6px 0;background:url(assets/ui2/divider.webp) cen
 #arow .ac{width:70px;border-width:8px}#arow .ac.hero{width:78px}
 #modal .mtitle+.gp{margin-top:20px}
 #toast{border:1px solid transparent;border-image:url(assets/ui2/title_9s.webp) 24 80 fill / 10px 30px stretch;background:none;padding:10px 30px;text-shadow:0 1px 2px #000}
+/* 技能栏：默认「智能」隐藏；其他模式右上角小角标 */
+#skbar .skb>small.uahide{display:none}
+#skbar .skb>small.uatag{left:auto;right:-3px;top:-3px;bottom:auto;font-size:8px;line-height:10px;padding:0 2px;border-radius:3px;background:rgba(0,0,0,.7);border:1px solid rgba(255,220,140,.4)}

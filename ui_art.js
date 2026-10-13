@@ -13,3 +13,8 @@ function uaFix(){try{
 }catch(e){console.warn('uaFix',e)}}
 {let q=0;const go=()=>{q=0;uaFix()};if(typeof MutationObserver!=='undefined'){const mo=new MutationObserver(()=>{if(!q){q=1;requestAnimationFrame(go)}});
  for(const id of ['panel','modal']){const el=document.getElementById(id);if(el)mo.observe(el,{childList:true,subtree:true})}};uaFix()}
+// 战斗技能栏：默认「智能」字样隐藏（改为按钮 title），其他模式缩成右上角角标，「关」保留（不改 skills.js）
+function uaSkb(){try{document.querySelectorAll('#skbar .skb>small').forEach(s=>{const t=s.textContent.trim(),b=s.parentNode;
+ if(s.dataset.uat===t)return;s.dataset.uat=t;s.classList.remove('uahide','uatag');
+ if(t==='智能'){s.classList.add('uahide');b.title='自动施法：智能'}else if(t==='关'){b.title='自动施法：关'}else{s.classList.add('uatag');b.title='自动施法：'+t}})}catch(e){console.warn('uaSkb',e)}}
+{let q=0,lt=0;const go=()=>{q=0;lt=performance.now();uaSkb()};if(typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(q)return;q=1;const w=Math.max(0,120-(performance.now()-lt));setTimeout(()=>requestAnimationFrame(go),w)}).observe(document.body,{childList:true,subtree:true})};uaSkb()}
