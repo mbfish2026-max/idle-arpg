@@ -34,4 +34,4 @@ function icon2Fix3(root){try{
  if(typeof CLASSES!=='undefined'){const CI={};CLASSES.forEach(c=>CI[c.ic]=c);
   (root||document).querySelectorAll('.chic:not(.fx3),.clsc>i:not(.fx3)').forEach(el=>{if(el.querySelector('img'))return;const C=CI[el.textContent.trim()];if(!C)return;el.classList.add('fx3');el.innerHTML=`<img class="fx3p" src="assets/char/${C.id}_portrait.webp" alt="${C.n}">`})}
 }catch(e){console.warn('icon2Fix3',e)}}
-if(typeof MutationObserver!=='undefined'&&document.body){new MutationObserver(()=>icon2Fix3()).observe(document.body,{childList:true,subtree:true});icon2Fix3()}
+if(typeof MutationObserver!=='undefined'&&document.body){{let q=0;new MutationObserver(()=>{if(q)return;q=1;setTimeout(()=>{q=0;icon2Fix3()},200)}).observe(document.body,{childList:true,subtree:true})}/* 省电：合并为每 200ms 至多一次 */icon2Fix3()}
