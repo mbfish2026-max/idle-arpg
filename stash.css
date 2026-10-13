@@ -1,0 +1,21 @@
+/* stash.css — 仓库/角色/堆叠/回收设置 */
+.sgrid{grid-template-columns:repeat(6,1fr)!important;gap:4px}
+.sgrid .cell{height:54px}
+.cell.void{border:1px dashed #3a2c18;background:#0c0906;opacity:.55;height:54px;border-radius:3px}
+.cell .qty{position:absolute;right:2px;bottom:1px;font-size:11px;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;font-weight:700}
+.gp.stash2.shared{border-color:#4a6a8a}
+.gp.stash2 h3 .r{float:right}
+.chrow{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #3a2c18;border-radius:4px;margin:6px 0;background:#140f0a}
+.chrow.cur{border-color:#c9a45a;box-shadow:0 0 6px #c9a45a55}
+.chic{font-size:26px;width:36px;text-align:center}.chi{flex:1}
+.newch{display:flex;gap:6px;margin:10px 0}.newch input{flex:1;background:#0e0a07;border:1px solid #4a3820;color:#e8e0d0;padding:6px;border-radius:3px}
+.gp.rcy h4{margin:8px 0 4px;color:#c9a45a;font-size:13px}.gp.rcy .btns{flex-wrap:wrap;gap:4px}.gp.rcy hr{border-color:#3a2c18}
+.ii.chm{filter:hue-rotate(40deg)}
+.gp.login input{display:block;width:100%;box-sizing:border-box;margin:6px 0;background:#0e0a07;border:1px solid #4a3820;color:#e8e0d0;padding:9px;border-radius:3px;font-size:15px}
+.gp.acct .bad{color:#f66}
+.pager{display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin:6px 0}.pager button{background:#1a130c;border:1px solid #4a3820;color:#d8c8a0;padding:3px 7px;border-radius:3px;font-size:12px}
+.pager button.on{border-color:#c9a45a;color:#ffd76a}.pager button small{color:#8f7f63}
+.sttools{display:flex;gap:4px;margin:4px 0;flex-wrap:wrap}.sttools select,.sttools input{background:#0e0a07;border:1px solid #4a3820;color:#e8e0d0;padding:4px;border-radius:3px;font-size:12px;max-width:31%}
+.clsgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.clsc{border:1px solid #4a3820;border-radius:4px;padding:8px;background:#140f0a;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.clsc i{font-size:26px;font-style:normal}.clsc.on{border-color:#ffd76a;box-shadow:0 0 8px #c9a45a88}.clsc.lock{filter:grayscale(1);opacity:.45}.clsc small{color:#8f7f63;font-size:11px}
+.newcu h4{margin:8px 0 4px;color:#c9a45a}
