@@ -1,0 +1,4 @@
+/* art2_icon3.css — 美术2：emoji 替换图标尺寸（静态，无动画/过渡） */
+img.ic3{display:inline-block;width:1.3em;height:1.3em;vertical-align:-.3em;object-fit:contain;margin:0 1px;pointer-events:none}
+#tabs img.ic3{width:22px;height:22px;vertical-align:middle;margin:0}
+.egach>i img.ic3{width:28px;height:28px}
