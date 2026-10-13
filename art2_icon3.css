@@ -3,4 +3,5 @@ img.ic3{display:inline-block;width:1.3em;height:1.3em;vertical-align:-.3em;objec
 #tabs img.ic3{width:22px;height:22px;vertical-align:middle;margin:0}
 .egach>i img.ic3{width:28px;height:28px}
 /* 标题栏内图标（悬赏 ⚔ / 魂阶分类）不随标题文字变暗 */
-h3 img.ic3,.egbr img.ic3,.dim img.ic3,img.ic3{opacity:1!important;filter:none!important}
+img.ic3{opacity:1!important}
+img.ic3[src$="bounty_kill.webp"],img.ic3[src*="/para_"]{filter:brightness(1.6) drop-shadow(0 0 2px rgba(255,220,150,.5))}
