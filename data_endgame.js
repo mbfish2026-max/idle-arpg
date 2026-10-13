@@ -46,6 +46,6 @@ Object.assign(MONS,{
  shroom:{n:'伞菇兵',ic:'🍄',hp:60,dmg:[3,9],ar:40,def:20,exp:42,a:'m_shroom',res:{pois:50},eg:1},
  sporer:{n:'毒孢菇',ic:'🟣',hp:44,dmg:[2,8],ar:38,def:14,exp:44,ranged:1,el:'pois',a:'m_sporer',res:{pois:75},sk:['poisbreath'],eg:1},
  hopper:{n:'菌丝跳跳',ic:'🐸',hp:50,dmg:[4,10],ar:46,def:16,exp:40,spd:1.5,a:'m_hopper',res:{cold:30},eg:1}});
-Object.assign(BOSSES,{shroomking:{n:'菌伞大王·噗噗',ic:'👑',hp:900,dmg:[10,26],ar:120,def:80,exp:9000,a:'b_shroomking',res:{pois:75,fire:-25},sk:['charge','poisbreath'],eg:1}});
+Object.assign(BOSSES,{shroomking:{n:'菌伞大王·噗噗',ic:'👑',hp:650,dmg:[8,20],ar:120,def:80,exp:9000,a:'b_shroomking',res:{pois:75,fire:-25},sk:['charge','poisbreath'],eg:1}});
 const EG_SECRET={n:'蘑菇王国',staff:{n:'老园丁的枯手杖',ic:'🦯'},waves:12,mons:['shroom','sporer','hopper'],boss:'shroomking',
  hint:'流放者营地的老人们说：坍颓村的铸匠亡魂生前总替一位老园丁修补手杖……',xp:1.6,mf:150};

@@ -30,8 +30,8 @@ const _eg_goAct=goAct;goAct=function(a,d,q){if(EGM)egLeave(1);return _eg_goAct(a
 // 事件钩子（各子系统注册）
 const EG_HOOK={kill:[],clear:[],tick:[],sec:[],calc:[],pre:[],item:[],xp:[]};
 function egOn(k,f){EG_HOOK[k].push(f)}
-// 通用防卡死：特殊模式内 240 秒无击杀则离开
-egOn('sec',()=>{if(!EGM)return;const c=EG().clock;if(EGM._lk==null)EGM._lk=c;if(c-EGM._lk>240){log('<b style="color:#f84">久战无果，撤离 '+EGM.name+'</b>');egLeave(1)}});
+// 通用防卡死：特殊模式内 240 秒既无击杀、怪物总血量也无新低则离开
+egOn('sec',()=>{if(!EGM)return;const c=EG().clock;if(EGM._lk==null)EGM._lk=c;const hp=liveMon().reduce((a,m)=>a+m.hp/m.max,0);if(EGM._mh==null||hp<EGM._mh-0.005){EGM._mh=hp;EGM._lk=c}if(!liveMon().length)EGM._mh=null;if(c-EGM._lk>240){log('<b style="color:#f84">久战无果，撤离 '+EGM.name+'</b>');egLeave(1)}});
 const _eg_killMon=killMon;killMon=function(m){const ctx={d:S.diff,a:S.act,z:S.zone,mode:EGM};_eg_killMon(m);egStat('kills');if(m.boss)egStat('boss');if(EGM){EGM._lk=EG().clock;if(EGM.onKill)EGM.onKill(m)}for(const f of EG_HOOK.kill)f(m,ctx)};
 const _eg_zoneClear=zoneClear;zoneClear=function(){const ctx={d:S.diff,a:S.act,z:S.zone};_eg_zoneClear();egStat('clears');for(const f of EG_HOOK.clear)f(ctx)};
 let EG_secT=0;
