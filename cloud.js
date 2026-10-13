@@ -22,7 +22,7 @@ function exportAccount(){save();const a=JSON.parse(GS.getItem(ACCT_KEY));const c
  return{fmt:1,acct:a,chars,extra,profile:{nickname:CL_PROFILE&&CL_PROFILE.nickname||''},at:Date.now()}}
 function importAccount(d){if(!d||!d.acct||!d.chars)throw new Error('云端存档格式错误');ST_RESET=1;GS.clear();
  GS.setItem(ACCT_KEY,JSON.stringify(d.acct));for(const id in d.chars)GS.setItem(CH_PRE+id,JSON.stringify(d.chars[id]));for(const k in d.extra||{})GS.setItem(k,d.extra[k]);ST_RESET=0;
- ACCT=null;resetRuntime();load();calc();H.life=ST.life;H.mana=ST.mana;if(!window.__NOUI&&typeof offline==='function')offline();save();if(!window.__NOUI){closeM();render()}}
+ ACCT=null;resetRuntime();load();calc();H.life=ST.life;H.mana=ST.mana;if(!window.__NOUI&&typeof offline==='function'){if(CL.inSync){const _m=modal;modal=h=>{CL.offHtml=h};try{offline()}finally{modal=_m}}else offline()}save();if(!window.__NOUI){closeM();render()}}
 function summary(d){if(!d||!d.acct)return'（空）';return d.acct.chars.map(c=>`${c.name} Lv.${(d.chars[c.id]||{}).lvl||c.lvl}`).join('、')}
 // ---------- 旧本机存档（localStorage）读取 / 合并 / 删除 ----------
 function legacyKeys(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^anye_(d2_|eg_rank|cloud$)/.test(k))out.push(k)}}catch(e){}return out}
@@ -68,10 +68,12 @@ async function afterLogin(nick){const{data}=await SB.auth.getUser();CU=data.user
  await firstSync()}
 async function fetchRemote(withData){const r=await SB.from('saves').select(withData?'data,updated_at,version':'updated_at,version').eq('user_id',CU.id).maybeSingle();if(r.error)throw r.error;return r.data}
 // 登录后：云端为准；旧本机数据静默迁移
+// 登录同步期间的离线收益弹窗先暂存，等登录框关闭后再显示（否则会被 closeM 立即关掉）
+function clShowOff(){if(CL.offHtml&&!window.__NOUI){const h=CL.offHtml;CL.offHtml=null;modal(h)}}
 async function firstSync(){clSetState('busy');const rem=await fetchRemote(true);const leg=legacyExport(CU.id);let d=rem&&rem.data&&rem.data.acct?rem.data:null;
  if(d){CLOUD.remoteAt=rem.updated_at;CLOUD.ver=rem.version||1}else{CLOUD.remoteAt=null;CLOUD.ver=0}
  if(leg)d=d?mergeAccounts(d,leg):leg;
- if(d)importAccount(d);CL.ready=1;
+ if(d){CL.inSync=1;try{importAccount(d)}finally{CL.inSync=0}}CL.ready=1;
  if(!rem||leg){await upload();if(leg)legacyClear()}else{legacyClear();CL.dirty=0;CLOUD.last=Date.now();clSetState('ok')}
  if(leg&&!window.__NOUI)toast('本机旧存档已迁移到云端');return rem?(leg?'merge':'down'):'up'}
 // 上传（带版本检查：云端被其他设备更新 → 停止写入）
@@ -103,7 +105,7 @@ function loginUI(tab){tab=tab||'in';CL_GATE=1;modal(`<div class="mtitle">暗夜�
 async function loginDo(tab){const raw=$('#lg_em').value.trim(),pw=$('#lg_pw').value;let nk=tab==='up'?$('#lg_nk').value.trim():'';const msg=$('#lg_msg');msg.textContent='请稍候…';
  try{if(!raw)throw new Error('请填写账号');if(pw.length<6)throw new Error('密码至少 6 位');let em;
   if(raw.includes('@')){if(tab==='up')throw new Error('注册请使用账号名（无需邮箱）');em=raw}else{clCheckName(raw);em=clName2Email(raw)}
-  if(tab==='up'){if(!nk)nk=raw;await clSignUp(em,pw,nk)}else await clSignIn(em,pw);CL_GATE=0;closeM();toast('已登录：'+clAcctName());render()}catch(e){msg.textContent='失败：'+clFriendlyErr(e)}}
+  if(tab==='up'){if(!nk)nk=raw;await clSignUp(em,pw,nk)}else await clSignIn(em,pw);CL_GATE=0;closeM();toast('已登录：'+clAcctName());render();clShowOff()}catch(e){msg.textContent='失败：'+clFriendlyErr(e)}}
 function accountPanel(){const t=CLOUD.last?new Date(CLOUD.last).toLocaleString('zh-CN'):'从未';const st={ok:'已同步',busy:'同步中',err:'离线重试',kick:'已在其他设备登录'}[CL.state]||'-';
  return CU?`<div class="gp acct"><h3>账号与云存档</h3><div class="row"><span>账号</span><b>${clAcctName()}</b></div><div class="row"><span>昵称</span><b>${(CL_PROFILE&&CL_PROFILE.nickname)||'-'}</b></div><div class="row"><span>同步状态</span><b>${st}</b></div><div class="row"><span>最后同步</span><b>${t}</b></div>${CL_ERR?`<div class="bad">${CL_ERR}</div>`:''}
  <div class="btns"><button class="btn sm gold" onclick="flushNow().then(()=>render())">立即同步</button><button class="btn sm" onclick="clSignOut()">退出登录</button></div>${chSwBtn()}<div class="dim">存档仅保存在云端：有改动时约 20 秒自动同步，切到后台、切换角色、锁定物品、掉落暗金/套装时立即同步。</div></div>`
@@ -117,7 +119,7 @@ function clHookEvents(){for(const n of['switchChar','newChar','deleteChar','togg
  if(typeof addBag==='function'&&!addBag._cl){const f=addBag;addBag=function(it){const r=f.apply(this,arguments);if(it&&(it.q===5||it.set))clSyncSoon();return r};addBag._cl=1}}
 async function cloudBoot(){clHookEvents();const sb=await sbReady();if(!sb){loginUI('in');return}
  sb.auth.onAuthStateChange((ev,s)=>{CL.token=s&&s.access_token||null});
- try{const{data}=await sb.auth.getSession();if(data.session){CU=data.session.user;CL.token=data.session.access_token;const p=await sb.from('profiles').select('nickname').eq('id',CU.id).maybeSingle();CL_PROFILE=p.data;await firstSync();CL_GATE=0;if(!window.__NOUI){closeM();render()}}
+ try{const{data}=await sb.auth.getSession();if(data.session){CU=data.session.user;CL.token=data.session.access_token;const p=await sb.from('profiles').select('nickname').eq('id',CU.id).maybeSingle();CL_PROFILE=p.data;await firstSync();CL_GATE=0;if(!window.__NOUI){closeM();render();clShowOff()}}
  else loginUI('in')}catch(e){CL_ERR='云服务连接失败：'+clFriendlyErr(e);clSetState('err');CL.bootFail=(CL.bootFail||0)+1;if(!window.__NOUI){loginUI('in');setTimeout(()=>{if(!CL.ready)cloudBoot()},Math.min(60000,3000*2**CL.bootFail))}}}
 if(typeof window!=='undefined'&&typeof document!=='undefined'&&document.addEventListener&&!window.__NOUI){
  window.addEventListener('load',()=>{loginUI('in');setTimeout(cloudBoot,50);setInterval(()=>{if(CL.ready&&(CL.dirty||Date.now()-CL.lastUp>60000))flushNow()},20000)});
