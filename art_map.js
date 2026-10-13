@@ -28,10 +28,10 @@ function artCraft(k,cls){const c=Math.max(0,ART.craftCols.indexOf(k));return art
 // 文件：assets/bg/a1_zNN.webp、assets/bg/a{章}_{类型}_{v}.webp（720x1280 webp）。只按需加载当前一张。
 function artZoneBg(ai,zi){const A=ACTS[ai];if(!A||!A.zones[zi])return null;const z=A.zones[zi];
  if(ai===0)return`assets/bg/a1_z${String(zi).padStart(2,'0')}.webp`;
- const t=(z.bg||'').replace('bg_','');if(ai>4||!t)return null;const same=A.zones.filter(x=>x.bg===z.bg);const nv=same.length>=4?3:2;
- return`assets/bg/a${ai+1}_${t}_${same.indexOf(z)%nv}.webp`}
+ // 二~五章的 a{章}_{类型}_{v}.webp 为程序化占位图（竖柱条纹+橙色小方块/三角，像切条叠图），改用各章手绘整图 act{N}.webp
+ if(ai>4)return null;return`assets/bg/act${ai+1}.webp`}
 const ART_BG={};
 {const _art_rf=renderFight;renderFight=function(){_art_rf();const fb=document.getElementById('fbattle');if(!fb)return;
   const z=zoneData(),zi=ACTS[S.act]?ACTS[S.act].zones.indexOf(z):-1;const u=zi>=0?artZoneBg(S.act,zi):null;if(!u)return;
-  const apply=()=>{if(fb.dataset.artbg!==u||!fb.style.backgroundImage.includes(u)){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.15) 35%,rgba(0,0,0,.65)),url(${u})`;fb.style.backgroundSize='cover';fb.style.backgroundPosition='center';fb.dataset.artbg=u}};
+  const apply=()=>{if(fb.dataset.artbg!==u||!fb.style.backgroundImage.includes(u)){fb.style.backgroundImage=`linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.15) 35%,rgba(0,0,0,.65)),url(${u})`;fb.style.backgroundSize='cover';fb.style.backgroundRepeat='no-repeat';fb.style.backgroundPosition='center';fb.dataset.artbg=u}};
   if(ART_BG[u]===1)apply();else if(!ART_BG[u]){ART_BG[u]=2;const i=new Image();i.onload=()=>{ART_BG[u]=1;if(TAB==='fight')renderFight()};i.onerror=()=>{ART_BG[u]=3};i.src=u}}}
