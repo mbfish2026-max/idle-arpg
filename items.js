@@ -96,12 +96,14 @@ addBag=function(it){if(it.k==='rune')S.found[it.r]=1;
 const _itm_sellPrice=sellPrice;sellPrice=function(it){if(it.k==='rune')return 50*(it.r+1)*(it.r>=10?2:1);return _itm_sellPrice(it)};
 
 // ---------- 离线收益：只列出真正放入背包的物品 ----------
+// 离线：按掉落表期望值折算的每只怪金币（与在线 rollPicks 的金币分支一致，不实际掷骰）
+function tcGoldExp(m){let g=0;const one=T=>{const w=T.nd+T.gold+T.junk+T.eq+T.good;if(w>0)g+=T.pk*T.gold/w*(5*m.lv+8)/2*(T.gmul||1)};const T=tcOf(m);one(T);if(T.extra)for(let i=0;i<T.extraPk;i++)one(TCS[T.extra]);return g*(1+(ST.gf||0)/100)}
 offline=function(){const sec=(Date.now()-S.last)/1000;if(sec<60)return;const t=Math.min(sec,8*3600);const kpm=Math.max(2,S.kpm||4);const kills=Math.floor(kpm*t/60*0.5);if(kills<1)return;
- const z=zoneData();let xp=0,g0=S.gold,got=[],kept=[],sold=0,soldG=0;
- for(let i=0;i<kills;i++){const m=mkMon(pick(z.mons),z.ml);const diff=S.lvl-m.lv;let f=diff>5?([.81,.62,.43,.24][diff-6]??.05):1;xp+=m.exp*f;if(got.length<30)for(const it of rollTC(m))got.push(it)}
- xp=Math.round(xp);gainXp(xp);
+ const z=zoneData();let xp=0,g0=S.gold,got=[],kept=[],sold=0,soldG=0,baseG=0;
+ for(let i=0;i<kills;i++){const m=mkMon(pick(z.mons),z.ml);const diff=S.lvl-m.lv;let f=diff>5?([.81,.62,.43,.24][diff-6]??.05):1;xp+=m.exp*f;if(got.length<30)for(const it of rollTC(m))got.push(it);else baseG+=tcGoldExp(m)}
+ xp=Math.round(xp);gainXp(xp);baseG=Math.round(baseG);S.gold+=baseG;
  for(const it of got){const g=S.gold;if(addBag(it))kept.push(it);else{sold++;soldG+=S.gold-g}}
- modal(`<div class="mtitle">离线收益</div><div class="gp"><div>离线 ${Math.floor(t/3600)}小时${Math.floor(t%3600/60)}分（上限8小时，效率50%）</div><div>于 <b>${z.n}</b> 击杀 ${kills} 只怪物</div><div>经验 +${fmt(xp)}　金币 +${fmt(S.gold-g0)}</div>
+ modal(`<div class="mtitle">离线收益</div><div class="gp"><div>离线 ${Math.floor(t/3600)}小时${Math.floor(t%3600/60)}分（上限8小时，效率50%）</div><div>于 <b>${z.n}</b> 击杀 ${kills} 只怪物</div><div>经验 +${fmt(xp)}　金币 +${fmt(S.gold-g0)}${baseG?`<span class="dim">（含击杀金币 ${fmt(baseG)}）</span>`:''}</div>
  ${sold?`<div class="dim">自动出售 ${sold} 件（${soldG}◈）</div>`:''}<div class="grid">${kept.map(it=>cell(it,'')).join('')||'<div class="dim">没有新物品放入背包</div>'}</div><div class="btns c"><button class="btn gold" onclick="closeM()">收下</button></div></div>`)};
 
 // ---------- 储物箱 ----------
