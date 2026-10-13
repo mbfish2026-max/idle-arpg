@@ -24,5 +24,5 @@ function autoSortStash(sh){const P=sh?ACCT.shared:S.pst;sortPages(P);if(sh)acctS
 // ---------- 界面：背包顶部显眼按钮 + 开关；仓库工具栏按钮替换 ----------
 {const f=renderBag;renderBag=function(){f.apply(this,arguments);if(typeof document==='undefined'||window.__NOUI)return;const P=$('#panel');
  P.querySelectorAll('.stabs.sm button').forEach(b=>{if(b.textContent==='整理')b.remove()});
- const h3=[...P.querySelectorAll('.gp h3')].find(e=>/背包/.test(e.textContent));if(h3&&!P.querySelector('.sortbar')){h3.insertAdjacentHTML('afterend',`<div class="sortbar"><button class="btn gold sortbtn" onclick="autoSortBag()">⇅ 自动整理</button><button class="btn xs ${sortAstOn()?'on':''}" onclick="sortAstToggle()">整理时先自动存仓</button></div>`)}
+ const h3=[...P.querySelectorAll('.gp h3')].find(e=>/背包/.test(e.textContent));if(h3&&!P.querySelector('.sortbar')){h3.insertAdjacentHTML('afterend',`<div class="sortbar"><button class="btn gold sortbtn" onclick="autoSortBag()">⇅ 自动整理</button><button class="btn xs ${sortAstOn()?'on':''}" onclick="sortAstToggle()">整理前<br>先存仓</button></div>`)}
  P.querySelectorAll('.sttools button').forEach(b=>{if(b.textContent==='整理'){const sh=/shared/.test(b.getAttribute('onclick')||'');b.textContent='⇅ 自动整理';b.className='btn xs gold sortbtn';b.setAttribute('onclick',`autoSortStash(${sh?1:0})`)}})}}

@@ -42,3 +42,6 @@ if(typeof cubeGem==='function'){const f=cubeGem;cubeGem=function(k){const g=k.sl
 if(typeof cubeRune==='function'){const f=cubeRune;cubeRune=function(r){const n=typeof runeUpCount==='function'?runeUpCount(r):3;if(S.bag.filter(x=>x.k==='rune'&&x.r===r&&!x.lk).length<n)return lkMsg();return f(r)}}
 // 戒指：只跳过锁定的那一格——自动换装期间锁定戒指的战力视为无穷大，autoTick 的“替换较弱戒指”自然落到另一格
 {const f=power;power=function(it){if(LK.inAuto&&isLk(it)&&it&&(it===S.eq.ring1||it===S.eq.ring2))return Infinity;return f(it)}}
+// 材料扣除跳过锁定堆叠：可用数=未锁部分；未锁不足即视为材料不足
+if(typeof takeMat==='function'){matCount=function(id){return S.bag.filter(x=>x.k==='mat'&&x.id===id&&!x.lk).reduce((a,x)=>a+(x.n||0),0)};
+ takeMat=function(id,n){if(matCount(id)<n)return false;for(const x of S.bag)if(x.k==='mat'&&x.id===id&&!x.lk){const t=Math.min(x.n,n);x.n-=t;n-=t;if(!n)break}mergeMats(S.bag);return true}}

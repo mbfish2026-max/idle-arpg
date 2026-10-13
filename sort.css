@@ -2,3 +2,4 @@
 .sortbar{display:flex;gap:6px;align-items:center;margin:4px 0 6px}
 .sortbar .sortbtn{flex:1;font-size:14px;padding:6px 0}
 .sttools .sortbtn{white-space:nowrap}
+.sortbar .btn.xs{flex:0 0 auto;font-size:11px;line-height:1.2;padding:3px 8px;white-space:normal}
