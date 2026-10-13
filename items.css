@@ -1,0 +1,10 @@
+/* items.css — 背包/储物箱/装备格修正 */
+.dslot{min-width:0}
+.cell{min-width:0}
+.cell .ii{line-height:1;display:flex;align-items:center;justify-content:center;height:28px;min-height:28px;flex:0 0 auto}
+.cell.empty .ii{font-size:22px;opacity:.9}
+.cell.empty small{color:#8f7f63}
+.stabs.bagv{margin:6px 0 2px}
+.gp.stash .grid{min-height:70px}
+/* 修正：战斗页 .empty（padding-top:80px）误作用于空装备格，导致图标被挤出格子 */
+.cell.empty{padding:0;letter-spacing:normal;grid-column:auto;text-align:center;color:inherit}
