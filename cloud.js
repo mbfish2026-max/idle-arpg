@@ -13,8 +13,8 @@ function sbReady(){if(SB)return Promise.resolve(SB);return new Promise(res=>{con
  if(window.supabase&&window.supabase.createClient)return done();const s=document.createElement('script');s.src=SB_CDN;s.onload=done;s.onerror=()=>{CL_ERR='无法加载云服务，请检查网络后刷新';res(null)};document.head.appendChild(s)})}
 // ---------- 状态指示 ----------
 function clSetState(st){CL.state=st;if(typeof document==='undefined'||window.__NOUI)return;let e=document.getElementById('clsync');
- if(!e){e=document.createElement('div');e.id='clsync';e.style.cssText='position:fixed;top:4px;right:6px;z-index:60;font-size:11px;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.55);pointer-events:none';document.body.appendChild(e)}
- const M={ok:['☁ 已同步','#8c8'],busy:['☁ 同步中','#ccc'],err:['☁ 离线重试','#e96'],kick:['⚠ 已在其他设备登录','#f66'],'':['','']};const m=M[st]||M[''];e.textContent=m[0];e.style.color=m[1];e.style.display=m[0]?'':'none'}
+ if(!e){e=document.createElement('div');e.id='clsync';e.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:60;font-size:10px;line-height:13px;padding:0 5px;border-radius:0 0 6px 6px;background:rgba(0,0,0,.5);pointer-events:none;white-space:nowrap';document.body.appendChild(e)}
+ /* 正常状态只显示小 ☁ 图标（顶部居中空白处，不压任何文字）；仅离线/被顶号时显示文字 */const M={ok:['☁','#8c8'],busy:['☁','#888'],err:['☁ 离线重试','#e96'],kick:['⚠ 已在其他设备登录','#f66'],'':['','']};const m=M[st]||M[''];e.textContent=m[0];e.style.color=m[1];e.title={ok:'已同步',busy:'同步中'}[st]||'';e.style.display=m[0]?'':'none'}
 function clDirty(){CL.dirty=1}
 // ---------- 账号存档导出 / 导入（内存 GS） ----------
 function exportAccount(){save();const a=JSON.parse(GS.getItem(ACCT_KEY));const chars={};for(const c of a.chars){const r=GS.getItem(CH_PRE+c.id);if(r)chars[c.id]=JSON.parse(r)}
