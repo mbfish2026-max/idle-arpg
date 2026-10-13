@@ -1,0 +1,12 @@
+/* 第二阶段：章节背景占位、免疫标签、难度标签、随从卡 */
+#fbattle[data-bg^=bg_desert],#fbattle[data-bg^=bg_tomb]{background-image:radial-gradient(ellipse at 50% 60%,#2a2214 0,#0d0a05 70%)}
+#fbattle[data-bg^=bg_jungle],#fbattle[data-bg^=bg_temple]{background-image:radial-gradient(ellipse at 50% 60%,#16231a 0,#060b07 70%)}
+#fbattle[data-bg^=bg_hell]{background-image:radial-gradient(ellipse at 50% 60%,#3a1208 0,#100403 70%)}
+#fbattle[data-bg^=bg_snow],#fbattle[data-bg^=bg_ice]{background-image:radial-gradient(ellipse at 50% 60%,#1a2430 0,#06090d 70%)}
+.mc{position:relative}.mc em.imm{position:absolute;top:auto;left:auto;right:3px;bottom:30px;width:auto;height:auto;min-width:0;line-height:13px;font-style:normal;font-size:10px;color:#fff;background:rgba(150,20,20,.85);border-radius:3px;padding:1px 3px;z-index:2}
+.imm2{color:#ff6a6a;font-size:10px;margin-left:1px}
+.diff{font-size:11px;padding:0 4px;border-radius:3px;background:#5a2a10;color:#ffcc88}.diff.d2{background:#701010;color:#ffd0d0}
+.ac.merc{border-color:#5fa0e0!important}
+.stabs button.lk{opacity:.5}
+.qlist{margin-top:6px}.qlist .q{font-size:12px;margin:2px 0}.qlist .q.ok{color:#7fd07f}
+.doll.merc{grid-template-columns:repeat(3,1fr)}

@@ -473,4 +473,5 @@ function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
  offline();render();requestAnimationFrame(loop);document.addEventListener('visibilitychange',save)}
 const dbg={speed:n=>SPEED=n,lvl:n=>{while(S.lvl<n)gainXp(xpNeed(S.lvl+1)-S.xp)},zone:i=>{S.unl=Math.max(S.unl,i);goZone(i)},loot:(n,ml=12,mf=300)=>{for(let i=0;i<n;i++)addBag(genItem(ml,{mf}))},
  give:it=>addBag(it),rune:r=>addBag({uid:S.uid++,k:'rune',r}),gem:(g,lv)=>addBag({uid:S.uid++,k:'gem',g,lv}),offline:h=>{S.last=Date.now()-h*3600e3;offline()}};
-init();
+// 延迟到 DOMContentLoaded，让后续脚本(acts.js)先完成扩展
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

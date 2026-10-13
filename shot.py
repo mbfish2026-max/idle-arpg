@@ -1,3 +1,30 @@
+import sys
+if len(sys.argv)>1 and sys.argv[1]=='p2':
+    # 第二阶段截图：各章战斗/地图、噩梦/地狱、随从面板。用法: python shot.py p2
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        b=p.chromium.launch(executable_path='/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome')
+        c=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True)
+        pg=c.new_page(); errs=[]
+        pg.on('pageerror',lambda e:errs.append(str(e))); pg.on('console',lambda m: m.type=='error' and 'Failed to load resource' not in m.text and errs.append(m.text))
+        pg.goto('http://localhost:8090/'); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(800)
+        pg.evaluate("""dbg.lvl(24);Object.assign(S.sk,{rs:8,sm:6,cg:1,rm:3,te:1,ba:1,ce:1,bs:8,ad:2,wk:1});S.kp=0;
+          S.actU={0:4,1:4,2:4};S.diffU=2;S.Q[0].q2=1;S.mercU=1;hireMerc('guard','might',1);calc();H.life=ST.life;H.mana=ST.mana""")
+        boss={0:20,1:17,2:13,3:4,4:17}
+        lv={0:14,1:24,2:32,3:37,4:44}
+        for a in range(5):
+            pg.evaluate(f"dbg.lvl({lv[a]});goAct({a},0,1);TAB='fight';S.auto=0;S.unl=ACTS[{a}].zones.length-1;goZone({boss[a]});S.wave={'2' if a==4 else 'ACTS[%d].zones[%d].w-1'%(a,boss[a])};MON=[];spawnT=0.1;calc();H.life=ST.life;render()")
+            pg.wait_for_timeout(2500); pg.screenshot(path=f'p2_battle_a{a+1}.png')
+            pg.evaluate(f"MAPA={a};MAPD=0;TAB='map';render()"); pg.wait_for_timeout(300); pg.screenshot(path=f'p2_map_a{a+1}.png')
+        pg.evaluate("dbg.lvl(60);goAct(3,1,1);MAPA=3;MAPD=1;TAB='map';render()"); pg.wait_for_timeout(300); pg.screenshot(path='p2_map_nm_a4.png')
+        pg.evaluate("dbg.lvl(75);goAct(4,2,1);TAB='fight';S.auto=0;S.unl=18;goZone(15);S.wave=3;MON=[];spawnT=0.1;render()"); pg.wait_for_timeout(2500); pg.screenshot(path='p2_battle_hell_a5.png')
+        pg.evaluate("MAPA=4;MAPD=2;TAB='map';render()"); pg.wait_for_timeout(300); pg.screenshot(path='p2_map_hell_a5.png')
+        pg.evaluate("S.autoEq=0;S.sockq=1;S.pers=1;const it=genItem(40,{base:BASEM.hlm3,q:1});it.sock=0;S.bag.push(it);window._sh=it.uid;TAB='hero';render()"); pg.wait_for_timeout(300)
+        pg.evaluate("document.querySelectorAll('.gp')[2]&&document.querySelectorAll('.gp')[2].scrollIntoView()"); pg.screenshot(path='p2_hero_merc.png')
+        pg.evaluate("showItem(window._sh)"); pg.wait_for_timeout(300); pg.screenshot(path='p2_item_sock.png')
+        print('errors',errs, pg.evaluate("JSON.stringify({lv:S.lvl,diff:S.diff,act:S.act,zone:S.zone,ally:ALLY.map(a=>a.kind),merc:!!S.merc})"))
+        b.close()
+    sys.exit()
 from playwright.sync_api import sync_playwright
 import json
 with sync_playwright() as p:
