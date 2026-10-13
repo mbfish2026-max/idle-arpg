@@ -30,7 +30,7 @@ Object.assign(SYN,{mfb:[['mmet'],12],mmet:[['mfb'],10],bww:[['bbash'],5]});
 const curCls=()=>(S&&CLS_DEF[S.cls])?S.cls:'nec';
 function clsBase(){return CLS_DEF[curCls()]}
 function clsName(){return clsBase().n}
-function heroArt(cls){return curCls()==='nec'?art('hero','🧙‍♂️',cls):`<span class="glyph ${cls||''}">${clsBase().glyph}</span>`}
+function heroArt(cls){const c=curCls();return c==='nec'?art('hero','🧙‍♂️',cls):`<img class="art ${cls||''}" src="assets/char/${c}_portrait.webp" alt="${clsBase().n}" onerror="this.outerHTML='<span class=&quot;glyph&quot;>${clsBase().glyph}</span>'">`}// 野蛮人/法师：美术立绘 assets/char/{id}_portrait.webp
 function trees(){return clsBase().trees}
 function skOfCls(s){return (s.cls||'nec')===curCls()}
 // 新角色/重置角色：按职业写入初始属性/技能/装备（只执行一次）
