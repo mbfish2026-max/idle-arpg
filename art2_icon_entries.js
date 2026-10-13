@@ -13,3 +13,4 @@ ICON2.scha_n='assets/icon2/scha_n.webp'; ICON2.scha_x='assets/icon2/scha_x.webp'
 ICON2.mcha_n='assets/icon2/mcha_n.webp'; ICON2.mcha_x='assets/icon2/mcha_x.webp'; ICON2.mcha_e='assets/icon2/mcha_e.webp';
 ICON2.lcha_n='assets/icon2/lcha_n.webp'; ICON2.lcha_x='assets/icon2/lcha_x.webp'; ICON2.lcha_e='assets/icon2/lcha_e.webp';
 ICON2.jewel_n='assets/icon2/jewel_n.webp'; ICON2.jewel_x='assets/icon2/jewel_x.webp'; ICON2.jewel_e='assets/icon2/jewel_e.webp';
+ICON2.bh1='assets/icon2/bh1.webp'; ICON2.bh2='assets/icon2/bh2.webp'; ICON2.bh3='assets/icon2/bh3.webp'; ICON2.bh4='assets/icon2/bh4.webp'; ICON2.bh5='assets/icon2/bh5.webp'; // 野蛮人专属头盔（底材 id）
