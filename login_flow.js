@@ -14,5 +14,5 @@ if(typeof clSignUp==='function'){const f=clSignUp;clSignUp=async function(...a){
 if(typeof clSignIn==='function'){const f=clSignIn;clSignIn=async function(...a){LF.pending='sel';const r=await f.apply(this,a);setTimeout(lfShow,60);return r}}
 for(const n of['clResolve','uploadGuest'])if(typeof window[n]==='function'){const f=window[n];window[n]=async function(...a){const r=await f.apply(this,a);setTimeout(lfShow,60);return r}}
 if(typeof newChar==='function'){const f=newChar;newChar=function(...a){const ph=LF.placeholder;const id=f.apply(this,a);
- if(id&&ph&&ph!==id){LF.placeholder=null;const c=ACCT.chars.find(x=>x.id===ph);const raw=c&&localStorage.getItem(CH_PRE+ph);let o=null;try{o=raw&&JSON.parse(raw)}catch(e){}
+ if(id&&ph&&ph!==id){LF.placeholder=null;const c=ACCT.chars.find(x=>x.id===ph);const raw=c&&GS.getItem(CH_PRE+ph);let o=null;try{o=raw&&JSON.parse(raw)}catch(e){}
   if(c&&(!o||(o.lvl<=1&&!o.xp&&!o.kills)))deleteChar(ph,true);if(!window.__NOUI){closeM();render()}}return id}}

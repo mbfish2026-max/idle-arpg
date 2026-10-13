@@ -39,11 +39,17 @@ function itemCount(sh){return(sh||[]).reduce((n,p)=>n+p.length,0)}
 function mergeAccounts(base,add){const r=JSON.parse(JSON.stringify(base));r.acct.nid=Math.max(r.acct.nid||1,add.acct.nid||1,...r.acct.chars.map(c=>c.id+1),...add.acct.chars.map(c=>c.id+1));
  r.acct.suid=Math.max(r.acct.suid||0,add.acct.suid||0);
  for(const c of add.acct.chars){const o=add.chars[c.id];if(!o)continue;const ex=r.acct.chars.find(x=>x.id===c.id);
-  if(ex&&ex.name===c.name&&(ex.cls||'')===(c.cls||'')){if(progGT(chProg(o),chProg(r.chars[c.id]))){r.chars[c.id]=o;ex.lvl=o.lvl;ex.t=c.t}continue}
+  if(ex&&ex.name===c.name&&(ex.cls||'')===(c.cls||'')){const keep=r.chars[c.id];let k=keep,other=o;if(progGT(chProg(o),chProg(keep))){k=JSON.parse(JSON.stringify(o));other=keep;r.chars[c.id]=k;ex.lvl=o.lvl;ex.t=c.t}
+   if(k&&other&&other.pst){if(!k.pst)k.pst=[];const ctr={n:Math.max(k.uid||0,other.uid||0)};unionPages(k.pst,other.pst,ctr,'n');k.uid=ctr.n+1}continue}
   const pl=r.acct.chars.length===1&&!hasProgress({acct:{chars:r.acct.chars},chars:r.chars});
   const nid=ex?r.acct.nid++:c.id;const oc=JSON.parse(JSON.stringify(o));oc.cid=nid;r.acct.chars.push(Object.assign({},c,{id:nid}));r.chars[nid]=oc;
   if(pl){const ph=r.acct.chars[0].id;r.acct.chars.shift();delete r.chars[ph];r.acct.cur=nid}}
- if(itemCount(add.acct.shared)>itemCount(r.acct.shared))r.acct.shared=add.acct.shared;return r}
+ if(!r.acct.shared)r.acct.shared=[];const ctr={n:r.acct.suid||1e9};unionPages(r.acct.shared,add.acct.shared||[],ctr,'n');r.acct.suid=ctr.n+1;return r}
+// 仓库并集：相同物品(内容完全一致)去重；uid 冲突但内容不同 → 重新编号后保留；按页放入，满 48 格顺延，绝不丢弃
+function unionPages(dst,src,ctr,_){const seen=new Set(),uids=new Set();for(const p of dst)for(const it of p){seen.add(JSON.stringify(it));uids.add(it.uid)}
+ for(const it of dst.flat())ctr.n=Math.max(ctr.n,it.uid||0);
+ for(const p of src||[])for(const it0 of p||[]){const key=JSON.stringify(it0);if(seen.has(key))continue;seen.add(key);const it=JSON.parse(key);if(it.uid!=null&&uids.has(it.uid))it.uid=++ctr.n;uids.add(it.uid);
+  let i=dst.findIndex(pg=>pg.length<48);if(i<0){dst.push([]);i=dst.length-1}dst[i].push(it)}}
 function legacyClear(){for(const k of legacyKeys())try{localStorage.removeItem(k)}catch(e){}}
 // ---------- 认证 ----------
 const CL_ACCT_DOM='anye-game.local';
