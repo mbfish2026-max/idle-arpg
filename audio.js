@@ -120,7 +120,123 @@ document.addEventListener('visibilitychange',()=>{hidden=document.hidden;if(!ctx
 
 // ---------- 事件钩子（包装全局函数，与 loot.js 等同一惯例） ----------
 function wrap(name,after,before){const f=window[name];if(typeof f!=='function')return;window[name]=function(){if(before)try{before.apply(this,arguments)}catch(e){}const r=f.apply(this,arguments);try{after&&after.call(this,r,arguments)}catch(e){}return r}}
-if(typeof fx==='function')wrap('fx',null,function(kind){if(typeof TAB!=='undefined'&&TAB!=='fight')return;if(kind==='slash')sfxT('attack',null,90);else sfxT('skill',kind,110)});
+// ================= 技能 / 战斗音效（按技能 id 建表） =================
+// 限流：① 每类最小间隔 GAP；② 全局同时发声上限 VOICE_MAX（按每个音效预计时长计数，超出则丢弃低优先级）；
+//       ③ 同类同时发声上限 CAT_MAX；④ 召唤物/佣兵/命中类额外随机稀疏，避免满屏召唤物时成噪音。
+const VOICE_MAX=8,CAT_MAX={hit:2,ally:2,merc:1,crit:1,block:1,skill:3,attack:1};
+const GAP={skill:70,attack:90,hit:110,crit:160,block:200,ally:140,merc:180};
+const PRIO={skill:3,crit:3,block:2,attack:2,merc:1,ally:1,hit:0};
+const VOICES=[];// {end,cat}
+function vClean(){const now=ctx.currentTime;for(let i=VOICES.length-1;i>=0;i--)if(VOICES[i].end<now)VOICES.splice(i,1)}
+const lastC={};
+function voice(cat,key,dur,fn){if(!ctx||!unlocked||hidden||ctx.state!=='running'||cfg().sm)return;if(typeof TAB!=='undefined'&&TAB!=='fight')return;
+ const now=performance.now(),k=cat+':'+key;if(now-(lastC[k]||0)<(GAP[cat]||80))return;
+ vClean();if(VOICES.filter(v=>v.cat===cat).length>=(CAT_MAX[cat]||2))return;
+ if(VOICES.length>=VOICE_MAX){// 满载：只有高优先级可挤掉最旧的低优先级计数（已发声的不截断，只是占位让出）
+  const p=PRIO[cat]||0,i=VOICES.findIndex(v=>(PRIO[v.cat]||0)<p);if(i<0)return;VOICES.splice(i,1)}
+ lastC[k]=now;VOICES.push({end:ctx.currentTime+dur,cat});try{fn(ctx.currentTime,sfxBus)}catch(e){}}
+
+// --- 音色原语（风格化） ---
+const P={
+ crack(D,t,v=1,f=2600){for(let i=0;i<3;i++)noise(D,{t:t+i*0.018,dur:0.05,vol:0.16*v,f:f*(1-i*0.15),q:6});tone(D,{f:320,glide:120,t,dur:0.06,type:'square',vol:0.05*v,a:0.001,d:0.05,sus:0.1,r:0.03,cut:1500})},
+ rattle(D,t,v=1){for(let i=0;i<6;i++)noise(D,{t:t+i*0.03+Math.random()*0.01,dur:0.03,vol:0.07*v,f:1800+Math.random()*1500,q:8})},
+ whoosh(D,t,v=1,f=600,f2=2400,dur=0.3){noise(D,{t,dur,vol:0.12*v,f,f2,q:1.2,a:dur*0.4})},
+ hiss(D,t,v=1,dur=0.6){noise(D,{t,dur,vol:0.09*v,type:'highpass',f:2500,f2:5000,a:0.08,wet:0.3});noise(D,{t,dur:dur*0.8,vol:0.08*v,f:500,f2:250,q:3})},
+ bubble(D,t,v=1,n=4){for(let i=0;i<n;i++){const f=300+Math.random()*400;tone(D,{f,glide:f*2.2,t:t+i*0.06,dur:0.07,type:'sine',vol:0.08*v,a:0.003,d:0.06,sus:0.2,r:0.04})}},
+ fire(D,t,v=1,dur=0.5){noise(D,{t,dur,vol:0.16*v,type:'lowpass',f:3000,f2:400,q:0.8,a:0.03,wet:0.2});noise(D,{t,dur:dur*0.7,vol:0.06*v,f:900,q:2,a:0.05})},
+ boom(D,t,v=1){tone(D,{f:90,glide:30,t,dur:0.6,type:'sine',vol:0.35*v,a:0.003,d:0.5,sus:0.05,r:0.2});noise(D,{t,dur:0.8,vol:0.22*v,type:'lowpass',f:1800,f2:100,a:0.003,wet:0.5})},
+ ice(D,t,v=1){[0,7,12,19].forEach((s,i)=>tone(D,{f:mtof(88+s),t:t+i*0.025,dur:0.25,type:'sine',vol:0.05*v,a:0.001,d:0.22,sus:0.05,r:0.3,wet:0.7}));noise(D,{t,dur:0.3,vol:0.07*v,type:'highpass',f:6000,a:0.002})},
+ zap(D,t,v=1,n=3){for(let i=0;i<n;i++){const tt=t+i*0.045;tone(D,{f:1200+Math.random()*1800,glide:200,t:tt,dur:0.05,type:'sawtooth',vol:0.06*v,a:0.001,d:0.04,sus:0.2,r:0.02});noise(D,{t:tt,dur:0.04,vol:0.1*v,type:'highpass',f:4000})}},
+ dark(D,t,v=1,root=41,iv=[0,1,6]){for(const s of iv)tone(D,{f:mtof(root+s),t,dur:0.7,type:'sawtooth',vol:0.045*v,a:0.08,d:0.3,sus:0.5,r:0.5,cut:900,det:(s*3)%11,wet:0.8});noise(D,{t,dur:0.6,vol:0.04*v,f:300,f2:1200,q:6,a:0.2,wet:0.6})},
+ rise(D,t,v=1,f=200,f2=800,type='triangle',dur=0.4){tone(D,{f,glide:f2,t,dur,type,vol:0.08*v,a:0.02,d:0.2,sus:0.5,r:0.2,wet:0.6})},
+ thud(D,t,v=1,f=140){tone(D,{f,glide:f*0.35,t,dur:0.18,type:'sine',vol:0.28*v,a:0.002,d:0.15,sus:0.05,r:0.06});noise(D,{t,dur:0.08,vol:0.1*v,type:'lowpass',f:900})},
+ clang(D,t,v=1,f=900){for(const m of[1,1.47,2.09,2.76])tone(D,{f:f*m,t,dur:0.3,type:'square',vol:0.025*v/m,a:0.001,d:0.25,sus:0.05,r:0.2,cut:5000,wet:0.4});noise(D,{t,dur:0.04,vol:0.12*v,f:3500,q:2})},
+ roar(D,t,v=1,f=110,dur=0.7){for(const d of[-12,0,9])tone(D,{f,glide:f*0.8,t,dur,type:'sawtooth',vol:0.07*v,a:0.05,d:0.2,sus:0.7,r:0.25,cut:1100,q:4,det:d,wet:0.4});noise(D,{t,dur,vol:0.06*v,f:700,q:2,a:0.05})},
+ slash(D,t,v=1,f=3000){noise(D,{t,dur:0.12,vol:0.22*v,f,f2:f/5,q:1.5})}
+};
+const mid=m=>mtof(m);
+// --- 技能 id → 音效。每个 id 一个独立配方 ---
+const SK={
+ // 召唤系
+ rs:(D,t)=>{P.rattle(D,t,1.2);P.rise(D,t,1,110,220,'sawtooth',0.5)},                     // 唤起骨仆：骨头拼合咔嗒+低升
+ rm:(D,t)=>{P.rattle(D,t);[0,3,7].forEach((s,i)=>tone(D,{f:mid(64+s),t:t+i*0.07,dur:0.5,type:'triangle',vol:0.06,a:0.01,d:0.3,sus:0.3,r:0.4,wet:0.8}))}, // 骨巫：骨响+幽暗和弦
+ cg:(D,t)=>{P.thud(D,t,1.2,90);noise(D,{t:t+0.05,dur:0.5,vol:0.12,type:'lowpass',f:500,f2:150,a:0.05})}, // 泥偶：泥土翻涌
+ bg:(D,t)=>{P.thud(D,t,1,100);P.bubble(D,t+0.05,1.2,5)},                                   // 血肉：心跳+血泡
+ ig:(D,t)=>{P.thud(D,t,1,80);P.clang(D,t+0.05,1.2,520)},                                   // 钢骸：金属铿锵
+ fg:(D,t)=>{P.thud(D,t,1,80);P.fire(D,t+0.03,1.3,0.8)},                                    // 焚火：烈焰轰起
+ rv:(D,t)=>{P.dark(D,t,1.2,45,[0,7,13]);P.rise(D,t+0.1,1,90,260,'sawtooth',0.7)},          // 亡者复生：圣咏般不协和上升
+ // 骨系
+ te:(D,t)=>{for(let i=0;i<4;i++)P.crack(D,t+i*0.035,0.5,3200+i*300)},                      // 噬骨齿：连串碎齿
+ ba:(D,t)=>{P.rattle(D,t,0.8);tone(D,{f:mid(55),t,dur:0.6,type:'triangle',vol:0.08,a:0.05,d:0.3,sus:0.6,r:0.4,wet:0.7})}, // 骨铠：骨片环绕
+ bw:(D,t)=>{for(let i=0;i<3;i++){P.thud(D,t+i*0.08,0.6,120);P.crack(D,t+i*0.08,0.6,1500)}}, // 骨墙：层层砸起
+ bs:(D,t)=>{P.whoosh(D,t,1,1200,300,0.22);P.crack(D,t+0.02,1,2200)},                       // 骨矛：破空+骨裂
+ bp:(D,t)=>{for(let i=0;i<5;i++)P.crack(D,t+i*0.05,0.6,1600+i*200);P.thud(D,t+0.25,0.6,150)}, // 骨牢：骨栅合拢
+ bx:(D,t)=>{P.rise(D,t,1,mid(76),mid(64),'sine',0.5);noise(D,{t,dur:0.5,vol:0.07,f:1500,f2:600,q:5,wet:0.8})}, // 骨魂：幽灵呼啸
+ // 毒系 / 尸体
+ pd:(D,t)=>{P.slash(D,t,0.8,4000);P.bubble(D,t+0.03,0.7,2)},                               // 毒蚀刃
+ ce:(D,t)=>{P.boom(D,t,1);P.bubble(D,t+0.05,0.8,3)},                                       // 尸爆：血肉爆裂
+ pe:(D,t)=>{P.thud(D,t,0.8,120);P.hiss(D,t+0.03,1.2,0.7);P.bubble(D,t,1,4)},              // 毒爆：闷爆+毒雾
+ pn:(D,t)=>{P.hiss(D,t,1.4,1);noise(D,{t,dur:0.9,vol:0.1,f:200,f2:1600,q:2,a:0.15,wet:0.5})}, // 毒新星：毒雾环扩
+ // 诅咒（共用暗黑和弦底色，音程/音色各异）
+ ad:(D,t)=>{P.dark(D,t,1,43,[0,1]);P.crack(D,t+0.1,0.5,1200)},
+ dv:(D,t)=>{P.dark(D,t,1,47,[0,6]);noise(D,{t,dur:0.6,vol:0.06,type:'lowpass',f:600,f2:200,a:0.2})},
+ wk:(D,t)=>{P.dark(D,t,1,41,[0,3]);P.rise(D,t,0.8,300,120,'triangle',0.6)},
+ im:(D,t)=>{P.dark(D,t,1,49,[0,11]);P.clang(D,t+0.05,0.5,1400)},
+ tr:(D,t)=>{P.dark(D,t,1,52,[0,1,2]);P.whoosh(D,t,0.6,2000,500,0.4)},
+ cf:(D,t)=>{P.dark(D,t,1,46,[0,6,13]);tone(D,{f:600,t,dur:0.5,type:'sine',vol:0.05,a:0.02,d:0.4,sus:0.3,r:0.3,det:50,wet:0.7})},
+ lt:(D,t)=>{P.dark(D,t,1,44,[0,5]);P.thud(D,t,0.5,70);P.thud(D,t+0.3,0.4,70)},             // 汲命：心跳
+ at:(D,t)=>{P.dark(D,t,1,50,[0,4,8]);P.rise(D,t,0.7,800,400,'sine',0.6)},
+ de:(D,t)=>{P.dark(D,t,1.2,36,[0,1,13]);noise(D,{t,dur:0.9,vol:0.05,f:4000,f2:300,q:3,a:0.3})}, // 衰老：沙漏流逝
+ lr:(D,t)=>{P.dark(D,t,1,45,[0,6]);P.zap(D,t+0.05,0.5,2)},
+ // 野蛮人
+ bbash:(D,t)=>{P.thud(D,t,1.3,110);P.clang(D,t,0.7,600)},                                  // 猛击
+ bww:(D,t)=>{for(let i=0;i<3;i++)P.whoosh(D,t+i*0.09,0.9,500,2500,0.12);P.slash(D,t+0.25,0.8)}, // 旋风斩
+ bshout:(D,t)=>P.roar(D,t,1.2,130,0.8),                                                    // 战斗怒吼
+ bhowl:(D,t)=>{P.roar(D,t,1.3,90,0.9);P.thud(D,t,0.8,60)},                                 // 震慑战嚎
+ bmast:(D,t)=>P.clang(D,t,0.6,800),
+ // 法师
+ mfb:(D,t)=>{P.whoosh(D,t,0.8,400,1500,0.2);P.fire(D,t+0.1,0.9,0.35)},                     // 火焰弹
+ mmet:(D,t)=>{P.whoosh(D,t,1,3000,200,0.5);P.boom(D,t+0.45,1.3);P.fire(D,t+0.5,1,0.7)},    // 陨石术
+ mnova:(D,t)=>{P.ice(D,t,1.3);noise(D,{t,dur:0.6,vol:0.1,f:3000,f2:8000,q:1,a:0.05,wet:0.6})}, // 霜冻新星
+ mcl:(D,t)=>{P.zap(D,t,1.2,6);tone(D,{f:60,t,dur:0.3,type:'sawtooth',vol:0.06,a:0.001,d:0.2,sus:0.3,r:0.1,cut:400})}, // 连锁闪电
+ mfa:(D,t)=>{P.ice(D,t,1);P.rise(D,t,0.6,mid(72),mid(84),'sine',0.5)}                      // 寒冰护甲
+};
+// 缺省回退：按技能元素/类型
+const KIND_FB={summon:'rs',golem:'cg',attack:'bs',buff:'ba',cbuff:'bshout',corpse:'ce',wall:'bw',cc:'bp',curse:'ad',melee:'bbash',warcry:'bhowl',spell:'mfb',passive:null};
+const EL_FB={fire:(D,t)=>P.fire(D,t),cold:(D,t)=>P.ice(D,t),light:(D,t)=>P.zap(D,t),pois:(D,t)=>P.hiss(D,t),magic:(D,t)=>P.crack(D,t),phys:(D,t)=>P.slash(D,t)};
+function skillRecipe(id){if(SK[id])return SK[id];const s=typeof SKM!=='undefined'&&SKM[id];if(s){if(s.el&&EL_FB[s.el])return EL_FB[s.el];const f=KIND_FB[s.kind];if(f&&SK[f])return SK[f]}return EL_FB.magic}
+function playSkill(id){voice('skill',id,0.6,(t,D)=>skillRecipe(id)(D,t))}
+
+// --- 召唤物 / 佣兵 / 命中 / 暴击 / 格挡 ---
+const colEl=c=>({'#f84':'fire','#f60':'fire','#8cf':'cold','#ff6':'light','#6f6':'pois','#8f6':'pois'})[c]||'phys';
+const ALLY_SFX={
+ skel:(D,t)=>{P.slash(D,t,0.6,2200);P.crack(D,t,0.3,1800)},
+ rev:(D,t)=>{P.slash(D,t,0.6,1500);P.thud(D,t,0.4,160)},
+ golem:{cg:(D,t)=>P.thud(D,t,0.8,90),bg:(D,t)=>{P.thud(D,t,0.7,100);P.bubble(D,t,0.5,2)},ig:(D,t)=>P.clang(D,t,0.6,500),fg:(D,t)=>{P.thud(D,t,0.6,90);P.fire(D,t,0.5,0.25)}},
+ mage:{fire:(D,t)=>P.fire(D,t,0.5,0.25),cold:(D,t)=>P.ice(D,t,0.5),light:(D,t)=>P.zap(D,t,0.5,2),pois:(D,t)=>P.bubble(D,t,0.6,2)}
+};
+function allySfx(a,fxc){if(a.kind==='merc'){const el=colEl(fxc);return voice('merc',el,0.3,(t,D)=>{if(el==='phys'){P.slash(D,t,0.8,2600);P.thud(D,t,0.5,150)}else EL_FB[el](D,t)})}
+ if(Math.random()<0.5)return;// 召唤物多：稀疏一半
+ const S2=ALLY_SFX[a.kind];const fn=typeof S2==='function'?S2:S2&&(S2[a.sub]||S2[a.el]);voice('ally',a.kind,0.25,(t,D)=>(fn||((D,t)=>P.slash(D,t,0.5)))(D,t))}
+
+// 钩子：spend(id) 是所有主动技能（含职业技能/自动施法）的唯一耗蓝入口 → 按 id 发声；随后同一动作内的 fx() 不再重复发声
+let castPending=0;
+wrap('spend',null,function(id){castPending=1;playSkill(id)});
+if(typeof fx==='function')wrap('fx',function(){castPending=0},function(kind){if(castPending)return;if(typeof TAB!=='undefined'&&TAB!=='fight')return;
+ if(kind==='slash')voice('attack','slash',0.15,(t,D)=>{P.slash(D,t);tone(D,{f:180,glide:70,t,dur:0.08,type:'square',vol:0.06,a:0.002,d:0.06,sus:0.1,r:0.05,cut:1200})});
+ else voice('skill','fx_'+kind,0.4,(t,D)=>EL_FB.magic(D,t))});
+// 命中 / 暴击(致命一击黄色飘字) / 召唤物与佣兵攻击：包装最外层 hitMon
+wrap('hitMon',function(r,args){const src=args[2],fxc=args[3];if(!r)return;
+ if(src==='hero'){if(fxc==='#ff4')voice('crit','c',0.4,(t,D)=>{P.thud(D,t,1,120);P.clang(D,t,0.8,1300);P.crack(D,t+0.02,0.8,3000)});
+  else voice('hit','h',0.1,(t,D)=>{noise(D,{t,dur:0.05,vol:0.08,type:'lowpass',f:1400});tone(D,{f:150,glide:80,t,dur:0.05,type:'sine',vol:0.08,a:0.001,d:0.04,sus:0.1,r:0.02})})}
+ else if(src&&typeof src==='object')allySfx(src,fxc)});
+// 野蛮人重击(双倍)：clsMelee 内部判定，比较伤害与正常上限推断
+if(typeof clsMelee==='function'){wrap('clsMelee',function(r,args){if(!r||!ST||!ST.bcrit)return;const mul=1+(args[1]||0)/100,mx=(ST.wmax*mul+(args[2]||0));if(r>mx*1.15)voice('crit','c',0.4,(t,D)=>{P.thud(D,t,1.2,100);P.clang(D,t,0.9,1100)})})}
+// 格挡：英雄格挡飘字 / 佣兵格挡飘字
+const blockSfx=()=>voice('block','b',0.3,(t,D)=>{P.clang(D,t,1,700);P.thud(D,t,0.5,200)});
+wrap('floatHero',null,function(txt){if(txt==='格挡')blockSfx()});
+wrap('floatNum',null,function(id,v){if(v==='格挡')blockSfx()});
+window.AUDIO_SK={table:SK,recipe:skillRecipe,play:playSkill};
 // rollTC 返回本次击杀掉落的装备列表（gold 已直接加到 S.gold）
 let goldPrev=null;
 wrap('rollTC',function(drops){let best=null,rank=-1;const rk=it=>it.rw!=null?9:it.q===5?8:it.q===6?7:it.k==='rune'?6:it.q===4||it.q===7?5:it.q===3?3:it.k?2:1;
