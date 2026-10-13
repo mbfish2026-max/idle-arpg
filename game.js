@@ -14,8 +14,10 @@ const KEY='anye_d2_v2';let S;
 function newSave(){return{v:2,lvl:1,xp:0,gold:0,at:{str:15,dex:25,vit:15,ene:25},sp:0,kp:0,sk:{rs:1},eq:{},bag:[],uid:1,
  autoSk:1,autoAt:1,autoEq:1,act:0,zone:0,wave:0,unl:0,cleared:{},q:{},pot:{hp:5,mp:3,rej:1,tp:3},auto:1,main:null,curse:null,diff:0,
  imbue:0,found:{},kpm:0,last:Date.now(),sell:{0:1,1:1,2:0,3:0},log:[]}}
-function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}if(!S||S.v!==2){S=newSave();for(const b of['wand1','shd1']){const it=makeBase(BASEM[b],1);S.eq[BASEM[b].s]=it}}}
-function save(){S.last=Date.now();localStorage.setItem(KEY,JSON.stringify(S))}
+// 存档仅存于内存 GS（云端为唯一真相，见 cloud.js）；不再写入 localStorage
+const GS=(()=>{const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>{v=String(v);if(m.get(k)!==v){m.set(k,v);if(typeof clDirty==='function')clDirty()}},removeItem:k=>{m.delete(k)},keys:()=>[...m.keys()],clear:()=>m.clear()}})();
+function load(){try{S=JSON.parse(GS.getItem(KEY))}catch(e){S=null}if(!S||S.v!==2){S=newSave();for(const b of['wand1','shd1']){const it=makeBase(BASEM[b],1);S.eq[BASEM[b].s]=it}}}
+function save(){S.last=Date.now();GS.setItem(KEY,JSON.stringify(S))}
 
 // ===== 物品属性计算 =====
 function slotOf(b){return b.s==='ring'?'ring':b.s}
@@ -270,7 +272,7 @@ function zoneClear(){S.dz=0;const z=zoneData();if(!S.cleared[S.zone]){S.cleared[
  const zs=ACTS[S.act].zones;let nx=S.zone+1;if(nx<zs.length)S.unl=Math.max(S.unl,nx);while(nx<zs.length&&zs[nx].side){nx++;S.unl=Math.max(S.unl,nx)}
  if(S.auto&&nx<zs.length&&nx<=S.unl){S.zone=nx;log(`前往 <b>${zoneData().n}</b>`)}S.wave=0}
 function die(){S.dz=(S.dz||0)+1;if(S.dz>=2&&S.zone>0){S.dz=0;S.zone--;while(S.zone>0&&zoneData().side)S.zone--;log('<b style="color:#f84">连续阵亡，退回上一区域历练</b>')}
-const lost=Math.floor(S.gold*0.1);S.gold-=lost;log(`<b style="color:#f44">你倒下了……损失 ${lost} 金币，回到营地</b>`);toast('死亡：损失10%金币');
+log(`<b style="color:#f44">你倒下了……回到营地</b>`);toast('死亡：回到营地');
  MON=[];ALLY=[];CORPSE=[];S.wave=0;calc();H.life=ST.life;H.mana=ST.mana;H.abs=0;spawnT=3}
 function goZone(i){if(i>S.unl)return;S.zone=i;S.wave=0;MON=[];CORPSE=[];spawnT=1;log(`前往 <b>${zoneData().n}</b>`);render()}
 function townPortal(){if(S.pot.tp<=0)return toast('没有回城卷轴');S.pot.tp--;MON=[];S.wave=0;H.life=ST.life;H.mana=ST.mana;spawnT=2;log('使用回城卷轴：在营地恢复后返回 '+zoneData().n)}
@@ -338,7 +340,7 @@ function renderHero(){const s=ST,A=s.attr,P=$('#panel');const row=(a,b)=>`<div c
  row('寻宝(MF)',s.mf+'%')+row('金币获取',s.gf+'%')+row('生命/法力偷取',s.ll+'% / '+s.ml+'%')+row('格挡',s.block+'%')+row('+全部技能',s.allsk)+row('召唤物伤害/生命',`+${s.sumdmg}% / +${s.sumlife}%`)}</div>
  <div class="gp"><h3>任务</h3>${Object.entries(QUESTS).map(([k,q])=>`<div class="row"><span>${S.q[k]?'✔':'○'} ${q.n}<div class="dim">${q.d}</div></span><b class="dim">${q.rw}</b></div>`).join('')}</div>
  <div class="gp"><h3>设置</h3><div class="btns">${[['autoSk','自动加技能'],['autoAt','自动加属性(力量够用,其余体力)'],['autoEq','自动换装(战力更高)']].map(([k,n])=>`<button class="btn sm ${S[k]?'on':''}" onclick="S.${k}^=1;render()">${n}</button>`).join('')}</div><div class="dim">自动出售（无凹槽）：</div><div class="btns">${[0,1,2,3].map(q=>`<button class="btn sm ${S.sell[q]?'on':''}" onclick="S.sell[${q}]^=1;render()" ${q===3?'disabled':''}>${QN[q]}</button>`).join('')}</div>
- <button class="btn sm" onclick="if(confirm('确定重置存档？')){localStorage.removeItem(KEY);location.reload()}">重置存档</button></div>`}
+ <button class="btn sm" onclick="resetChar()">重置存档</button></div>`}
 function addStat(k,n){n=Math.min(n,S.sp);S.at[k]+=n;S.sp-=n;calc();render()}
 
 // ===== 技能页 =====
