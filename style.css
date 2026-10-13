@@ -27,7 +27,8 @@ body{background:#000;color:var(--txt);font-family:"STKaiti","KaiTi","Songti SC",
 #fbattle[data-bg^=bg_cath],#fbattle[data-bg^=bg_mon],#fbattle[data-bg^=bg_tower]{background-image:radial-gradient(ellipse at 50% 60%,#2a1616 0,#0c0606 70%)}
 #fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
 #ftop{padding:6px 2px 4px}
-.zt{display:flex;justify-content:space-between;color:var(--gold2);font-size:13px}.zt .wv{color:#b09870;font-size:12px}
+.zt{display:flex;justify-content:space-between;color:var(--gold2);font-size:13px;position:relative;min-height:18px}.zt .wv{color:#b09870;font-size:12px}
+/* 层数/波数移到战斗面板顶部居中；区域名限宽省略，避免与之相撞 */.zt .wv{position:absolute;left:50%;top:0;transform:translateX(-50%);white-space:nowrap}.zt .zn{max-width:calc(50% - 62px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tg{text-align:center;margin:3px 0;height:34px;box-sizing:border-box;overflow:hidden}/* 固定高度：搜寻中文字(19px)↔目标名+大血条(34px)切换时不再推动下方 */.tg>span{font-size:13px}
 .bar{position:relative;height:9px;background:#200;border:1px solid #000;box-shadow:0 0 0 1px #4a3820;overflow:hidden}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#e33,#801010);transition:width .15s}
