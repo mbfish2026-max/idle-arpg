@@ -61,7 +61,7 @@ function rcyUI(){ensureLoot();const r=S.rcy,a=S.ast;const ck=(on,fn,t)=>`<button
  <h4>品质</h4><div class="btns">${RCY_Q.map(([q,n])=>ck(r.q[q],`S.rcy.q[${q}]^=1`,n)).join('')}</div>
  <h4>部位 / 类型</h4><div class="btns">${RCY_C.map(([k,n])=>ck(r.c[k],`S.rcy.c['${k}']^=1`,n)).join('')}</div>
  <div class="row"><span>符文：回收 <b>${r.runeMax||0}号</b> 及以下（0=不回收）</span><span><button class="btn xs" onclick="S.rcy.runeMax=Math.max(0,(S.rcy.runeMax||0)-1);rcyUI()">－</button><button class="btn xs" onclick="S.rcy.runeMax=Math.min(33,(S.rcy.runeMax||0)+1);rcyUI()">＋</button></span></div>
- <h4>保护（例外）</h4><div class="btns">${ck(r.keepSock,'S.rcy.keepSock^=1','带凹槽白/超强底材')}${ck(r.keepElite,'S.rcy.keepElite^=1','精英底材')}${ck(r.keepNew,'S.rcy.keepNew^=1','未收录图鉴的暗金/套装')}${ck(r.keepSkill,'S.rcy.keepSkill^=1','带亡灵术士技能')}</div>
+ <h4>保护（例外）</h4><div class="btns">${ck(r.keepSock,'S.rcy.keepSock^=1','带凹槽白/超强底材')}${ck(r.keepElite,'S.rcy.keepElite^=1','精英底材')}${ck(r.keepNew,'S.rcy.keepNew^=1','未收录图鉴的暗金/套装')}${ck(r.keepSkill,'S.rcy.keepSkill^=1','带本职业技能')}</div>
  <h4>回收所得</h4><div class="btns">${ck(r.mode==='gold',"S.rcy.mode='gold'",'金币（按卖价）')}${ck(r.mode==='ess',"S.rcy.mode='ess'",'残骸精华')}</div>
  <div class="dim">残骸精华：炼金匣 ${ESS_REROLL} 个重铸魔法/稀有物品；商店「精华兑换」。当前 ${matCount('ess')} 个。</div>
  <hr><div class="row"><b>自动存仓</b>${ck(a.on,'S.ast.on^=1',a.on?'已开启':'已关闭')}</div>

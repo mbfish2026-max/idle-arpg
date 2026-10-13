@@ -28,3 +28,8 @@ function skRule(it){const r=S.rcy;if(!r||!r.on||!r.sk||!it||it.k||it.lk)return n
   <div class="dim">阈值 0=关闭（沿用上方规则）。开启的部位：凹槽数达标保留，不达标回收（不受上方品质/部位/“带凹槽底材”保护影响）。「只保留扩展/精英」开启时普通底材即使达标也回收。默认只适用破旧/普通品质；「超强品质也适用」开启后包含超强。上方「精英底材」保护开启时，精英底材不论凹槽数一律保留。锁定物品永不回收。</div></div>`;
  if(hs)hs.insertAdjacentHTML('beforebegin',h);else box.insertAdjacentHTML('beforeend',h)}}
 function skSet(k,d){skNorm();S.rcy.sk.n[k]=Math.max(0,Math.min(6,(S.rcy.sk.n[k]||0)+d));if(!window.__NOUI)rcyUI()}
+
+// 「带职业技能」保护按当前角色职业判断（不再只认亡灵术士）：+全部技能、本职业单技能 sk_<id>、本职业系别 tc_<cls><t>；亡灵系别 t0sk..t2sk 只算亡灵术士
+hasNecroSkill=function(it){const m=(it&&it.m)||{};const c=typeof curCls==='function'?curCls():'nec';
+ return Object.keys(m).some(k=>{if(k==='allsk')return true;if(k.startsWith('sk_')){const s=SKM[k.slice(3)];return !!s&&(s.cls||'nec')===c}
+  if(/^t\dsk$/.test(k))return c==='nec';if(k.startsWith('tc_'))return k.slice(3).replace(/\d+$/,'')===c;return false})};
