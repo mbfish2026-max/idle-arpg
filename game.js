@@ -30,7 +30,7 @@ function itemLocal(it){const b=BASEM[it.b],m=allMods(it),o={};
  if(b.def){o.def=Math.floor(it.def*(1+(m.edef||0)/100))+(m.def||0)}return o}
 function itemReq(it){const b=BASEM[it.b];let l=it.req||0;for(const x of it.soc||[])if(x.r!=null)l=Math.max(l,RUNES[x.r][1]);if(it.rw!=null)l=Math.max(l,RUNEWORDS[it.rw].lv);
  const f=it.q===0?0.8:1;return{lv:l,str:Math.floor((b.str||0)*f),dex:Math.floor((b.dex||0)*f)}}
-function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
+function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;if(BASEM[it.b]&&BASEM[it.b].cls&&typeof curCls==='function'&&curCls()!=='nec')return false;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
 function itemName(it){if(it.k==='gem')return GEMG[it.lv]+GEMS[it.g].n;if(it.k==='rune')return RUNES[it.r][0]+'符文';return it.rw!=null?RUNEWORDS[it.rw].n:it.name}
 function itemColor(it){if(it.k==='gem')return GEMS[it.g].c;if(it.k==='rune')return'#ffa040';if(it.rw!=null)return QC[8];if((it.q===1||it.q===2)&&it.sock)return'#a0a0a0';return QC[it.q]}
 function power(it){if(it.k)return 0;const m=allMods(it),l=itemLocal(it);let p=(l.def||0)*1+((l.min||0)+(l.max||0))*2;
@@ -78,7 +78,8 @@ function calc(){const M={};const add=(k,v)=>{M[k]=(M[k]||0)+v};let idef=0,wep=nu
  const sc=setCount();for(const s in sc){const bo=SETS[s].bonus;for(const n in bo)if(sc[s]>=+n)for(const k in bo[n])add(k,bo[n][k])}
  const A={str:S.at.str+(M.str||0),dex:S.at.dex+(M.dex||0),vit:S.at.vit+(M.vit||0),ene:S.at.ene+(M.ene||0)};
  const pen=DIFFS[S.diff].pen;const res=k=>Math.min(75,(M[k]||0)+(M.allres||0)+pen);
- const o={attr:A,M,life:Math.floor((45+(S.lvl-1)*1.5+(A.vit-15)*2+(M.life||0))*(1+(M.lifepct||0)/100)),mana:Math.floor((25+(S.lvl-1)*2+(A.ene-25)*2+(M.mana||0))*(1+(M.manapct||0)/100)),
+ const CB=typeof clsBase==='function'?clsBase():{life0:45,lpl:1.5,lpv:2,mana0:25,mpl:2,mpe:2,at:{vit:15,ene:25}};// 职业系数（classes.js；亡灵术士与原公式一致）
+ const o={attr:A,M,life:Math.floor((CB.life0+(S.lvl-1)*CB.lpl+(A.vit-CB.at.vit)*CB.lpv+(M.life||0))*(1+(M.lifepct||0)/100)),mana:Math.floor((CB.mana0+(S.lvl-1)*CB.mpl+(A.ene-CB.at.ene)*CB.mpe+(M.mana||0))*(1+(M.manapct||0)/100)),
   def:Math.floor(A.dex/4)+idef+(M.def||0),ar:A.dex*5-35+(M.ar||0)+S.lvl*3,
   res:{fire:res('fres'),cold:res('cres'),light:res('lres'),pois:res('pres')},
   fcr:M.fcr||0,ias:M.ias||0,mf:M.mf||0,gf:M.gf||0,ll:M.ll||0,ml:M.ml||0,mpk:M.mpk||0,regen:M.regen||0,mregen:M.mregen||0,dr:M.dr||0,mdr:M.mdr||0,block:Math.min(75,M.block||0),thorns:M.thorns||0,undead:M.undead||0,tdef:M.tdef||0,
@@ -88,6 +89,7 @@ function calc(){const M={};const add=(k,v)=>{M[k]=(M[k]||0)+v};let idef=0,wep=nu
  const bp=[0,9,18,30,48,75,125],fr=[15,14,13,12,11,10,9];let i=0;while(i<bp.length-1&&o.fcr>=bp[i+1])i++;o.castT=fr[i]/25;o.fcrBP=bp[i];
  o.atkT=1.5/(1+o.ias/100);
  for(let t=0;t<3;t++)o['t'+t+'sk']=M['t'+t+'sk']||0;for(const s of SKILLS)o['sk_'+s.id]=M['sk_'+s.id]||0;
+if(typeof clsCalc==='function')clsCalc(o);
  ST=o;return o}
 
 // ===== 技能数值 =====
@@ -98,7 +100,7 @@ function syn(id){const k=SYN[id];if(!k)return 1;return 1+k[0].reduce((a,x)=>a+bl
 const skN=L=>L<=0?0:L<=3?L:3+Math.floor((L-3)/3);
 const ncur=L=>Math.min(8,2+Math.floor(L/2));
 const dim=(L,lo,hi)=>Math.round(lo+(hi-lo)*(110*L/(L+6))/100);
-function SV(id,L){const sm=slvl('sm'),gm=slvl('gm'),sy=syn(id),r=(a,b)=>[Math.round(a*sy),Math.round(b*sy)];let v;
+function SV(id,L){if(SKM[id]&&SKM[id].cls&&typeof clsSV==='function'){const v=clsSV(id,L);v.mana=SKM[id].mana?Math.round(SKM[id].mana(L)*10)/10:0;return v}const sm=slvl('sm'),gm=slvl('gm'),sy=syn(id),r=(a,b)=>[Math.round(a*sy),Math.round(b*sy)];let v;
  switch(id){
  case'sm':v={txt:`骨仆/骨巫 +${7*L}生命 +${2*L}伤害；复生怪 +${10*L}%生命与伤害`};break;
  case'rs':{const n=skN(L),d=[1+(L-1)+2*sm,2+(L-1)+2*sm];v={n,life:21+3*(L-1)+7*sm,dmg:d,txt:`召唤 ${n} 只骨仆（伤害 ${d[0]}-${d[1]}，生命 ${21+3*(L-1)+7*sm}）`};break}
@@ -290,7 +292,7 @@ function renderFight(){const z=zoneData(),boss=MON.find(m=>m.boss&&m.hp>0),tgt=b
  <div class="tg">${tgt?`<span class="${tgt.boss?'bossn':''}">${tgt.n}（${tgt.lv}级）</span>`+bar(tgt.hp,tgt.max,'hp big'):'<span class="dim">搜寻敌人中……</span>'}</div>
  <div class="xpb"><b>EXP</b>${bar(S.xp-xpNeed(S.lvl),xpNeed(S.lvl+1)-xpNeed(S.lvl),'xp')}<span class="lvt">Lv.${S.lvl}</span><span class="gold">◈${fmt(S.gold)}</span></div>`;
  const ms=MON.filter(m=>m.hp>0);$('#mgrid').innerHTML=ms.map(monCard).join('')+(ms.length?'':'<div class="empty">· 静 ·</div>');
- $('#arow').innerHTML=`<div class="ac hero" id="chero"><b class="lv">${S.lvl}</b><div class="pt">${art('hero','🧙‍♂️')}</div><div class="nm">亡灵术士</div>${H.abs>0?`<div class="abs">骨铠 ${Math.round(H.abs)}</div>`:''}</div>`+ALLY.map(allyCard).join('')+`<div class="corpse">尸体×${CORPSE.length}</div>`;
+ $('#arow').innerHTML=`<div class="ac hero" id="chero"><b class="lv">${S.lvl}</b><div class="pt">${heroArt()}</div><div class="nm">${clsName()}</div>${H.abs>0?`<div class="abs">骨铠 ${Math.round(H.abs)}</div>`:''}</div>`+ALLY.map(allyCard).join('')+`<div class="corpse">尸体×${CORPSE.length}</div>`;
  $('#orbL').style.setProperty('--p',clamp(H.life/ST.life,0,1));$('#orbR').style.setProperty('--p',clamp(H.mana/ST.mana,0,1));
  $('#orbL span').textContent=Math.max(0,Math.round(H.life));$('#orbR span').textContent=Math.round(H.mana);
  for(const k of['hp','mp','rej','tp'])$('#p_'+k).textContent=S.pot[k];
@@ -327,7 +329,7 @@ function drawFX(dt){const cv=$('#fx');if(!cv)return;const b=$('#fbattle'),W=b.cl
 // ===== 角色页 =====
 function renderHero(){const s=ST,A=s.attr,P=$('#panel');const row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
  const at=[['str','力量','装备需求 · 武器伤害+1%/点'],['dex','敏捷','命中+5 · 防御+1/4'],['vit','体力','生命+2/点'],['ene','精力','法力+2/点']];
- P.innerHTML=`<div class="gp"><div class="heroart">${art('hero','🧙‍♂️')}</div><h3>亡灵术士 · Lv.${S.lvl}</h3><div class="sub">经验 ${fmt(S.xp)} / ${fmt(xpNeed(S.lvl+1))} · 难度 ${DIFFS[S.diff].n}</div>
+ P.innerHTML=`<div class="gp"><div class="heroart">${heroArt()}</div><h3>${clsName()} · Lv.${S.lvl}</h3><div class="sub">经验 ${fmt(S.xp)} / ${fmt(xpNeed(S.lvl+1))} · 难度 ${DIFFS[S.diff].n}</div>
  <div class="pts">可用属性点 <b>${S.sp}</b> · 技能点 <b>${S.kp}</b></div>
  ${at.map(([k,n,d])=>`<div class="attr"><div><b>${n}</b> <span class="v">${A[k]}</span>${A[k]!==S.at[k]?`<span class="plus"> (+${A[k]-S.at[k]})</span>`:''}<div class="dim">${d}</div></div>
   <div><button class="btn sm" onclick="addStat('${k}',1)" ${S.sp?'':'disabled'}>+1</button><button class="btn sm" onclick="addStat('${k}',5)" ${S.sp>=5?'':'disabled'}>+5</button></div></div>`).join('')}</div>
@@ -340,10 +342,10 @@ function renderHero(){const s=ST,A=s.attr,P=$('#panel');const row=(a,b)=>`<div c
 function addStat(k,n){n=Math.min(n,S.sp);S.at[k]+=n;S.sp-=n;calc();render()}
 
 // ===== 技能页 =====
-function renderSkills(){const P=$('#panel');const tabs=TREES.map((t,i)=>`<button class="${SKT===i?'on':''}" onclick="SKT=${i};render()">${t}</button>`).join('')+`<button class="${SKT===3?'on':''}" onclick="SKT=3;render()">符文图鉴</button>`;
+function renderSkills(){const P=$('#panel');const tabs=trees().map((t,i)=>`<button class="${SKT===i?'on':''}" onclick="SKT=${i};render()">${t}</button>`).join('')+`<button class="${SKT===3?'on':''}" onclick="SKT=3;render()">符文图鉴</button>`;
  if(SKT===3){P.innerHTML=`<div class="stabs">${tabs}</div><div class="gp"><h3>符文图鉴</h3><div class="rgrid">${RUNES.map((r,i)=>S.found[i]?`<div class="rc on"><div class="ro">${i+1}</div><b>${r[0]}符文</b><small>需求 ${r[1]} 级</small><small>武:${modsTxt(r[2])}</small><small>防:${modsTxt(r[3])}</small></div>`:`<div class="rc back"><div class="ro">?</div><small>未发现</small></div>`).join('')}</div></div>
   <div class="gp"><h3>符文之语</h3>${RUNEWORDS.map(w=>`<div class="rw"><b class="uq">${w.n}</b> <span class="dim">${w.r.map(i=>RUNES[i][0]).join('+')} · ${w.cats.map(c=>({wand:'魔杖',dagger:'匕首',sword:'剑',helm:'头盔',armor:'铠甲',shield:'盾',head:'缩颅'})[c]).join('/')} ${w.r.length}孔 · 需求${w.lv}</span><div class="dim">${modsTxt(w.m)}</div></div>`).join('')}</div>`;return}
- const list=SKILLS.filter(s=>s.t===SKT).sort((a,b)=>a.r-b.r||a.col-b.col);
+ const list=SKILLS.filter(s=>s.t===SKT&&skOfCls(s)).sort((a,b)=>a.r-b.r||a.col-b.col);
  P.innerHTML=`<div class="stabs">${tabs}</div><div class="pts">技能点 <b>${S.kp}</b>　主攻：<b>${S.main?SKM[S.main].n:'自动'}</b>　诅咒：<b>${S.curse?SKM[S.curse].n:'自动'}</b></div>
  <div class="tree">${REQL.map((r,ri)=>`<div class="trow"><span class="rq">${r}</span>${[0,1,2].map(c=>{const s=list.find(x=>x.r===r&&x.col===c);return s?`<div class="tn ${bl(s.id)?'has':''} ${canLearn(s.id)?'can':''}" id="tn_${s.id}" onclick="skPop('${s.id}')">${skIcon(s)}<b>${bl(s.id)||''}</b></div>`:'<div class="tn void"></div>'}).join('')}</div>`).join('')}</div>
  ${list.map(s=>{const L=slvl(s.id),v=SV(s.id,Math.max(1,L||1));return`<div class="skc ${L?'':'off'}">${skIcon(s)}<div class="si"><div><b>${s.n}</b> <span class="lvt">Lv.${bl(s.id)}${L>bl(s.id)?`<span class="plus">+${L-bl(s.id)}</span>`:''}</span></div>
@@ -354,11 +356,11 @@ function drawTree(list){const t=$('.tree');if(!t)return;const o=t.getBoundingCli
  const on=bl(p)>0;h+=`<line x1="${A.left-o.left+A.width/2}" y1="${A.bottom-o.top}" x2="${B.left-o.left+B.width/2}" y2="${B.top-o.top}" stroke="${on?'#c9a45a':'#4a3820'}" stroke-width="2" marker-end="url(#ar${on?1:0})"/>`}
  t.insertAdjacentHTML('beforeend',`<svg class="tlines" width="${o.width}" height="${o.height}"><defs><marker id="ar1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#c9a45a"/></marker><marker id="ar0" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#4a3820"/></marker></defs>${h}</svg>`)}
 function skIcon(s){const i=SKILLS.filter(x=>x.t===s.t).indexOf(s);const k='sk_sheet'+s.t;return IMG[k]?`<i class="ski" style="background-image:url(${IMG[k]});background-position:${(i%5)*25}% ${Math.floor(i/5)*100}%"></i>`:`<i class="ski t${s.t}">${s.ic}</i>`}
-function canLearn(id){const s=SKM[id];return S.kp>0&&S.lvl>=s.r&&s.pre.every(p=>bl(p)>0)&&bl(id)<20}
+function canLearn(id){const s=SKM[id];return skOfCls(s)&&S.kp>0&&S.lvl>=s.r&&s.pre.every(p=>bl(p)>0)&&bl(id)<20}
 function skPop(id){const s=SKM[id],b=bl(id);const lo=Math.max(1,b-1),hi=Math.max(4,b+3);let rows='';for(let l=lo;l<=hi;l++){const v=SV(id,l);rows+=`<div class="lvr ${l===b?'cur':''} ${l===b+1?'nx':''}">${l}级：${v.txt}${v.mana?`，消耗 ${v.mana} 法力`:''}</div>`}
  const syns=SYN[id]?`<div class="dim">协同：${SYN[id][0].map(x=>SKM[x].n+'('+bl(x)+')').join('、')} 每级 +${SYN[id][1]}%，当前 ×${syn(id).toFixed(2)}</div>`:'';
  const why=S.lvl<s.r?`需要角色等级 ${s.r}`:!s.pre.every(p=>bl(p))?`需要前置：${s.pre.map(p=>SKM[p].n).join('、')}`:S.kp<=0?'技能点不足':'';
- modal(`<div class="mtitle">技能升级</div><div class="gp"><div class="skh">${skIcon(s)}<div><b>${s.n}升级说明：</b><div class="dim">${TREES[s.t]} · 需求 ${s.r} 级${s.pre.length?' · 前置 '+s.pre.map(p=>SKM[p].n).join('、'):''}</div></div></div>${rows}${syns}
+ modal(`<div class="mtitle">技能升级</div><div class="gp"><div class="skh">${skIcon(s)}<div><b>${s.n}升级说明：</b><div class="dim">${trees()[s.t]} · 需求 ${s.r} 级${s.pre.length?' · 前置 '+s.pre.map(p=>SKM[p].n).join('、'):''}</div></div></div>${rows}${syns}
  <div class="dim">剩余技能点：${S.kp}${why?` · <span style="color:#f66">${why}</span>`:''}</div><div class="btns c"><button class="btn" onclick="closeM()">关闭</button><button class="btn gold" onclick="learn('${id}')" ${canLearn(id)?'':'disabled'}>开始升级</button></div></div>`)}
 function learn(id){if(!canLearn(id))return;S.sk[id]=bl(id)+1;S.kp--;calc();skPop(id);render()}
 
@@ -456,8 +458,9 @@ const SK_ORDER=['rs','rs','rs','sm','te','ce','rs','sm','cg','ad','rm','bs','bs'
 // 列表走完后：骨矛加满(20) → 骨铠/骨墙/骨牢(前置各 1) → 骨魂加满 → 骨巫/骨仆精通/骨仆
 const SK_FILL=()=>bl('bs')<20?['bs','sm','rs','te']:[...['ba','bw','bp'].filter(x=>!bl(x)),'bx','rm','sm','rs','cg','te'];
 function autoTick(){let ch={};ch=0;const learned=[];for(const[k,c]of[['hp',30],['mp',30]])while(S.pot[k]<8&&S.gold>=c*4){S.gold-=c;S.pot[k]++}
- if(S.autoSk)while(S.kp>0){const done={};const id=SK_ORDER.find(x=>{done[x]=(done[x]||0)+1;return bl(x)<done[x]&&canLearn(x)})||SK_FILL().find(canLearn);if(!id)break;S.sk[id]=bl(id)+1;S.kp--;ch=1;learned.push(SKM[id].n)}if(learned.length)log('自动加点：'+learned.join('、'));
- if(S.autoAt&&S.sp>0){const ns=needStr();while(S.sp>0){if(ST.attr.str<ns)S.at.str++;else if(ST.attr.ene<S.lvl+25&&S.at.ene<S.lvl+15)S.at.ene++;else S.at.vit++;S.sp--;calc()}ch=1}
+ const PL=(typeof clsSkPlan==='function'&&clsSkPlan())||{order:SK_ORDER,fill:SK_FILL};
+ if(S.autoSk)while(S.kp>0){const done={};const id=PL.order.find(x=>{done[x]=(done[x]||0)+1;return bl(x)<done[x]&&canLearn(x)})||PL.fill().find(canLearn);if(!id)break;S.sk[id]=bl(id)+1;S.kp--;ch=1;learned.push(SKM[id].n)}if(learned.length)log('自动加点：'+learned.join('、'));
+ if(S.autoAt&&S.sp>0){const ns=needStr();while(S.sp>0){if(ST.attr.str<ns)S.at.str++;else if(curCls()==='nec'?(ST.attr.ene<S.lvl+25&&S.at.ene<S.lvl+15):clsBase().autoEne())S.at.ene++;else S.at.vit++;S.sp--;calc()}ch=1}
  if(S.autoEq)for(const it of S.bag.slice()){if(it.k||!canEquip(it))continue;const b=BASEM[it.b];let k=slotOf(b);if(k==='ring')k=!S.eq.ring1?'ring1':!S.eq.ring2?'ring2':(power(S.eq.ring1)<power(S.eq.ring2)?'ring1':'ring2');
   if(!S.eq[k]||power(it)>power(S.eq[k])){const i=S.bag.indexOf(it);S.bag.splice(i,1);if(S.eq[k])S.bag.push(S.eq[k]);S.eq[k]=it;ch=1;log(`自动换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`)}}
  if(ch){calc();if(TAB!=='fight')render()}}
@@ -471,7 +474,7 @@ function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render()});
  $('#modal').onclick=e=>{if(e.target.id==='modal')closeM()};
  for(const k of['hp','mp','rej','tp'])$('#pb_'+k).onclick=()=>usePot(k);
- if(S.lvl===1&&!S.kills){log('欢迎来到暮土。亡灵术士，从<b>荒血原野</b>开始你的旅程。');}
+ if(S.lvl===1&&!S.kills){log('欢迎来到暮土。'+clsName()+'，从<b>荒血原野</b>开始你的旅程。');}
  offline();render();requestAnimationFrame(loop);document.addEventListener('visibilitychange',save)}
 const dbg={speed:n=>SPEED=n,lvl:n=>{while(S.lvl<n)gainXp(xpNeed(S.lvl+1)-S.xp)},zone:i=>{S.unl=Math.max(S.unl,i);goZone(i)},loot:(n,ml=12,mf=300)=>{for(let i=0;i<n;i++)addBag(genItem(ml,{mf}))},
  give:it=>addBag(it),rune:r=>addBag({uid:S.uid++,k:'rune',r}),gem:(g,lv)=>addBag({uid:S.uid++,k:'gem',g,lv}),offline:h=>{S.last=Date.now()-h*3600e3;offline()}};

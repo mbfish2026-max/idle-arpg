@@ -130,7 +130,7 @@ ok(G('ACCT.chars.length')===1&&G('S.lvl')===17,'旧存档成为第一个角色')
 ok(G('S.autoCast===1&&S.bf.x===1'),'同事新增字段保留');
 G(`window._sid=S.pst[0][0].uid;depositUid(S.bag[0].uid,'s')`);ok(G('ACCT.shared.flat().length')===1,'存入共享');
 const id2=G(`newChar('第二个','nec','normal')`);ok(G('S.lvl')===1&&G('S.name')==='第二个'&&G('S.pst.flat().length')===0&&G("S.cls==='nec'"),'新角色独立');
-ok(G(`newChar('x','sor')`)===0,'未开放职业不可创建');
+ok(G(`newChar('x','ama')`)===0,'未开放职业不可创建');
 G(`withdrawUid(ACCT.shared.flat()[0].uid)`);ok(G('ACCT.shared.flat().length')===0&&G('S.bag.filter(x=>!x.k).length')>=1,'其他角色从共享取出');
 G('S.lvl=5;save()');G('switchChar(1)');ok(G('S.lvl')===17&&G('S.pst[0].length')===10&&G('S.bag.length')===0,'切回角色1 存档隔离');
 G(`switchChar(${id2})`);ok(G('S.lvl')===5,'切回角色2');ok(G(`deleteChar(1,true)`)&&G('ACCT.chars.length')===1,'删除角色');

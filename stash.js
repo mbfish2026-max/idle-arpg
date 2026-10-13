@@ -33,14 +33,14 @@ const _st_load=load;load=function(){acctLoad();const c=curChar()||ACCT.chars[0];
  if(d)localStorage.setItem(KEY,d);else localStorage.removeItem(KEY);_st_load();migrateChar(c)};
 function migrateChar(c){if(!S.pst){S.pst=mkPages(PST_PAGES);let p=0;for(const it of (S.stash||[])){while(p<PST_PAGES-1&&!fits(S.pst[p],it,PAGE_SZ))p++;S.pst[p].push(it)}S.stash=[]}
  while(S.pst.length<PST_PAGES)S.pst.push([]);if(!S.stash)S.stash=[];drainOld();for(const p of S.pst)mergeMats(p);mergeMats(S.bag);
- S.name=S.name||c.name;S.cid=c.id;S.cls=S.cls||c.cid||'nec';S.mode=S.mode||c.mode||'normal';if(!S.ast)S.ast={on:0,dest:'p',t:{gem:1,rune:1,mat:1,jewel:0,charm:0,unique:0,set:0,rare:0,sock:0}}}
+ S.name=S.name||c.name;S.cid=c.id;S.cls=S.cls||c.cid||'nec';S.mode=S.mode||c.mode||'normal';if(S.cls!=='nec'&&!S.ci&&typeof clsInit==='function')clsInit();if(!S.ast)S.ast={on:0,dest:'p',t:{gem:1,rune:1,mat:1,jewel:0,charm:0,unique:0,set:0,rare:0,sock:0}}}
 function drainOld(){if(S.stash&&S.stash.length){for(const it of S.stash.splice(0)){const p=S.pst.findIndex(pg=>fits(pg,it,PAGE_SZ));(S.pst[p<0?0:p]).push(it)}}}
 const _st_save=save;save=function(){if(ST_RESET)return;if(S.pst)drainOld();_st_save();try{const raw=localStorage.getItem(KEY);if(raw)localStorage.setItem(CH_PRE+ACCT.cur,raw);const c=curChar();if(c){c.lvl=S.lvl;c.t=Date.now();c.name=S.name||c.name}acctSave()}catch(e){}};
-function resetRuntime(){MON=[];ALLY=[];CORPSE=[];killWin=[];spawnT=2;LOGS.length=0;LOGDIRTY=1;Object.assign(H,{abs:0,castT:0,atkT:0,potT:0,mpT:0,curse:0});if(typeof ACX!=='undefined')ACX.mercOn=0}
+function resetRuntime(){MON=[];ALLY=[];CORPSE=[];killWin=[];spawnT=2;LOGS.length=0;LOGDIRTY=1;Object.assign(H,{cb:null,abs:0,castT:0,atkT:0,potT:0,mpT:0,curse:0});if(typeof ACX!=='undefined')ACX.mercOn=0}
 function switchChar(id){if(!ACCT.chars.some(c=>c.id===id))return false;if(id!==ACCT.cur){save();ACCT.cur=id;acctSave()}resetRuntime();load();S.last=Date.now();calc();H.life=ST.life;H.mana=ST.mana;save();
  if(!window.__NOUI){closeM();TAB='hero';render();toast('已切换到 '+S.name)}return true}
-const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与诅咒',ic:'☠',open:1},{id:'ama',n:'荒野射手',d:'弓弩与标枪，元素箭矢',ic:'🏹'},{id:'sor',n:'秘法女巫',d:'冰火雷三系元素法术',ic:'🔮'},
- {id:'pal',n:'圣誓骑士',d:'光环与神圣近战',ic:'🛡'},{id:'bar',n:'战吼狂战',d:'战吼、双持与武器精通',ic:'🪓'},{id:'ass',n:'影杀刺客',d:'陷阱、武学与暗影',ic:'🗡'},{id:'dru',n:'变形德鲁尔',d:'变身、召唤自然与元素',ic:'🐺'}];
+const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与诅咒',ic:'☠',open:1},{id:'ama',n:'荒野射手',d:'弓弩与标枪，元素箭矢',ic:'🏹'},{id:'sor',n:'法师',d:'火焰弹/陨石、霜冻新星/寒冰护甲、连锁闪电',ic:'🔮',open:1},
+ {id:'pal',n:'圣誓骑士',d:'光环与神圣近战',ic:'🛡'},{id:'bar',n:'野蛮人',d:'猛击/旋风斩、武器精通、战吼与震慑',ic:'🪓',open:1},{id:'ass',n:'影杀刺客',d:'陷阱、武学与暗影',ic:'🗡'},{id:'dru',n:'变形德鲁尔',d:'变身、召唤自然与元素',ic:'🐺'}];
 let NEWCLS='nec',NEWMODE='normal';
 function newChar(name,cls,mode){cls=cls||'nec';const C=CLASSES.find(c=>c.id===cls);if(!C||!C.open){if(!window.__NOUI)toast('该职业敬请期待');return 0}
  name=(name||'').trim().slice(0,12)||(C.n+ACCT.nid);const id=ACCT.nid++;ACCT.chars.push({id,name,cls:C.n,cid:cls,mode:mode||'normal',lvl:1,t:Date.now()});save();acctSave();
@@ -48,7 +48,7 @@ function newChar(name,cls,mode){cls=cls||'nec';const C=CLASSES.find(c=>c.id===cl
 function deleteChar(id,force){if(ACCT.chars.length<=1){if(!window.__NOUI)toast('至少保留一个角色');return false}const c=ACCT.chars.find(x=>x.id===id);if(!c)return false;
  if(!force&&!confirm(`确定删除角色「${c.name}」？其个人仓库与装备将一并删除（共享仓库不受影响）。`))return false;
  if(id===ACCT.cur){const o=ACCT.chars.find(x=>x.id!==id);switchChar(o.id)}ACCT.chars=ACCT.chars.filter(x=>x.id!==id);localStorage.removeItem(CH_PRE+id);acctSave();if(!window.__NOUI)charUI();return true}
-function charUI(){const L=ACCT.chars.map(c=>`<div class="chrow ${c.id===ACCT.cur?'cur':''}"><div class="chic">☠</div><div class="chi"><b>${c.name}</b><div class="dim">${c.cls}${c.mode==='season'?' · 赛季':''} · Lv.${c.id===ACCT.cur?S.lvl:c.lvl} · ${new Date(c.t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
+function charUI(){const L=ACCT.chars.map(c=>`<div class="chrow ${c.id===ACCT.cur?'cur':''}"><div class="chic">${(CLASSES.find(x=>x.id===(c.cid||'nec'))||CLASSES[0]).ic}</div><div class="chi"><b>${c.name}</b><div class="dim">${c.cls}${c.mode==='season'?' · 赛季':''} · Lv.${c.id===ACCT.cur?S.lvl:c.lvl} · ${new Date(c.t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div>
  ${c.id===ACCT.cur?'<span class="tag ok">当前</span>':`<button class="btn xs gold" onclick="switchChar(${c.id})">进入</button>`}<button class="btn xs" onclick="deleteChar(${c.id})" ${ACCT.chars.length<=1?'disabled':''}>删除</button></div>`).join('');
  modal(`<div class="mtitle">角色选择</div><div class="gp chsel">${L}<div class="btns c"><button class="btn gold" onclick="newCharUI()">＋ 新建角色</button></div>
  <div class="dim">所有角色共用共享仓库（${SH_PAGES}页×${PAGE_SZ}格）；个人仓库/背包/装备/进度各自独立。${ACCT_NS?'当前为账号存档':'当前为游客存档（仅本机）'}</div><div class="btns c"><button class="btn" onclick="closeM()">关闭</button></div></div>`)}

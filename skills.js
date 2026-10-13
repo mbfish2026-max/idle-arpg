@@ -5,7 +5,7 @@
 // ---------- 资源 ----------
 for(const s of SKILLS)ASSETS['ski_'+s.id]='assets/skill/'+s.id+'.webp';
 for(const k of ['spear','spirit','teeth','boom','poison','nova','armor','curse','summon'])ASSETS['fx_'+k]='assets/fx/'+k+'.webp';
-skIcon=function(s){const k='ski_'+s.id;if(IMG[k])return`<i class="ski img" style="background-image:url(${IMG[k]})"></i>`;
+skIcon=function(s){if(s.cls)return`<i class="ski t${s.t}">${s.ic}</i>`;const k='ski_'+s.id;if(IMG[k])return`<i class="ski img" style="background-image:url(${IMG[k]})"></i>`;
  const i=SKILLS.filter(x=>x.t===s.t).indexOf(s),sh='sk_sheet'+s.t;return IMG[sh]?`<i class="ski" style="background-image:url(${IMG[sh]});background-position:${(i%5)*25}% ${Math.floor(i/5)*100}%"></i>`:`<i class="ski t${s.t}">${s.ic}</i>`};
 
 // ---------- 自动施法设置 ----------
@@ -90,7 +90,7 @@ function acPanel(){const L=acLearned();return`<div class="gp acp"><h3>自动施�
 function acPop(id){const L=acLearned(),i=L.indexOf(id);if(i<0)return skPop(id);modal(`<div class="mtitle">自动施法 · ${SKM[id].n}</div><div class="gp acp">${acRow(id,i,L.length)}<div class="btns c"><button class="btn" onclick="closeM()">关闭</button><button class="btn" onclick="closeM();TAB='skill';SKT=4;render()">全部设置</button></div></div>`);ACX.acpop=id}
 function acRefresh(){if(ACX.acpop&&!$('#modal').classList.contains('hide'))acPop(ACX.acpop);else if(TAB==='skill')render();ACX.skSig=''}
 const _renderSkills=renderSkills;renderSkills=function(){if(SKT===4){const P=$('#panel');
-  const tabs=TREES.map((t,i)=>`<button onclick="SKT=${i};render()">${t}</button>`).join('')+`<button onclick="SKT=3;render()">符文图鉴</button><button class="on">自动施法</button>`;
+  const tabs=trees().map((t,i)=>`<button onclick="SKT=${i};render()">${t}</button>`).join('')+`<button onclick="SKT=3;render()">符文图鉴</button><button class="on">自动施法</button>`;
   P.innerHTML=`<div class="stabs">${tabs}</div>${acPanel()}`;return}
  _renderSkills();const st=$('#panel .stabs');if(st)st.insertAdjacentHTML('beforeend',`<button onclick="SKT=4;render()">自动施法</button>`);
  // 技能卡片上加“自动施法”按钮
