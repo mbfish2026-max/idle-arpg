@@ -24,12 +24,16 @@ function artSprite(url,col,row,cols,rows,cls){return`<i class="ii art ${cls||''}
   return _art_icon(it)}}
 // 工匠图标（供其它面板按需调用）：artCraft('cube')
 function artCraft(k,cls){const c=Math.max(0,ART.craftCols.indexOf(k));return artSprite(ART.craftSheet,c,0,ART.craftCols.length,1,'mt '+(cls||''))}
-// ---------- 区域背景：第一章逐区域一张；二~五章按(章节, 场景类型)多张轮换 ----------
+// ---------- 区域背景：第一章逐区域一张；二~五章按(章节, 场景类型)多张轮换（手绘） ----------
 // 文件：assets/bg/a1_zNN.webp、assets/bg/a{章}_{类型}_{v}.webp（720x1280 webp）。只按需加载当前一张。
+// ART_BGN = 实际存在的 a{章}_{类型}_* 文件数（与 assets/bg 核对过）；无对应文件时退回 act{N}.webp
+const ART_BGN={a2_cave:3,a2_desert:3,a2_jail:2,a2_tomb:3,a2_tower:2,a3_cave:3,a3_forest:2,a3_jail:2,a3_jungle:2,a3_temple:2,a3_village:2,a4_hell:3,a5_ice:3,a5_snow:3,a5_temple:3};
 function artZoneBg(ai,zi){const A=ACTS[ai];if(!A||!A.zones[zi])return null;const z=A.zones[zi];
  if(ai===0)return`assets/bg/a1_z${String(zi).padStart(2,'0')}.webp`;
- // 二~五章的 a{章}_{类型}_{v}.webp 为程序化占位图（竖柱条纹+橙色小方块/三角，像切条叠图），改用各章手绘整图 act{N}.webp
- if(ai>4)return null;return`assets/bg/act${ai+1}.webp`}
+ if(ai>4)return null;const t=(z.bg||'').replace('bg_',''),key=`a${ai+1}_${t}`,cnt=ART_BGN[key]||0;
+ if(!t||!cnt)return`assets/bg/act${ai+1}.webp`;
+ const same=A.zones.filter(x=>x.bg===z.bg),nv=Math.min(same.length>=4?3:2,cnt);
+ return`assets/bg/${key}_${same.indexOf(z)%nv}.webp`}
 const ART_BG={};
 {const _art_rf=renderFight;renderFight=function(){_art_rf();const fb=document.getElementById('fbattle');if(!fb)return;
   const z=zoneData(),zi=ACTS[S.act]?ACTS[S.act].zones.indexOf(z):-1;const u=zi>=0?artZoneBg(S.act,zi):null;if(!u)return;
