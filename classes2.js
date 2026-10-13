@@ -54,4 +54,6 @@ if(typeof EG_LP!=='undefined'){
 }
 
 // 职业技能音效：每个新技能有独立音效 id（技能定义 sfx 字段，形如 sfx_<id>）。音乐 bot 往 AUDIO_SK.table 里加 sfx_<id> 配方即生效；没有配方时静默
-if(window.AUDIO_SK&&AUDIO_SK.table){const T=AUDIO_SK.table;for(const s of CLS_SKILLS)if(!T[s.id]&&s.sfx!==s.id)T[s.id]=(D,t)=>{const f=T[s.sfx];if(f)f(D,t)}}
+// 独立音效 id 尚无配方时回退到同元素/同类旧技能音效（否则 25 个新技能施放时完全无声）
+if(window.AUDIO_SK&&AUDIO_SK.table){const T=AUDIO_SK.table,FB={fire:'mfb',cold:'mnova',light:'mcl',magic:'mcl',phys:'bbash',buff:'mfa',cbuff:'bshout',warcry:'bhowl',melee:'bbash'};
+ for(const s of CLS_SKILLS)if(!T[s.id]&&s.sfx!==s.id)T[s.id]=(D,t)=>{const f=T[s.sfx]||T[FB[s.el]]||T[FB[s.kind]]||T[s.cls==='bar'?'bbash':'mfb'];if(f)f(D,t)}}

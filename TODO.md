@@ -108,3 +108,4 @@
 - [x] 野蛮人技能图标 30 + 技能特效 18（assets/skills，manifest 已登记）(by 美术2)
 - [x] 第一章 21 张战斗背景换手绘（修坤颓村黑塔占位）+ 技能栏隐藏默认智能字样（美术）
 - [x] 野蛮人头盔图标 bh1–bh5（assets/icon2，ICON2 底材映射）(by 美术2)
+- [x] 法师 30 技能回归（390x844，线上+本地）：无报错/NaN；修复新技能 sfx_<id> 无配方时完全无声（回退同元素旧音效）；数值问题清单见 /workspace/qa/progress_mage_sim.md
