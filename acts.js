@@ -132,7 +132,7 @@ const _zoneClear=zoneClear;zoneClear=function(){const z=zoneData(),zi=S.zone,a=S
 // 首领"连战受创"：每次在其面前阵亡，该首领(本难度)伤害 ×0.8，最低 ×0.5 —— 保留死亡风险又不形成死墙
 function bfKey(k){return S.diff+'_'+k}
 const _die=die;die=function(){S.bf=S.bf||{};for(const m of MON)if(m.boss&&m.hp>0){const k=bfKey(m.key);S.bf[k]=(S.bf[k]||0)+1;log(`<span class="dim">${m.n} 在连战中受创（伤害 -${Math.round((1-Math.max(0.5,Math.pow(0.8,S.bf[k])))*100)}%）</span>`)}
-const D=DIFFS[S.diff];if(D.dxp){const cur=S.xp-xpNeed(S.lvl),loss=Math.min(cur,Math.floor((xpNeed(S.lvl+1)-xpNeed(S.lvl))*D.dxp));if(loss>0){S.xp-=loss;log(`<b style="color:#f44">${D.n}死亡惩罚：经验 -${fmt(loss)}</b>`)}}
+const D=DIFFS[S.diff];if(false&&D.dxp){const cur=S.xp-xpNeed(S.lvl),loss=Math.min(cur,Math.floor((xpNeed(S.lvl+1)-xpNeed(S.lvl))*D.dxp));if(loss>0){S.xp-=loss;log(`<b style="color:#f44">${D.n}死亡惩罚：经验 -${fmt(loss)}</b>`)}}
  const keep=ALLY.filter(a=>a.kind==='merc');_die();ALLY=keep;H.curse=0;calc()};
 questLine=function(){const z=zoneData();let q=z.quest&&!S.q[z.quest]?z.quest:Object.keys(QUESTS).find(k=>QUESTS[k].act===S.act&&!S.q[k]);
  if(!q){const n=nextStage();return`【主线】${DIFFS[S.diff].n}·${ACTS[S.act].n.split('·')[1]} 已完成${n?'，可前往 '+DIFFS[n[1]].n+'·'+ACTS[n[0]].n.split('·')[1]:''}`}
