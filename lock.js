@@ -25,7 +25,7 @@ if(typeof shouldRecycle==='function'){const f=shouldRecycle;shouldRecycle=functi
 // 3) 角色自动换装：锁定的背包物品不自动穿；已穿戴的锁定物品不被替换
 lkHide('autoTick');
 {const f=autoTick;autoTick=function(){LK.inAuto=1;try{return f.apply(this,arguments)}finally{LK.inAuto=0}}}
-{const f=canEquip;canEquip=function(it){if(LK.inAuto&&it&&!it.k){const b=BASEM[it.b];if(b){const k=slotOf(b);if(k==='ring'){if(isLk(S.eq.ring1)||isLk(S.eq.ring2))return false}else if(isLk(S.eq[k]))return false;if(b.th&&isLk(S.eq.shield))return false;if(k==='shield'&&isLk(S.eq.weapon))return false}}return f(it)}}
+{const f=canEquip;canEquip=function(it){if(LK.inAuto&&it&&!it.k){const b=BASEM[it.b];if(b){const k=slotOf(b);if(k==='ring'){if(isLk(S.eq.ring1)&&isLk(S.eq.ring2))return false}else if(isLk(S.eq[k]))return false;if(b.th&&isLk(S.eq.shield))return false;if(k==='shield'&&isLk(S.eq.weapon))return false}}return f(it)}}
 // ---------- 界面 ----------
 {const f=cell;cell=function(it,on){const h=f(it,on);return it&&it.lk?h.replace(/<\/div>$/,'<i class="lkic">🔒</i></div>'):h}}
 {const f=showItem;showItem=function(uid,...r){f(uid,...r);if(typeof document==='undefined'||window.__NOUI)return;const it=lkFind(uid);if(!it)return;const box=document.querySelector('#modal .btns.c');if(!box||box.querySelector('[data-lk]'))return;
@@ -40,3 +40,5 @@ function lkTabBtn(){const sb=[...document.querySelectorAll('#panel .stabs.sm')].
 // 合成数量校验（防止锁定后材料不足仍被直接调用）
 if(typeof cubeGem==='function'){const f=cubeGem;cubeGem=function(k){const g=k.slice(0,3),lv=+k.slice(3);if(S.bag.filter(x=>x.k==='gem'&&x.g===g&&x.lv===lv&&!x.lk).length<3)return lkMsg();return f(k)}}
 if(typeof cubeRune==='function'){const f=cubeRune;cubeRune=function(r){const n=typeof runeUpCount==='function'?runeUpCount(r):3;if(S.bag.filter(x=>x.k==='rune'&&x.r===r&&!x.lk).length<n)return lkMsg();return f(r)}}
+// 戒指：只跳过锁定的那一格——自动换装期间锁定戒指的战力视为无穷大，autoTick 的“替换较弱戒指”自然落到另一格
+{const f=power;power=function(it){if(LK.inAuto&&isLk(it)&&it&&(it===S.eq.ring1||it===S.eq.ring2))return Infinity;return f(it)}}

@@ -147,9 +147,9 @@ mercTick=function(dt){if(typeof S==='undefined'||!S||!S.merc)return;mercNorm();c
  if(!mercUp()){if(a)ALLY.splice(ALLY.indexOf(a),1);ACX.mercOn=0;return}
  if(!a){if(ACX.mercOn&&!M.dead){M.dead=1;ACX.mercOn=0;log(`<b style="color:#f84">佣兵 ${M.nm} 阵亡</b>（复活 ${reviveCost()} 金）`);calc();return}
   if(M.dead){if(M.ar&&!liveMon().length)mercRevive(1);return}
-  const ms=mercStats(),T=MERCS[M.t];a={uid:mUid++,kind:'merc',n:M.nm,ic:T.ic,hp:ms.life,max:ms.life,dmg:ms.dmg,res:ms.avgres,t:1e9,mt:1,ms};ALLY.unshift(a);ACX.mercOn=1;calc();return}
+  const ms=mercStats(),T=MERCS[M.t];a={uid:mUid++,kind:'merc',n:M.nm,ic:T.ic,hp:ms.life,max:ms.life,dmg:ms.dmg,res:ms.avgres,t:1e9,mt:1,ms};mercArmHp(a);ALLY.unshift(a);ACX.mercOn=1;calc();return}
  a.t=1e9;ACX.mercOn=1;ACX.mst=(ACX.mst||0)-dt;
- if(ACX.mst<=0){ACX.mst=1;const ms=mercStats();const r=a.hp/a.max;a.max=ms.life;a.hp=Math.min(a.max,Math.max(1,r*a.max));a.dmg=ms.dmg;a.res=ms.avgres;a.ms=ms;a.n=M.nm}
+ if(ACX.mst<=0){ACX.mst=1;const ms=mercStats();const r=a.hp/a.max;a.max=ms.life;MX.self=1;a.hp=Math.min(a.max,Math.max(1,r*a.max));MX.self=0;a.dmg=ms.dmg;a.res=ms.avgres;a.ms=ms;a.n=M.nm}
  const ms=a.ms||mercStats(),mons=liveMon();
  for(const au of ms.auras)if(au.e.heal)for(const x of ALLY)if(x.hp>0&&x.kind!=='wall')x.hp=Math.min(x.max,x.hp+au.e.heal*dt);
  if(!mons.length){a.hp=Math.min(a.max,a.hp+a.max*0.05*dt);return}
@@ -208,6 +208,9 @@ function mercAddTab(){if(typeof document==='undefined'||window.__NOUI)return;con
 if(typeof document!=='undefined'&&document.addEventListener){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mercAddTab);else mercAddTab()}
 
 // ---------- 格挡（原版公式：总格挡 = (盾牌基础格挡 + 装备格挡) × (敏捷 - 15) / (等级 × 2)，上限 75%） ----------
-// 怪物伤害结算后都会立刻调用 floatNum('a'+uid)（game.js 普攻 / acts.js hurtAlly），在此判定格挡并返还伤害
-{const _mx_fn=floatNum;floatNum=function(id,v,c){if(typeof id==='string'&&id[0]==='a'&&typeof v==='number'&&v>0&&mercUp()){const a=ALLY.find(x=>x.kind==='merc');
- if(a&&'a'+a.uid===id){const bl=(a.ms||mercStats()).block||0;if(bl>0&&rnd()*100<bl){a.hp+=v;MX.blocks=(MX.blocks||0)+1;return _mx_fn(id,'格挡','#ccc')}}}return _mx_fn(id,v,c)}}
+// 所有伤害来源（game.js 普攻 a.hp-=、acts.js hurtAlly、怪物技能/光环等）最终都是对佣兵对象 hp 的扣减：
+// 在佣兵对象上把 hp 定义为访问器，扣血入口统一在 setter 中判定格挡（格挡则本次伤害归零），不依赖飘字。
+function mercArmHp(a){let hp=a.hp;Object.defineProperty(a,'hp',{enumerable:true,configurable:true,get(){return hp},set(v){
+ if(!MX.self&&v<hp&&hp>0){const bl=(a.ms||mercStats()).block||0;if(bl>0&&rnd()*100<bl){MX.blocks=(MX.blocks||0)+1;a._blk=1;return}}hp=v}})}
+// 飘字只做显示：被格挡的那一下改为显示「格挡」
+{const _mx_fn=floatNum;floatNum=function(id,v,c){if(typeof id==='string'&&id[0]==='a'){const a=ALLY.find(x=>x.kind==='merc'&&'a'+x.uid===id);if(a&&a._blk){a._blk=0;return _mx_fn(id,'格挡','#ccc')}}return _mx_fn(id,v,c)}}
