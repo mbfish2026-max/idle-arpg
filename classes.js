@@ -8,9 +8,9 @@
 const CLS_DEF={
  nec:{n:'亡灵术士',ic:'☠',glyph:'🧙‍♂️',at:{str:15,dex:25,vit:15,ene:25},life0:45,lpl:1.5,lpv:2,mana0:25,mpl:2,mpe:2,trees:['冥仆系','骨毒系','咒怨系']},
  bar:{n:'野蛮人',ic:'🪓',glyph:'🪓',at:{str:30,dex:20,vit:25,ene:10},life0:55,lpl:2,lpv:4,mana0:10,mpl:1,mpe:1,trees:['战斗技能','武器精通','战吼'],
-  sk:{bbash:1},eq:['swd1','shd1'],autoEne:()=>false},
+  sk:{bbash:1},eq:['swd1','shd1'],mk:()=>S.lvl<=24?0.85:Math.max(0.5,0.85-0.06*(S.lvl-24)),autoEne:()=>false},
  sor:{n:'法师',ic:'🔮',glyph:'🧝‍♀️',at:{str:10,dex:25,vit:10,ene:35},life0:40,lpl:1,lpv:2,mana0:35,mpl:2,mpe:2,trees:['火焰法术','冰霜法术','闪电法术'],
-  sk:{mfb:1},eq:['wand1'],dk:0.32,autoEne:()=>S.at.ene<Math.floor(S.lvl*1.5)+35},
+  sk:{mfb:1},eq:['wand1'],dk:()=>Math.max(0.2,0.42-0.0075*S.lvl),autoEne:()=>S.at.ene<Math.floor(S.lvl*1.5)+35},
 };
 const curCls=()=>(S&&CLS_DEF[S.cls])?S.cls:'nec';
 function clsBase(){return CLS_DEF[curCls()]}
@@ -43,21 +43,27 @@ function clsArtLoad(){if(typeof fetch!=='function'||typeof document==='undefined
 const clsIconUrl=id=>CLS_ART.icons.has(id)?`assets/skills/${id}.webp`:null,clsFxUrl=id=>CLS_ART.fx.has(id)?`assets/skills/fx_${id}.webp`:null;
 {const f=skIcon;skIcon=function(s){if(s&&s.cls){const u=clsIconUrl(s.id);return u?`<i class="ski img" style="background-image:url(${u})"></i>`:`<i class="ski t${s.t}">${s.ic}</i>`}return f(s)}}
 // ---------- 数值 ----------
-function clsSV(id,L){const s=SKM[id];if(!s||!s.v)return{txt:''};return s.v(Math.max(1,L),syn(id)*(CLS_DEF[s.cls].dk||1))}// dk：职业技能伤害总系数（平衡用，已计入显示数值）
+function clsMk(){const k=CLS_DEF[curCls()].mk;return typeof k==='function'?k():(k||1)}// mk：职业近战伤害总系数（平衡用）
+function clsDk(c){const k=CLS_DEF[c].dk;return typeof k==='function'?k():(k||1)}
+function clsSV(id,L){const s=SKM[id];if(!s||!s.v)return{txt:''};return s.v(Math.max(1,L),syn(id)*clsDk(s.cls))}// dk：职业技能伤害总系数（平衡用，已计入显示数值）
 const CLS_ELC={fire:'#f84',cold:'#8cf',light:'#ff6',magic:'#e0c0ff',phys:'#fff'};
 const avg=d=>d?(d[0]+d[1])/2:0,rr=d=>R(Math.round(d[0]),Math.round(d[1]));
 const buffOn=id=>{const b=H.cbs&&H.cbs[id];return b&&b.until>GT?b:null};
 function pasV(id){return bl(id)?clsSV(id,slvl(id)):null}
 function elMul(el){let p=ST.sdmg||0;if(curCls()==='sor'){const k={fire:'mfm',cold:'mcm',light:'mlm'}[el];const v=k&&pasV(k);if(v)p+=v.dmg||0;if(el==='fire'){const e=buffOn('menc');if(e)p+=e.fdmg||0}}return 1+p/100}
-function clsHit(m,el,dmg,col){if(!m||m.hp<=0||!(dmg>0))return 0;let pr=0;if(el==='cold'&&curCls()==='sor'){const v=pasV('mcm');if(v){pr=v.pierce;m.res.cold-=pr}}
+function clsHit(m,el,dmg,col){if(!m||m.hp<=0||!(dmg>0))return 0;let pr=0;if(el==='cold'&&curCls()==='sor'){const v=pasV('mcm');if(v){pr=v.pierce;m.res.cold=(m.res.cold||0)-pr}}
  try{return hitMon(m,{[el]:dmg*elMul(el)},'hero',col||CLS_ELC[el])}finally{if(pr)m.res.cold+=pr}}
 function others(ms,tg){return[tg,...ms.filter(m=>m!==tg)]}
 function cc(m,v){if(!m||m.hp<=0)return;if(v.slow)m.slow=Math.max(m.slow||0,GT+v.slow);if(v.stun&&!m.boss)m.stun=Math.max(m.stun||0,v.stun)}
 // 近战：武器伤害 × (1+pct%) + flat；o.el 转换元素(如狂暴→魔法)
 function clsMelee(m,pct,flat,o){o=o||{};if(!m||m.hp<=0)return 0;const db=m.dbf&&m.dbf.until>GT?m.dbf:null;const df=m.def*(1-ST.tdef/100)*(1-((db&&db.def)||0)/100);
- if(!o.sure&&!hitChance(ST.ar*(1+(o.ar||0)/100),df,S.lvl,m.lv))return 0;let k=1+(pct||0)/100;if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
- const base=Math.max(1,R(ST.wmin,ST.wmax)*k+(flat||0));const d=o.el?hitMon(m,{[o.el]:base},'hero',CLS_ELC[o.el]):hitMon(m,{phys:base,fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
+ if(!o.sure&&!hitChance(ST.ar*(1+(o.ar||0)/100),df,S.lvl,m.lv))return 0;let k=(1+(pct||0)/100)*clsMk();if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
+ const base=Math.max(1,clsWRoll()*k+(flat||0));const d=o.el?hitMon(m,{[o.el]:base},'hero',CLS_ELC[o.el]):hitMon(m,{phys:base,fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
  if(d){H.life=Math.min(ST.life,H.life+d*(ST.ll+(ST.bll||0))/100);H.mana=Math.min(ST.mana,H.mana+d*ST.ml/100+(curCls()==='bar'?2:0));cc(m,o)}return d}// 野蛮人：每次近战命中 +2 法力
+// 野蛮人武器权重（修复好武器偏强）：伤害 = 35% 实际武器 + 65% 等级基准武器(2+0.9×等级)，基准同样吃力量/精通/增益倍率
+const CLS_WW=0.35;function clsWRef(){return(2+0.9*S.lvl)*(ST.wmul||1)}
+function clsWRoll(){const w=R(ST.wmin,ST.wmax);return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
+function clsWAvg(){const w=(ST.wmin+ST.wmax)/2;return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
 function setBuff(id,v,g){H.cbs=H.cbs||{};if(g)for(const k in H.cbs)if(k!==id&&H.cbs[k].g===g)delete H.cbs[k];H.cbs[id]=Object.assign({},v,{g,until:GT+(v.dur||30)});calc()}
 const CLS_TY={
  bolt(s,v,ms,tg){clsHit(tg,s.el,rr(v.dmg));cc(tg,v);return[tg]},
@@ -73,7 +79,7 @@ const CLS_TY={
  hit(s,v,ms,tg){for(let i=0;i<(v.hits||1);i++)clsMelee(tg,v.pct,v.flat,v);return[tg]},
  mhit(s,v,ms,tg){const L=others(ms,tg).slice(0,v.n||2);for(const m of L)clsMelee(m,v.pct,v.flat,v);if(v.fz)setBuff('bfrz_st',{ias:v.fz,dur:4},null);return L},
  mall(s,v,ms,tg){const L=ms.slice(0,v.n||8);for(const m of L)v.pct==null?cc(m,v):clsMelee(m,v.pct,v.flat,v);if(v.dmg)for(const m of L)hitMon(m,{phys:rr(v.dmg)},'hero','#fff');return L},
- throw(s,v,ms,tg){const L=others(ms,tg).slice(0,v.n||2);const tm=pasV('bthrm');for(const m of L)clsMelee(m,v.pct+((tm&&tm.dmg)||0),v.flat,Object.assign({},v,{ar:(tm&&tm.ar)||0}));return L},
+ throw(s,v,ms,tg){const L=others(ms,tg).slice(0,v.n||2);for(const m of L)clsMelee(m,v.pct,v.flat,v);return L},
  debuff(s,v,ms){for(const m of ms){m.dbf={id:s.id,until:GT+v.dur,dmg:v.wk||0,def:v.dd||0};cc(m,v)}floatHero(s.n,'#ffb050');return ms},
  wcry(s,v,ms){for(const m of ms){hitMon(m,{phys:rr(v.dmg)},'hero','#ffb050');cc(m,v)}floatHero(s.n,'#ffb050');return ms},
 };
@@ -87,7 +93,7 @@ function clsCast(id,ms){const s=SKM[id],v=SV(id,slvl(id));spend(id);ACT[id]=GT;c
 // ---------- 自动施法 ----------
 for(const k of['melee','spell','cbuff','warcry'])if(!AC_KINDS.includes(k))AC_KINDS.push(k);
 function clsEst(s,ms){const v=SV(s.id,slvl(s.id)),n=ms.length;const tn=CLS_SINGLE.has(s.ty)?Math.min(n,s.ty==='hit'?1:(v.n||1)):Math.min(n,v.n||8);
- if(['hit','mhit','mall','throw'].includes(s.ty))return((ST.wmin+ST.wmax)/2*(1+(v.pct||0)/100)+(v.flat||0)+avg(v.dmg))*(v.hits||1)*tn;
+ if(['hit','mhit','mall','throw'].includes(s.ty))return(clsWAvg()*(1+(v.pct||0)/100)+(v.flat||0)+avg(v.dmg))*(v.hits||1)*tn;
  if(s.ty==='burn')return v.dps*(v.bdur||4)*elMul('fire')*tn;if(s.ty==='multi')return avg(v.dmg)*elMul(s.el)*(v.n||3)*(v.acc||0.7);
  return(avg(v.dmg)*(s.ty==='splash'?1+(tn-1)*(v.sp||50)/100:tn)+(v.dps?v.dps*(v.bdur||3)*tn:0))*elMul(s.el)}
 function clsBest(set,ms){let b=null,bv=-1;for(const s of SKILLS){if(!s.cls||!skOfCls(s)||!set.has(s.ty)||!bl(s.id)||!castable(s.id)||!acCfg(s.id).on)continue;if(CLS_AOE.has(s.ty)&&ms.length<s.sm&&!ms.some(m=>m.boss||m.fl==='uniq'))continue;const e=clsEst(s,ms);if(e>bv){bv=e;b=s.id}}return b}
@@ -114,7 +120,7 @@ function clsCalc(o){const c=curCls();if(c==='nec')return;const M=o.M||{};const l
  if(c==='bar'&&BASEM[S.eq.shield?.b]?.block)o.block=Math.min(75,o.block+5);// 野蛮人职业格挡 25（亡灵术士/法师 20，已含在底材里）
  for(const id in H.cbs||{}){const b=buffOn(id);if(!b)continue;wd+=b.wdmg||0;ar+=b.ar||0;ias+=b.ias||0;defP+=b.def||0;lifeP+=b.life||0;manaP+=b.mana||0;o.allsk+=b.allsk||0;o.sdmg=(o.sdmg||0)+(b.sdmg||0);
   if(b.cres)o.res.cold=Math.min(75,o.res.cold+b.cres);if(b.res)for(const k in o.res)o.res[k]=Math.min(75,o.res[k]+b.res);if(b.dodge)o.cdodge=Math.max(o.cdodge||0,b.dodge);if(b.es)o.ces=Math.max(o.ces||0,b.es);if(b.ret)o.cret=b}
- o.wmin=Math.floor(o.wmin*(1+wd/100));o.wmax=Math.floor(o.wmax*(1+wd/100));o.ar=Math.round(o.ar*(1+ar/100));o.bcrit=Math.min(60,crit);o.atkT=1.5/(1+(o.ias+ias)/100);
+ o.wmin=Math.floor(o.wmin*(1+wd/100));o.wmax=Math.floor(o.wmax*(1+wd/100));o.wmul=(1+o.attr.str/100)*(1+wd/100);o.ar=Math.round(o.ar*(1+ar/100));o.bcrit=Math.min(60,crit);o.atkT=1.5/(1+(o.ias+ias)/100);
  o.def=Math.round(o.def*(1+defP/100));o.life=Math.round(o.life*(1+lifeP/100));o.mana=Math.round(o.mana*(1+manaP/100))}
 // ---------- 每帧：增益到期、减益减伤、灼烧、炮台、闪避/能量护盾/反击 ----------
 {const f=step;step=function(dt){if(!ST||curCls()==='nec')return f(dt);
@@ -142,7 +148,7 @@ clsDef('sor',[
  {id:'menc',t:0,n:'炎附',r:18,col:1,pre:['mwarm'],ty:'buff',g:'ench',ic:'🕯',fx:'shield',mana:L=>15,v:L=>{const f=20+8*(L-1),t=90+12*(L-1);return{fdmg:f,dur:t,txt:`火焰伤害 +${f}%，持续 ${t} 秒`}}},
  {id:'mfwall',t:0,n:'火墙术',r:18,col:2,pre:['mblaze'],ty:'burn',el:'fire',ic:'🧱',mana:L=>14+(L-1),sm:3,syn:[['mblaze','mwarm'],4],v:(L,sy)=>{const p=Math.round((14+9*(L-1))*sy);return{dps:p,bdur:4,txt:`火墙灼烧全部敌人：每秒 ${p} 火焰，持续 4 秒`}}},
  {id:'mhyd',t:0,n:'九首炎蛇',r:24,col:2,pre:['mfwall'],ty:'turret',el:'fire',ic:'🐉',fx:'boom',mana:L=>20+(L-1),syn:[['mfb','mfball'],3],v:(L,sy)=>{const d=DR(12,18,6,9,L,sy),t=10+L;return{dmg:d,iv:1.2,n:3,dur:t,txt:`召出炎蛇 ${t} 秒：每 1.2 秒喷 3 发火球，各 ${dtx(d,'fire')}`}}},
- {id:'mfm',t:0,n:'火焰精通',r:30,col:1,ty:'passive',ic:'💠',v:L=>{const d=30+7*(L-1);return{dmg:d,txt:`被动：火焰技能伤害 +${d}%`}}},
+ {id:'mfm',t:0,n:'火焰精通',r:30,col:1,ty:'passive',ic:'💠',v:L=>{const d=20+5*(L-1);return{dmg:d,txt:`被动：火焰技能伤害 +${d}%`}}},
  // 冰霜
  {id:'mice',t:1,n:'冰晶箭',r:1,col:1,ty:'bolt',el:'cold',ic:'🧊',fx:'ring',mana:L=>3,syn:[['mspike','mglac','mbliz','morb'],15],v:(L,sy)=>{const d=DR(3,5,2,3,L,sy),s=3+0.2*(L-1);return{dmg:d,slow:s,txt:`单体 ${dtx(d,'cold')}，减速 ${s.toFixed(1)} 秒`}}},
  {id:'mfa',t:1,n:'寒冰护甲',r:1,col:2,ty:'buff',g:'armor',ic:'❄',fx:'shield',mana:L=>7,v:L=>{const df=40+10*(L-1),cr=Math.min(40,10+2*(L-1)),t=60+12*(L-1);return{def:df,cres:cr,dur:t,chill:1,txt:`防御 +${df}%，冰冷抗性 +${cr}%，近战攻击者被减速；持续 ${t} 秒`}}},
@@ -168,16 +174,49 @@ clsDef('sor',[
 ]);
 // 寒冰护甲：近战怪攻击英雄时被减速（掉血近似）
 {const f=step;step=function(dt){const hp0=H.life;const r=f(dt);if(curCls()==='sor'&&buffOn('mfa')&&H.life<hp0)for(const m of MON)if(m.hp>0&&!m.ranged)m.slow=Math.max(m.slow||0,GT+2);return r}}
-// ---------------- 野蛮人（下一步补全三系） ----------------
+// ---------------- 野蛮人：战斗技能 / 武器精通 / 战吼（旧 id bbash/bww/bmast/bshout/bhowl 及其需求等级保持不变） ----------------
+const mtx=(p,f)=>`武器伤害 ${p>=0?'+':''}${p}%${f?`，额外 +${f} 物理`:''}`;
+const MST=(L)=>{const d=20+8*(L-1),a=30+10*(L-1),c=Math.min(35,Math.round(dim(L,5,45))),i=Math.min(40,8+2*(L-1));return{dmg:d,ar:a,crit:c,ias:i,txt:`使用对应武器时：武器伤害 +${d}%，命中 +${a}%，攻速 +${i}%，${c}% 几率重击(双倍)`}};
 clsDef('bar',[
- {id:'bbash',t:0,n:'猛击',r:1,col:1,ty:'hit',ic:'🔨',fx:'slash',mana:L=>1,v:L=>{const p=80+20*(L-1),f=3+3*(L-1);return{pct:p,flat:f,txt:`近战一击：武器伤害 +${p}%，额外 +${f} 物理伤害`}}},
- {id:'bww',t:0,n:'旋风斩',r:12,col:2,pre:['bbash'],ty:'mall',ic:'🌀',fx:'slash',mana:L=>3+0.2*(L-1),sm:2,syn:[['bbash'],5],v:(L,sy)=>{const p=Math.round((50+20*(L-1))*sy),f=2+3*(L-1);return{pct:p,flat:f,txt:`旋转攻击全部敌人（最多 8 个），武器伤害 +${p}%，额外 +${f} 物理伤害`}}},
- {id:'bmast',t:1,n:'武器精通',r:1,col:0,ty:'passive',cat:'*',ic:'⚔',v:L=>{const d=20+8*(L-1),a=30+10*(L-1),c=Math.min(35,Math.round(dim(L,5,45))),i=Math.min(40,8+2*(L-1));return{dmg:d,ar:a,crit:c,ias:i,txt:`武器伤害 +${d}%，命中 +${a}%，攻速 +${i}%，${c}% 几率重击(双倍)`}}},
+ // 战斗技能
+ {id:'bbash',t:0,n:'猛击',r:1,col:1,ty:'hit',ic:'🔨',fx:'slash',mana:L=>1,syn:[['bstun','bconc'],5],v:(L,sy)=>{const p=Math.round((80+20*(L-1))*sy),f=3+3*(L-1);return{pct:p,flat:f,txt:`近战一击：${mtx(p,f)}`}}},
+ {id:'bleap',t:0,n:'跃击',r:6,col:0,ty:'mall',ic:'🦘',fx:'slash',mana:L=>3,sm:2,v:(L,sy)=>{const p=Math.round(-40+8*(L-1)),s=+(0.8+0.1*(L-1)).toFixed(1);return{pct:p,n:3,stun:Math.min(2.5,s),txt:`跃入敌群：打击 3 个敌人（${mtx(p)}），击晕 ${Math.min(2.5,s)} 秒`}}},
+ {id:'bdsw',t:0,n:'双重挥击',r:6,col:2,pre:['bbash'],ty:'mhit',ic:'⚔',fx:'slash',mana:L=>2,syn:[['bfrz'],5],v:(L,sy)=>{const p=Math.round((15+10*(L-1))*sy);return{pct:p,n:2,txt:`双手各攻击一个敌人：${mtx(p)}`}}},
+ {id:'bstun',t:0,n:'震晕',r:12,col:1,pre:['bbash'],ty:'hit',ic:'💫',fx:'slash',mana:L=>2,v:(L,sy)=>{const p=Math.round((40+10*(L-1))*sy),s=+(1+0.15*(L-1)).toFixed(2);return{pct:p,stun:Math.min(4,s),txt:`近战一击 ${mtx(p)}，击晕 ${Math.min(4,s)} 秒（首领免疫）`}}},
+ {id:'bww',t:0,n:'旋风斩',r:12,col:2,pre:['bbash'],ty:'mall',ic:'🌀',fx:'slash',mana:L=>3+0.2*(L-1),sm:2,syn:[['bbash','bdsw'],5],v:(L,sy)=>{const p=Math.round((50+12*(L-1))*sy),f=2+2*(L-1);return{pct:p,flat:f,txt:`旋转攻击全部敌人（最多 8 个）：${mtx(p,f)}`}}},
+ {id:'b2thr',t:0,n:'双重投掷',r:12,col:0,pre:['bdsw'],ty:'throw',ic:'🪃',fx:'slash',mana:L=>2,v:(L,sy)=>{const p=Math.round((20+12*(L-1))*sy);return{pct:p,n:2,txt:`投掷两件武器击中 2 个敌人：${mtx(p)}（远程，不受近战限制）`}}},
+ {id:'bla',t:0,n:'跃斩',r:18,col:0,pre:['bleap'],ty:'hit',ic:'🗡',fx:'slash',mana:L=>9,v:(L,sy)=>{const p=Math.round((100+30*(L-1))*sy),f=5+4*(L-1);return{pct:p,flat:f,stun:0.5,txt:`跃起重斩：${mtx(p,f)}，击晕 0.5 秒`}}},
+ {id:'bconc',t:0,n:'专注',r:18,col:1,pre:['bstun'],ty:'hit',ic:'🎯',fx:'slash',mana:L=>2,syn:[['bbash','bbers'],5],v:(L,sy)=>{const p=Math.round((70+15*(L-1))*sy),a=60+10*(L-1);return{pct:p,ar:a,sure:0,txt:`凝神一击：${mtx(p)}，本次命中 +${a}%`}}},
+ {id:'bfrz',t:0,n:'狂乱',r:24,col:2,pre:['bww'],ty:'mhit',ic:'🌪',fx:'slash',mana:L=>4,syn:[['bdsw','bww'],4],v:(L,sy)=>{const p=Math.round((60+18*(L-1))*sy),z=Math.min(60,20+4*(L-1));return{pct:p,n:2,fz:z,txt:`连续攻击 2 个敌人：${mtx(p)}，之后 4 秒攻速 +${z}%`}}},
+ {id:'bbers',t:0,n:'狂暴',r:30,col:1,pre:['bconc'],ty:'hit',ic:'😡',fx:'spirit',mana:L=>4,v:(L,sy)=>{const p=Math.round((120+18*(L-1))*sy);return{pct:p,el:'magic',sure:1,txt:`必中一击，伤害全部转为魔法：${mtx(p)}`}}},
+ // 武器精通（被动）
+ {id:'bmast',t:1,n:'剑刃精通',r:1,col:0,ty:'passive',cat:'sword,dagger',ic:'⚔',v:MST},
+ {id:'baxm',t:1,n:'斧锤精通',r:1,col:1,ty:'passive',cat:'axe,mace',ic:'🪓',v:MST},
+ {id:'bpolm',t:1,n:'长柄精通',r:6,col:0,ty:'passive',cat:'polearm,spear,staff',ic:'🔱',v:MST},
+ {id:'bthrm',t:1,n:'投掷精通',r:6,col:2,ty:'passive',cat:'throw,jav',ic:'🎯',v:MST},
+ {id:'bstam',t:1,n:'坚韧体魄',r:12,col:1,ty:'passive',ic:'💪',v:L=>{const l=10+3*(L-1);return{life:l,txt:`被动：最大生命 +${l}%`}}},
+ {id:'bcrit',t:1,n:'破绽洞察',r:18,col:0,pre:['bstam'],ty:'passive',ic:'👁',v:L=>{const c=Math.min(30,Math.round(dim(L,5,40)));return{crit:c,txt:`被动：任意武器额外 ${c}% 几率重击(双倍)`}}},
+ {id:'biron',t:1,n:'铁肤',r:18,col:2,pre:['bstam'],ty:'passive',ic:'🛡',v:L=>{const d=30+10*(L-1);return{def:d,txt:`被动：防御 +${d}%`}}},
+ {id:'bspeed',t:1,n:'迅捷',r:24,col:1,pre:['bcrit'],ty:'passive',ic:'💨',v:L=>{const i=Math.min(40,10+2*(L-1));return{ias:i,txt:`被动：攻击速度 +${i}%`}}},
+ {id:'bfury',t:1,n:'嗜血',r:30,col:0,pre:['bcrit'],ty:'passive',ic:'🩸',v:L=>{const l=Math.min(10,2+0.5*(L-1));return{ll:l,txt:`被动：近战伤害 ${l}% 转为生命`}}},
+ {id:'bnres',t:1,n:'自然抗性',r:30,col:2,pre:['biron'],ty:'passive',ic:'🌿',v:L=>{const r=Math.min(60,Math.round(dim(L,15,80)));return{res:r,txt:`被动：全部元素抗性 +${r}%（不超过上限）`}}},
+ // 战吼
+ {id:'bpot',t:2,n:'寻药',r:1,col:0,ty:'passive',ic:'🧪',v:L=>{const c=Math.min(50,Math.round(dim(L,8,60)));return{potch:c,txt:`被动：击杀时 ${c}% 几率搜出药剂，回复 10% 生命与法力`}}},
  {id:'bshout',t:2,n:'战斗怒吼',r:1,col:1,ty:'buff',g:'shout',ic:'📯',fx:'shield',mana:L=>3,v:L=>{const d=15+5*(L-1),df=20+10*(L-1),t=12+2*(L-1);return{wdmg:d,def:df,dur:t,txt:`战吼：伤害 +${d}%，防御 +${df}%，持续 ${t} 秒`}}},
  {id:'bhowl',t:2,n:'震慑战嚎',r:6,col:0,ty:'debuff',ic:'🗣',fx:'ring',mana:L=>4,sm:3,v:L=>{const t=+(1.5+0.25*(L-1)).toFixed(2),w=Math.min(60,20+3*(L-1));return{stun:t,dur:t*3,wk:w,txt:`震慑所有敌人 ${t} 秒，并使其伤害 -${w}%（${t*3}秒）`}}},
+ {id:'btaunt',t:2,n:'挑衅',r:6,col:2,ty:'debuff',ic:'😤',fx:'ring',mana:L=>3,sm:2,v:L=>{const d=Math.min(60,20+4*(L-1)),t=10+L;return{dd:d,wk:10,dur:t,txt:`激怒全部敌人：防御 -${d}%，伤害 -10%，持续 ${t} 秒`}}},
+ {id:'bfind',t:2,n:'搜刮',r:12,col:0,pre:['bpot'],ty:'passive',ic:'💰',v:L=>{const m=Math.round(dim(L,10,60)),g=Math.round(dim(L,20,120));return{mf:m,gf:g,txt:`被动：魔法装备掉率 +${m}%，金币 +${g}%`}}},
+ {id:'bbcry',t:2,n:'战斗吶喊',r:18,col:2,pre:['btaunt'],ty:'debuff',ic:'📢',fx:'ring',mana:L=>5,sm:2,v:L=>{const d=Math.min(70,30+4*(L-1)),w=Math.min(50,20+3*(L-1)),t=12+L;return{dd:d,wk:w,dur:t,txt:`全部敌人防御 -${d}%、伤害 -${w}%，持续 ${t} 秒`}}},
+ {id:'bgrim',t:2,n:'恐惧图腾',r:24,col:0,pre:['bfind'],ty:'debuff',ic:'🗿',fx:'ring',mana:L=>8,sm:3,v:L=>{const s=+(2+0.2*(L-1)).toFixed(1);return{stun:Math.min(5,s),wk:30,dd:20,dur:8+L,txt:`竖起图腾：非首领敌人恐惧(定身) ${Math.min(5,s)} 秒，伤害 -30%、防御 -20%`}}},
+ {id:'bbo',t:2,n:'战斗号令',r:24,col:1,pre:['bshout'],ty:'buff',g:'bo',ic:'🚩',fx:'shield',mana:L=>8,v:L=>{const p=35+3*(L-1),t=30+6*(L-1);return{life:p,mana:p,dur:t,txt:`最大生命与法力 +${p}%，持续 ${t} 秒`}}},
+ {id:'bbcmd',t:2,n:'战斗指挥',r:30,col:1,pre:['bbo'],ty:'buff',g:'bc',ic:'🎖',fx:'shield',mana:L=>10,v:L=>{const a=1+Math.floor((L-1)/10),t=20+4*(L-1);return{allsk:a,dur:t,txt:`全部技能 +${a}，持续 ${t} 秒`}}},
+ {id:'bwcry',t:2,n:'战争怒吼',r:30,col:2,pre:['bbcry'],ty:'wcry',ic:'🦁',fx:'ring',mana:L=>12+0.5*(L-1),sm:2,syn:[['bhowl','btaunt','bbcry','bbo'],10],v:(L,sy)=>{const d=DR(30,40,12,14,L,sy),s=1;return{dmg:d,stun:s,txt:`怒吼震伤全部敌人 ${dtx(d,'phys')}，击晕 1 秒`}}},
 ]);
+// 寻药：击杀时概率回复
+{const f=killMon;killMon=function(m){const r=f(m);if(curCls()==='bar'){const v=pasV('bpot');if(v&&rnd()*100<v.potch&&ST){H.life=Math.min(ST.life,H.life+ST.life*0.1);H.mana=Math.min(ST.mana,H.mana+ST.mana*0.1)}}return r}}
 const CLS_SKPLAN={
- bar:{order:['bbash','bshout','bmast','bbash','bmast','bhowl','bbash','bmast','bshout','bmast','bbash','bww','bww','bww','bww','bww'],fill:()=>bl('bww')<20?['bww','bmast','bshout','bbash','bhowl']:['bmast','bshout','bhowl','bbash']},
+ bar:{order:['bbash','bshout','bmast','bbash','bmast','bhowl','bbash','bmast','bshout','bmast','bbash','bww','bstam','bww','bww','bww','bww','bcrit','bww','bww','bww','bww','bww','bbo','bww','bspeed','bww','bww','bww','bfury','bbcmd'],
+  fill:()=>bl('bww')<20?['bww','bmast','bfury','bspeed','bshout']:['bmast','bfury','bspeed','bbo','bshout','bstam']},
  sor:{order:['mfb','mfa','mfb','mwarm','mfb','mfb','mcl','mfb','mfb','mfb','mfb','mfball','mmet','mfball','mfball','mmet','mfball','mfball','menc','mfball','mfball','mmet','mfball','mmet','mblaze','mfwall','mhyd','mfball','mmet','mfm','mfm','mfm'],
   fill:()=>['mfball','mmet','mfm','mfb','mhyd','menc','mwarm']},
 };
