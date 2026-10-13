@@ -316,7 +316,7 @@ function floatHero(t,c){if(TAB!=='fight')return;const p=heroPos();spawnFloat(p.x
 function spawnFloat(x,y,t,c){const e=document.createElement('div');e.className='fl';e.textContent=t;e.style.cssText=`left:${x}px;top:${y}px;color:${c}`;$('#fbattle').appendChild(e);setTimeout(()=>e.remove(),900)}
 function groundLoot(it){if(TAB!=='fight')return;const g=$('#mgrid').getBoundingClientRect(),o=$('#fbattle').getBoundingClientRect();const e=document.createElement('div');
  const hi=it.k||it.q>=4||it.rw!=null;e.className='loot'+(hi?' hi':'');e.style.cssText=`left:${g.left-o.left+R(10,g.width-90)}px;top:${g.top-o.top+R(20,g.height-20)}px;color:${itemColor(it)};--c:${itemColor(it)}`;e.innerHTML=(hi?'<i></i>':'')+itemName(it);$('#fbattle').appendChild(e);setTimeout(()=>e.remove(),3500)}
-function drawFX(dt){const cv=$('#fx');if(!cv)return;const b=$('#fbattle'),W=b.clientWidth,Hh=b.clientHeight,d=2;if(cv.width!==W*d||cv.height!==Hh*d){cv.width=W*d;cv.height=Hh*d}
+let FX_CLR=0;function drawFX(dt){if(!FX.length){if(FX_CLR)return;FX_CLR=1}else FX_CLR=0;const cv=$('#fx');if(!cv)return;const b=$('#fbattle'),W=b.clientWidth,Hh=b.clientHeight,d=2;if(cv.width!==W*d||cv.height!==Hh*d){cv.width=W*d;cv.height=Hh*d}
  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,W,Hh);
  for(const f of FX){f.t+=dt;const a=1-f.t/f.life;if(a<=0)continue;c.globalAlpha=a;c.strokeStyle=f.c;c.fillStyle=f.c;c.shadowColor=f.c;c.shadowBlur=12;const h=f.h;
   if(f.k==='spear'||f.k==='line'||f.k==='spirit'||f.k==='stab'||f.k==='teeth'){for(const p of f.pts){c.lineWidth=f.k==='spear'?4:2;c.beginPath();c.moveTo(h.x,h.y);const tx=h.x+(p.x-h.x)*Math.min(1,f.t/f.life*2.2),ty=h.y+(p.y-h.y)*Math.min(1,f.t/f.life*2.2);c.lineTo(tx,ty);c.stroke();c.beginPath();c.arc(tx,ty,f.k==='spear'?5:3,0,7);c.fill()}}
@@ -474,9 +474,11 @@ function arowHint(){const a=$('#arow');if(a)a.classList.toggle('ovf',a.scrollLef
 // ===== 主循环 =====
 let lastT=performance.now(),autoT=0,acc=0,uiT=0,saveT=0;
 // 主循环出错时也要继续调度下一帧，否则单个坏数据会让整个游戏停住
-function loop(now){try{loop0(now)}catch(e){console.error(e)}requestAnimationFrame(loop)}
+// 省电：限帧（普通 30fps / 省电 15fps）；息屏或后台时不推进、不渲染（回来后按离线公式结算，见 power.js）
+const PWRF={fps:30,ui:0.25,paused:0};
+function loop(now){if(!PWRF.paused&&now-lastT>=1000/PWRF.fps-2){try{loop0(now)}catch(e){console.error(e)}}else if(PWRF.paused)lastT=now;requestAnimationFrame(loop)}
 function loop0(now){let dt=Math.min(0.1,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
- uiT+=dt;if(uiT>0.15){uiT=0;if(TAB==='fight'){renderFight();arowHint()}}drawFX(dt);
+ uiT+=dt;if(uiT>PWRF.ui){uiT=0;if(TAB==='fight'){renderFight();arowHint()}}drawFX(dt);
  autoT+=dt*SPEED;if(autoT>1){autoT=0;autoTick()}saveT+=dt;if(saveT>5){saveT=0;killWin=killWin.filter(t=>GT-t<120);if(GT>60)S.kpm=killWin.length/Math.min(2,GT/60);save()}}
 function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render()});

@@ -1,0 +1,6 @@
+/* power.css — 省电模式 / 息屏挂机（QA） */
+body.eco *,body.eco *::before,body.eco *::after{animation:none!important;transition:none!important}
+body.eco .fl,body.eco .fxs,body.eco .fxcur,body.eco .fxarm,body.eco .art2fx,body.eco .loot,body.eco .a2atmo{display:none!important}
+body.eco #fbattle *{box-shadow:none!important;filter:none!important}
+#sleepv{position:fixed;inset:0;z-index:9999;background:#000;color:#7a6a50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:14px;text-align:center;padding:20px}
+#sleepv.hide{display:none}#sleepv .sl1{font-size:18px;color:#a08a60}#sleepv .sl2{margin-top:18px;font-size:12px;color:#4a4030}

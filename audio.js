@@ -28,7 +28,7 @@ function env(g,t,a,peak,d,sus,r,end){g.gain.setValueAtTime(0.0001,t);g.gain.line
 function tone(dest,{f,t,dur,type='sine',vol=0.2,a=0.01,d=0.1,sus=0.6,r=0.2,det=0,cut=0,q=1,glide=0,wet=0}){
  const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(glide)o.frequency.exponentialRampToValueAtTime(Math.max(20,glide),t+dur);o.detune.value=det;
  let n=o;if(cut){const fl=ctx.createBiquadFilter();fl.type='lowpass';fl.frequency.value=cut;fl.Q.value=q;o.connect(fl);n=fl}
- n.connect(g);g.connect(dest);if(wet){const w=ctx.createGain();w.gain.value=wet;g.connect(w);w.connect(rev)}
+ n.connect(g);g.connect(dest);if(wet&&!window.PWR_ECO){const w=ctx.createGain();w.gain.value=wet;g.connect(w);w.connect(rev)}
  env(g,t,a,vol,d,sus,r,t+dur);o.start(t);o.stop(t+dur+r+0.05)}
 function noise(dest,{t,dur,vol=0.2,type='bandpass',f=1000,f2=0,q=1,a=0.002,wet=0}){
  const s=ctx.createBufferSource(),fl=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noiseBuf;s.loop=true;fl.type=type;fl.frequency.setValueAtTime(f,t);if(f2)fl.frequency.exponentialRampToValueAtTime(f2,t+dur);fl.Q.value=q;
@@ -54,15 +54,16 @@ let cur=null,want=null,nextBar=0,bar=0,trackGain=null,timer=null;
 function playBar(T,t,b,dest){const beat=60/T.bpm,bl=beat*4,ch=T.prog[b%T.prog.length];
  // 低音 drone + 和弦 pad
  tone(dest,{f:mtof(deg(T,ch,-1)),t,dur:bl,type:'sawtooth',vol:0.09,a:0.4,d:0.4,sus:0.8,r:0.6,cut:260,q:2});
- for(const iv of[0,2,4])for(const dt of[-7,7])tone(dest,{f:mtof(deg(T,ch+iv,0)),t,dur:bl,type:'sawtooth',vol:T.pad/2,a:bl*0.3,d:0.5,sus:0.8,r:1.2,det:dt,cut:900,wet:0.5});
- if(T.choir)for(const iv of[0,4])tone(dest,{f:mtof(deg(T,ch+iv,1)),t,dur:bl,type:'triangle',vol:0.03*T.choir,a:bl*0.4,d:0.3,sus:0.9,r:1.5,det:(b%2?5:-5),wet:0.9});
+ const ECO=!!window.PWR_ECO;// 省电：pad 不叠失谐双音、不发混响，跳过人声/琶音/钟声
+ for(const iv of[0,2,4])for(const dt of ECO?[0]:[-7,7])tone(dest,{f:mtof(deg(T,ch+iv,0)),t,dur:bl,type:'sawtooth',vol:ECO?T.pad:T.pad/2,a:bl*0.3,d:0.5,sus:0.8,r:1.2,det:dt,cut:900,wet:0.5});
+ if(T.choir&&!ECO)for(const iv of[0,4])tone(dest,{f:mtof(deg(T,ch+iv,1)),t,dur:bl,type:'triangle',vol:0.03*T.choir,a:bl*0.4,d:0.3,sus:0.9,r:1.5,det:(b%2?5:-5),wet:0.9});
  // 琶音（八分音符）
- const st=bl/T.arp.length;T.arp.forEach((x,i)=>{if(x==null)return;tone(dest,{f:mtof(deg(T,ch+x,1)),t:t+i*st,dur:st*0.9,type:'triangle',vol:0.045,a:0.005,d:st*0.6,sus:0.2,r:0.25,cut:2400,wet:0.35})});
+ const st=bl/T.arp.length;if(!ECO)T.arp.forEach((x,i)=>{if(x==null)return;tone(dest,{f:mtof(deg(T,ch+x,1)),t:t+i*st,dur:st*0.9,type:'triangle',vol:0.045,a:0.005,d:st*0.6,sus:0.2,r:0.25,cut:2400,wet:0.35})});
  // 旋律：每两小节一句
  const half=T.lead.length/2,base=(b%2)*half,lst=bl/half;for(let i=0;i<half;i++){const x=T.lead[base+i];if(x==null)continue;let len=1;while(i+len<half&&T.lead[base+i+len]==null&&len<4)len++;
   if(b%8>=2)tone(dest,{f:mtof(deg(T,x,1)),t:t+i*lst,dur:lst*len*0.95,type:T.lt,vol:0.05,a:0.03,d:0.2,sus:0.6,r:0.4,cut:T.lt==='sawtooth'?1600:3000,wet:0.6})}
  // 钟
- if(T.bell&&b%4===0)for(const m of[1,2.76,5.4])tone(dest,{f:mtof(deg(T,ch,1))*m,t,dur:2.5,type:'sine',vol:0.05*T.bell/m,a:0.002,d:2.4,sus:0.01,r:0.5,wet:0.8});
+ if(T.bell&&!ECO&&b%4===0)for(const m of[1,2.76,5.4])tone(dest,{f:mtof(deg(T,ch,1))*m,t,dur:2.5,type:'sine',vol:0.05*T.bell/m,a:0.002,d:2.4,sus:0.01,r:0.5,wet:0.8});
  // 打击：战鼓 + 碎拍
  if(T.perc){for(let i=0;i<4;i++){const tt=t+i*beat;if(i===0||i===2||(T.perc>0.8))tone(dest,{f:110,glide:38,t:tt,dur:0.35,type:'sine',vol:0.25*T.perc,a:0.002,d:0.3,sus:0.01,r:0.1});
   if(T.perc>0.5&&(i===1||i===3))noise(dest,{t:tt,dur:0.18,vol:0.05*T.perc,f:1800,q:0.8,wet:0.3});
@@ -115,7 +116,8 @@ function unlock(){init();if(!ctx)return;if(ctx.state==='suspended'&&!hidden)ctx.
   if(!timer)timer=setInterval(tick,250);tick()}}
 ['pointerdown','touchstart','touchend','mousedown','keydown','click'].forEach(e=>document.addEventListener(e,unlock,{capture:true,passive:true}));
 document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('button,.cell,.zc,.tn,#tabs button');if(b)sfxT('click',null,40)},true);
-document.addEventListener('visibilitychange',()=>{hidden=document.hidden;if(!ctx)return;
+let userPause=0;
+document.addEventListener('visibilitychange',()=>{hidden=document.hidden||!!userPause;if(!ctx)return;
  if(hidden){ctx.suspend()}else if(unlocked){ctx.resume().then(()=>{nextBar=Math.max(nextBar,ctx.currentTime+0.05);tick()})}});
 
 // ---------- 事件钩子（包装全局函数，与 loot.js 等同一惯例） ----------
@@ -263,6 +265,7 @@ window.AUDIO={
  set(k,v){const c=cfg();c[k]=Math.max(0,Math.min(1,+v||0));const e=document.getElementById('au_'+k+'T');if(e)e.textContent=Math.round(c[k]*100);applyVol();
   clearTimeout(saveT);saveT=setTimeout(()=>{try{save()}catch(e){}},400);if(k==='sv')sfxT('click',null,80)},
  toggle(k){const c=cfg();c[k]=c[k]?0:1;applyVol();try{save()}catch(e){}},
+ pause(b){userPause=b?1:0;hidden=document.hidden||!!userPause;if(!ctx)return;if(hidden)ctx.suspend();else if(unlocked)ctx.resume().then(()=>{nextBar=Math.max(nextBar,ctx.currentTime+0.05);tick()})},
  play:(n,a)=>sfx(n,a), music:k=>switchTo(k), tracks:Object.keys(TRACKS), get scene(){return cur}
 };
 })();
