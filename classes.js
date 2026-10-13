@@ -5,12 +5,15 @@
 // 新增技能放入全局 SKILLS/SKM（带 cls 字段），技能页/加点/自动施法按 S.cls 过滤；数值在 clsSV，施放在 acFeasible/acSmart/acCast 包装中。
 // 必须在 skills.js 之后加载（包装其自动施法函数）。
 // ===================================================================================
+// 平衡系数表（按角色等级线性插值）：法师=技能伤害系数 dk，野蛮人=近战伤害系数 mk。依据 1/12/24/30 级 60 秒击杀与亡灵术士对比调校
+const CLS_BAL={sor:[[1,0.253],[12,0.13],[24,0.172],[30,0.175]],bar:[[1,0.5],[12,0.125],[24,0.92],[30,0.34]]};
+function clsBalK(t){const l=(typeof S!=='undefined'&&S&&S.lvl)||1;if(l<=t[0][0])return t[0][1];for(let i=1;i<t.length;i++)if(l<=t[i][0]){const[a,x]=t[i-1],[b,y]=t[i];return x+(y-x)*(l-a)/(b-a)}return t[t.length-1][1]}
 const CLS_DEF={
  nec:{n:'亡灵术士',ic:'☠',glyph:'🧙‍♂️',at:{str:15,dex:25,vit:15,ene:25},life0:45,lpl:1.5,lpv:2,mana0:25,mpl:2,mpe:2,trees:['冥仆系','骨毒系','咒怨系']},
  bar:{n:'野蛮人',ic:'🪓',glyph:'🪓',at:{str:30,dex:20,vit:25,ene:10},life0:55,lpl:2,lpv:4,mana0:10,mpl:1,mpe:1,trees:['战斗技能','武器精通','战吼'],
-  sk:{bbash:1},eq:['swd1','shd1'],mk:()=>S.lvl<=24?0.85:Math.max(0.5,0.85-0.06*(S.lvl-24)),autoEne:()=>false},
+  sk:{bbash:1},eq:['swd1','shd1'],mk:()=>clsBalK(CLS_BAL.bar),autoEne:()=>false},
  sor:{n:'法师',ic:'🔮',glyph:'🧝‍♀️',at:{str:10,dex:25,vit:10,ene:35},life0:40,lpl:1,lpv:2,mana0:35,mpl:2,mpe:2,trees:['火焰法术','冰霜法术','闪电法术'],
-  sk:{mfb:1},eq:['wand1'],dk:()=>Math.max(0.2,0.42-0.0075*S.lvl),autoEne:()=>S.at.ene<Math.floor(S.lvl*1.5)+35},
+  sk:{mfb:1},eq:['wand1'],dk:()=>clsBalK(CLS_BAL.sor),autoEne:()=>S.at.ene<Math.floor(S.lvl*1.5)+35},
 };
 const curCls=()=>(S&&CLS_DEF[S.cls])?S.cls:'nec';
 function clsBase(){return CLS_DEF[curCls()]}
@@ -57,11 +60,11 @@ function clsOthers(ms,tg){return[tg,...ms.filter(m=>m!==tg)]}
 function clsCC(m,v){if(!m||m.hp<=0)return;if(v.slow)m.slow=Math.max(m.slow||0,GT+v.slow);if(v.stun&&!m.boss)m.stun=Math.max(m.stun||0,v.stun)}
 // 近战：武器伤害 × (1+pct%) + flat；o.el 转换元素(如狂暴→魔法)
 function clsMelee(m,pct,flat,o){o=o||{};if(!m||m.hp<=0)return 0;const db=m.dbf&&m.dbf.until>GT?m.dbf:null;const df=m.def*(1-ST.tdef/100)*(1-((db&&db.def)||0)/100);
- if(!o.sure&&!hitChance(ST.ar*(1+(o.ar||0)/100),df,S.lvl,m.lv))return 0;let k=(1+(pct||0)/100)*clsMk();if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
- const base=Math.max(1,clsWRoll()*k+(flat||0));const d=o.el?hitMon(m,{[o.el]:base},'hero',CLS_ELC[o.el]):hitMon(m,{phys:base,fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
+ if(!o.sure&&!hitChance(ST.ar*(1+(o.ar||0)/100),df,S.lvl,m.lv))return 0;let k=1+(pct||0)/100;if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
+ const base=Math.max(1,(clsWRoll()*k+(flat||0))*clsMk());const d=o.el?hitMon(m,{[o.el]:base},'hero',CLS_ELC[o.el]):hitMon(m,{phys:base,fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
  if(d){H.life=Math.min(ST.life,H.life+d*(ST.ll+(ST.bll||0))/100);H.mana=Math.min(ST.mana,H.mana+d*ST.ml/100+(curCls()==='bar'?2:0));clsCC(m,o)}return d}// 野蛮人：每次近战命中 +2 法力
-// 野蛮人武器权重（修复好武器偏强）：伤害 = 35% 实际武器 + 65% 等级基准武器(2+0.9×等级)，基准同样吃力量/精通/增益倍率
-const CLS_WW=0.35;function clsWRef(){return(2+0.9*S.lvl)*(ST.wmul||1)}
+// 野蛮人武器权重（修复好武器偏强）：伤害 = 20% 实际武器 + 80% 等级基准武器(2+0.9×等级)，基准同样吃力量/精通/增益倍率
+const CLS_WW=0.2;function clsWRef(){return(2+0.9*S.lvl)*(ST.wmul||1)}
 function clsWRoll(){const w=R(ST.wmin,ST.wmax);return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
 function clsWAvg(){const w=(ST.wmin+ST.wmax)/2;return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
 function setBuff(id,v,g){H.cbs=H.cbs||{};if(g)for(const k in H.cbs)if(k!==id&&H.cbs[k].g===g)delete H.cbs[k];H.cbs[id]=Object.assign({},v,{g,until:GT+(v.dur||30)});calc()}
