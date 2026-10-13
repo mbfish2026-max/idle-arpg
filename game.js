@@ -31,7 +31,7 @@ function itemLocal(it){const b=BASEM[it.b],m=allMods(it),o={};
 function itemReq(it){const b=BASEM[it.b];let l=it.req||0;for(const x of it.soc||[])if(x.r!=null)l=Math.max(l,RUNES[x.r][1]);if(it.rw!=null)l=Math.max(l,RUNEWORDS[it.rw].lv);
  const f=it.q===0?0.8:1;return{lv:l,str:Math.floor((b.str||0)*f),dex:Math.floor((b.dex||0)*f)}}
 function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;if(BASEM[it.b]&&BASEM[it.b].cls&&typeof curCls==='function'&&curCls()!=='nec')return false;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
-function itemName(it){if(it.k==='gem')return GEMG[it.lv]+GEMS[it.g].n;if(it.k==='rune')return RUNES[it.r][0]+'符文';return it.rw!=null?RUNEWORDS[it.rw].n:it.name}
+function itemName(it){if(!it)return'损坏物品';if(it.k==='gem')return GEMS[it.g]?(GEMG[it.lv]||'')+GEMS[it.g].n:'未知宝石';if(it.k==='rune')return RUNES[it.r]?RUNES[it.r][0]+'符文':'未知符文';return it.rw!=null?(RUNEWORDS[it.rw]?RUNEWORDS[it.rw].n:'未知符文之语'):(it.name||'未知物品')}
 function itemColor(it){if(it.k==='gem')return GEMS[it.g].c;if(it.k==='rune')return'#ffa040';if(it.rw!=null)return QC[8];if((it.q===1||it.q===2)&&it.sock)return'#a0a0a0';return QC[it.q]}
 function power(it){if(it.k)return 0;const m=allMods(it),l=itemLocal(it);let p=(l.def||0)*1+((l.min||0)+(l.max||0))*2;
  const w={str:3,dex:3,vit:4,ene:3,life:2,mana:1.5,ar:.2,fres:1.5,cres:1.5,lres:1.5,pres:1.2,allres:6,allsk:120,t0sk:60,t1sk:60,t2sk:60,fcr:3,mf:2,gf:.3,ll:8,ml:6,ias:3,regen:6,mpk:8,undead:.5,firemin:4,coldmin:4,lightmax:2,poisdmg:.3,tdef:1,dr:8,mdr:6,fhr:1.5,block:2,thorns:1,mregen:1,dmgmana:1,sumdmg:2,sumlife:2};
@@ -369,7 +369,9 @@ function modsTxt(m){return Object.entries(m).map(([k,v])=>(MODT[k]||k+' {v}').re
 const SLOTG={weapon:'🪄',shield:'💀',helm:'⛑',armor:'🥋',gloves:'🧤',belt:'🎗',boots:'🥾',amulet:'📿',ring:'💍'};
 function itemIcon(it){if(it.k==='rune')return`<i class="ii rune">${it.r+1}</i>`;if(it.k==='gem')return`<i class="ii gem" style="--c:${GEMS[it.g].c}">◆</i>`;
  const b=BASEM[it.b];return`<i class="ii">${b.cat==='wand'?'🪄':b.cat==='dagger'?'🗡':b.cat==='sword'?'⚔':b.cat==='shield'?'🛡':SLOTG[slotOf(b)]}</i>`}
-function cell(it,on){return`<div class="cell q${it.q??'x'} ${it.rw!=null?'rw':''}" style="--c:${itemColor(it)}" onclick="${on}">${itemIcon(it)}${it.sock?`<em class="sk">${'●'.repeat((it.soc||[]).length)}${'○'.repeat(it.sock-(it.soc||[]).length)}</em>`:''}<small>${itemName(it)}</small></div>`}
+// 坏物品（缺数据/旧版存档）只显示占位，不让整页渲染崩溃
+function cell(it,on){try{return cell0(it,on)}catch(e){console.warn('坏物品',it,e);return`<div class="cell bad" style="--c:#844"><span class="glyph">?</span><small>损坏物品</small></div>`}}
+function cell0(it,on){return`<div class="cell q${it.q??'x'} ${it.rw!=null?'rw':''}" style="--c:${itemColor(it)}" onclick="${on}">${itemIcon(it)}${it.sock?`<em class="sk">${'●'.repeat((it.soc||[]).length)}${'○'.repeat(it.sock-(it.soc||[]).length)}</em>`:''}<small>${itemName(it)}</small></div>`}
 function renderBag(){const P=$('#panel');const doll=SLOTS.map(k=>{const it=S.eq[k];return it?`<div class="dslot">${cell(it,`showItem(${it.uid},'eq')`)}</div>`:`<div class="dslot"><div class="cell empty"><i class="ii">${SLOTG[k.startsWith('ring')?'ring':k]}</i><small>${SLOTN[k]}</small></div></div>`}).join('');
  const sc=setCount();const sets=Object.entries(sc).map(([k,n])=>`<span class="setb">${SETS[k].n} ${n}件</span>`).join('');
  const fl=[['all','全部'],['eq','装备'],['misc','符文宝石']];const items=S.bag.filter(it=>BAGF==='all'||(BAGF==='eq'?!it.k:!!it.k));
@@ -461,15 +463,19 @@ function autoTick(){let ch={};ch=0;const learned=[];for(const[k,c]of[['hp',30],[
  const PL=(typeof clsSkPlan==='function'&&clsSkPlan())||{order:SK_ORDER,fill:SK_FILL};
  if(S.autoSk)while(S.kp>0){const done={};const id=PL.order.find(x=>{done[x]=(done[x]||0)+1;return bl(x)<done[x]&&canLearn(x)})||PL.fill().find(canLearn);if(!id)break;S.sk[id]=bl(id)+1;S.kp--;ch=1;learned.push(SKM[id].n)}if(learned.length)log('自动加点：'+learned.join('、'));
  if(S.autoAt&&S.sp>0){const ns=needStr();while(S.sp>0){if(ST.attr.str<ns)S.at.str++;else if(curCls()==='nec'?(ST.attr.ene<S.lvl+25&&S.at.ene<S.lvl+15):clsBase().autoEne())S.at.ene++;else S.at.vit++;S.sp--;calc()}ch=1}
- if(S.autoEq)for(const it of S.bag.slice()){if(it.k||!canEquip(it))continue;const b=BASEM[it.b];let k=slotOf(b);if(k==='ring')k=!S.eq.ring1?'ring1':!S.eq.ring2?'ring2':(power(S.eq.ring1)<power(S.eq.ring2)?'ring1':'ring2');
+ if(S.autoEq)for(const it of S.bag.slice()){if(!it||it.k||!BASEM[it.b]||!canEquip(it))continue;const b=BASEM[it.b];let k=slotOf(b);if(k==='ring')k=!S.eq.ring1?'ring1':!S.eq.ring2?'ring2':(power(S.eq.ring1)<power(S.eq.ring2)?'ring1':'ring2');
   if(!S.eq[k]||power(it)>power(S.eq[k])){const i=S.bag.indexOf(it);S.bag.splice(i,1);if(S.eq[k])S.bag.push(S.eq[k]);S.eq[k]=it;ch=1;log(`自动换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`)}}
  if(ch){calc();if(TAB!=='fight')render()}}
-function needStr(){let n=0;for(const it of S.bag)if(!it.k){const r=itemReq(it);if(r.lv<=S.lvl+3&&r.str<=ST.attr.str+10)n=Math.max(n,r.str)}return Math.min(n,60)}
+function needStr(){let n=0;for(const it of S.bag)if(it&&!it.k&&BASEM[it.b]){const r=itemReq(it);if(r.lv<=S.lvl+3&&r.str<=ST.attr.str+10)n=Math.max(n,r.str)}return Math.min(n,60)}
+// 我方行可横向滑动：右侧还有内容时加渐隐遮罩提示
+function arowHint(){const a=$('#arow');if(a)a.classList.toggle('ovf',a.scrollLeft+a.clientWidth<a.scrollWidth-2)}
 // ===== 主循环 =====
 let lastT=performance.now(),autoT=0,acc=0,uiT=0,saveT=0;
-function loop(now){let dt=Math.min(0.1,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
- uiT+=dt;if(uiT>0.15){uiT=0;if(TAB==='fight')renderFight()}drawFX(dt);
- autoT+=dt*SPEED;if(autoT>1){autoT=0;autoTick()}saveT+=dt;if(saveT>5){saveT=0;killWin=killWin.filter(t=>GT-t<120);if(GT>60)S.kpm=killWin.length/Math.min(2,GT/60);save()}requestAnimationFrame(loop)}
+// 主循环出错时也要继续调度下一帧，否则单个坏数据会让整个游戏停住
+function loop(now){try{loop0(now)}catch(e){console.error(e)}requestAnimationFrame(loop)}
+function loop0(now){let dt=Math.min(0.1,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
+ uiT+=dt;if(uiT>0.15){uiT=0;if(TAB==='fight'){renderFight();arowHint()}}drawFX(dt);
+ autoT+=dt*SPEED;if(autoT>1){autoT=0;autoTick()}saveT+=dt;if(saveT>5){saveT=0;killWin=killWin.filter(t=>GT-t<120);if(GT>60)S.kpm=killWin.length/Math.min(2,GT/60);save()}}
 function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render()});
  $('#modal').onclick=e=>{if(e.target.id==='modal')closeM()};

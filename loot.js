@@ -16,7 +16,7 @@ const _lt_load=load;load=function(){_lt_load();ensureLoot()};
 function matCount(id){return S.bag.filter(x=>x.k==='mat'&&x.id===id).reduce((a,x)=>a+(x.n||0),0)}
 function addMat(id,n){if(n<=0)return;pushInto(S.bag,{uid:S.uid++,k:'mat',id,n})}
 function takeMat(id,n){if(matCount(id)<n)return false;for(const x of S.bag)if(x.k==='mat'&&x.id===id){const t=Math.min(x.n,n);x.n-=t;n-=t;if(!n)break}mergeMats(S.bag);return true}
-const _lt_name=itemName;itemName=function(it){return it.k==='mat'?MATS[it.id].n:_lt_name(it)};
+const _lt_name=itemName;itemName=function(it){return it&&it.k==='mat'?(MATS[it.id]?MATS[it.id].n:'未知材料'):_lt_name(it)};
 const _lt_color=itemColor;itemColor=function(it){return it.k==='mat'?MATS[it.id].c:_lt_color(it)};
 const _lt_price=sellPrice;sellPrice=function(it){return it.k==='mat'?2:_lt_price(it)};
 const _lt_show=showItem;showItem=function(uid){const f=findItem(uid);if(f&&f.it.k==='mat'){const it=f.it;const n=f.stash?groupCount(f):matCount(it.id);
@@ -48,7 +48,7 @@ function recycleNow(){ensureLoot();const was=S.rcy.on;S.rcy.on=1;const b0=STATS.
  const n=STATS.rcy-b0;if(!window.__NOUI){toast(n?`回收 ${n} 件：+${STATS.rcyG-g0}金币 +${STATS.rcyE-e0}精华`:'没有符合回收规则的物品');render()}return n}
 // ---------- 离线结算附加回收/存仓统计 ----------
 const _lt_off=offline;offline=function(){const a=STATS.rcy,g=STATS.rcyG,e=STATS.rcyE,s=STATS.ast;_lt_off();const n=STATS.rcy-a,m=STATS.ast-s;if(window.__NOUI||(!n&&!m))return;
- const box=document.querySelector('#modal .gp .grid');if(box)box.insertAdjacentHTML('beforebegin',`<div class="g">自动回收 ${n} 件：+${STATS.rcyG-g} 金币，+${STATS.rcyE-e} 残骸精华${m?`；自动存仓 ${m} 件`:''}</div>`)};
+ const box=document.querySelector('#modal .gp .grid');for(const d of document.querySelectorAll('#modal .gp>.dim'))if(n&&d.textContent.startsWith('自动出售'))d.remove();if(box)box.insertAdjacentHTML('beforebegin',`<div class="g">自动回收 ${n} 件：+${STATS.rcyG-g} 金币，+${STATS.rcyE-e} 残骸精华${m?`；自动存仓 ${m} 件`:''}</div>`)};
 // ---------- 炼金匣：精华重铸 ----------
 const ESS_REROLL=20;
 const _lt_rec=cubeRecipes;cubeRecipes=function(){const rec=_lt_rec();if(matCount('ess')>=ESS_REROLL)for(const it of S.bag)if(!it.k&&(it.q===3||it.q===4))rec.push([`${ESS_REROLL}×残骸精华 + ${itemName(it)} → 精华重铸（同品质，物品等级不变）`,`essReroll(${it.uid})`]);return rec};

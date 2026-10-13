@@ -54,7 +54,7 @@ genItem=function(ilvl,opt={}){const b=opt.base||pickBase(ilvl,opt.slot);const it
  else if(q===1||q===2){it.name=(q===2?'精良的':'')+b.n;if(q===2){if(b.dmg)it.m.edmg=R(5,15);else if(b.def)it.m.edef=R(5,15)}
   if(maxSock(b,ilvl)&&rnd()<0.18)it.sock=R(1,maxSock(b,ilvl))}
  else if(q===3){let p=null,s=null;const r=rnd();if(r<0.75)p=rollAff(PREFIX,b,al,used);if(r>=0.25||!p)s=rollAff(SUFFIX,b,al,used);if(!p&&!s)p=rollAff(PREFIX,b,al,used);
-  if(p)applyAff(it,p,b,ilvl);if(s)applyAff(it,s,b,ilvl);staffMods(it,b,ilvl);it.name=(s?s.n:'')+(p?p.n:'')+b.n}
+  if(p)applyAff(it,p,b,ilvl);if(s)applyAff(it,s,b,ilvl);staffMods(it,b,ilvl);it.name=(s?(s.dn||s.n):'')+(p?p.n:'')+b.n}
  else if(q===4||q===7){const n=q===7?R(1,4):R(3,6);let np=0,ns=0;
   for(let i=0;i<n*4&&np+ns<n;i++){const wantP=np<3&&(ns>=3||rnd()<0.5);const a=rollAff(wantP?PREFIX:SUFFIX,b,al,used);if(!a)continue;applyAff(it,a,b,ilvl);wantP?np++:ns++}
   it.np=np;it.ns=ns;staffMods(it,b,ilvl);if(q===4)it.name=pick(RARE_A)+pick(RARE_A)+pick(RARE_B[slotOf(b)])}
@@ -62,7 +62,7 @@ genItem=function(ilvl,opt={}){const b=opt.base||pickBase(ilvl,opt.slot);const it
 function finishDefense(it,b){/* 暗金/套装的 def 区间作为本地加成；防御基础值已在 makeBase 生成 */return it}
 
 // ---------- 物品显示 / 需求 ----------
-const _itm_itemName=itemName;itemName=function(it){if(!it.k&&it.rw==null&&!it.name)return(BASEM[it.b]||{n:'?'}).n;return _itm_itemName(it)};
+const _itm_itemName=itemName;itemName=function(it){if(it&&!it.k&&it.rw==null&&!it.name)return(BASEM[it.b]||{n:'?'}).n;const nm=_itm_itemName(it);return typeof sufDn==='function'&&it&&!it.k&&nm&&nm[0]==='之'?nm.replace(/^之.(·[小大巨])?/,x=>sufDn(x)):nm};
 socketMods=function(it){const b=BASEM[it.b],m={},c=sockCat(b);
  for(const x of it.soc||[]){let e;if(x.g){const G=GEMS[x.g];e=(c==='w'?G.w:c==='s'?G.s:G.a)(x.lv)}else{const r=RUNES[x.r];e=c==='w'?r[2]:(c==='s'&&r[4]?r[4]:r[3])}for(const k in e)m[k]=(m[k]||0)+e[k]}
  if(it.rw!=null){const w=it.rwm||RUNEWORDS[it.rw].m;for(const k in w){const v=Array.isArray(w[k])?w[k][1]:w[k];m[k]=(m[k]||0)+v}}return m};

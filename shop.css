@@ -1,6 +1,6 @@
 /* shop.css — 商店 */
 .shc{display:flex;flex-direction:column;gap:2px;align-items:stretch}
-.shc .btn{padding:2px 0;font-size:11px}.shc small{text-align:center}
+.shc .btn{padding:2px 0;font-size:11px;min-height:44px}.shc small{text-align:center}
 .cell.unid{--c:#6f8fff;border-style:dashed}
 .shoph h3 .gold{color:#ffd76a;float:right}
 #tabs button{min-width:0}

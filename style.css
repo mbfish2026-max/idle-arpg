@@ -50,6 +50,7 @@ body{background:#000;color:var(--txt);font-family:"STKaiti","KaiTi","Songti SC",
 .mc em,.ac em{position:absolute;right:0;top:0;font-style:normal;font-size:10px;padding:0 2px;z-index:2}
 .mc .cur{background:#5a1a7a;color:#f0d0ff}.mc .psn{top:14px;background:#1a5a1a;color:#bfb}.ac .tm{background:#000;color:#ccc}
 #arow{display:flex;gap:5px;overflow-x:auto;padding:4px 0 2px;align-items:flex-end;scrollbar-width:none}
+#arow.ovf{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
 #arow .ac{flex:none;width:62px;border-color:#3d9a3d;box-shadow:0 0 6px #1d6a1d}.ac .pt{height:44px}.ac .glyph{font-size:26px}
 #arow .ac.hero{width:72px;border-color:var(--gold);box-shadow:0 0 10px #a07020}.ac.hero .pt{height:54px;background:radial-gradient(#4a3a5a,#1a1020)}.ac.hero .glyph{filter:drop-shadow(0 0 6px #6f6)}
 .abs{font-size:10px;color:#ddd;background:#333;border:1px solid #888}
