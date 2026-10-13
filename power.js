@@ -4,8 +4,9 @@
 const KEY='anye_pwr';
 const mobile=(typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches)||/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent||'');
 let P={};try{P=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){P={}}
-if(P.eco==null)P.eco=mobile;            // 手机默认开启省电模式
-const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify({eco:P.eco}))}catch(e){}};
+// 省电模式默认关闭（手机默认开启会关掉攻击/技能特效）；旧版自动开启但未手动设置过(无 m 标记)的一次性重置为关闭
+if(!P.m)P.eco=false;
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify({eco:P.eco,m:1}))}catch(e){}};
 function apply(){PWRF.fps=P.eco?15:30;PWRF.ui=P.eco?0.5:0.25;window.PWR_ECO=!!P.eco;
  if(document.body)document.body.classList.toggle('eco',!!P.eco)}
 // 省电模式下跳过：飘字、技能特效（画布/图片/帧动画）、地面掉落标签
