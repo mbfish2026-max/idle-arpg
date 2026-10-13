@@ -114,7 +114,12 @@ def bone_prison():
             d.polygon([(x-9,210),(x+9,210),(x+1,210-h)],fill=(220,210,185,int(255*fade)))
         g=glow_layer([(30+s*24,205,10,120*fade) for s in range(9)],(200,210,230),blur=(3,8)); g.alpha_composite(im); fr.append(g)
     save('bone_prison',fr)
-bone_spear(); poison_nova(); corpse_explosion(); curse_aura(); bone_prison()
+# fx2 v3：改用手绘素材驱动的帧动画（见 gen_fx2.py）；以上程序化版本保留作参考/后备
+import sys; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+if os.path.isdir(os.environ.get('FX2_SRC','/workspace/fx2_gen')):
+    import gen_fx2; gen_fx2.main()
+else:
+    bone_spear(); poison_nova(); corpse_explosion(); curse_aura(); bone_prison()
 # ---------- 3) 地图下层场景缩略图（240x160，暗化+阶梯下行标记+章节色调） ----------
 MAP={1:['a1_z05','a1_z09','a1_z12','a1_z17'],2:['a2_cave_0','a2_tomb_1','a2_jail_0','a2_tower_1'],3:['a3_cave_1','a3_jail_1','a3_temple_0','a3_jungle_1'],4:['a4_hell_0','a4_hell_1'],5:['a5_ice_0','a5_temple_0','a5_snow_1']}
 TONE={1:(150,110,70),2:(170,130,70),3:(80,130,80),4:(170,50,30),5:(110,140,180)}
