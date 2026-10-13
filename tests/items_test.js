@@ -147,7 +147,7 @@ G('S.rcy.on=0;S.ast.on=0');
 
 sec('商店 / 赌博');
 G(`S.gold=100;S.bag=[];ensureShop(true);window._it=S.shop.items[0];buyItem(_it.uid)`);ok(G('S.gold')>=0,'金币不负');
-G(`S.gold=1e7;window._c=S.shop.items.length;buyItem(S.shop.items[0].uid)`);ok(G('S.shop.items.length===_c-1&&S.bag.length===1'),'购买');
+G(`S.gold=1e7;S.bag=[];window._c=S.shop.items.length;buyItem(S.shop.items[0].uid)`);ok(G('S.shop.items.length===_c-1&&S.bag.length===1'),'购买');
 G(`window._sold=S.bag[0];shopSell(_sold.uid)`);ok(G('S.bag.length===0&&S.shop.bb[0].it===_sold'),'出售进入回购');G('buyBack(0)');ok(G('S.bag.length===1&&S.shop.bb.length===0&&S.bag[0]===_sold'),'回购不复制');
 ok(G('shopSellPrice(_sold)<=buyPrice(_sold)'),'卖价低于买价');
 G('S.gold=0;buyPot("hp");buyPot("rej")');ok(G('S.gold')===0,'金币不足无法购买');
