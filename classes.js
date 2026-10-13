@@ -14,9 +14,9 @@ const CLS_DEF={
 };
 // 技能：顺序即默认自动施法优先级（增益/控制 → 群攻 → 单体）
 const CLS_SKILLS=[
- {id:'bshout',cls:'bar',t:2,n:'战斗怒吼',r:1,col:1,pre:[],kind:'cbuff',ic:'📯',mana:L=>5},
- {id:'bhowl',cls:'bar',t:2,n:'震慑战嚎',r:6,col:0,pre:[],kind:'warcry',ic:'🗣',mana:L=>6},
- {id:'bww',cls:'bar',t:0,n:'旋风斩',r:12,col:2,pre:['bbash'],kind:'melee',ic:'🌀',mana:L=>5+0.25*(L-1)},
+ {id:'bshout',cls:'bar',t:2,n:'战斗怒吼',r:1,col:1,pre:[],kind:'cbuff',ic:'📯',mana:L=>3},
+ {id:'bhowl',cls:'bar',t:2,n:'震慑战嚎',r:6,col:0,pre:[],kind:'warcry',ic:'🗣',mana:L=>4},
+ {id:'bww',cls:'bar',t:0,n:'旋风斩',r:12,col:2,pre:['bbash'],kind:'melee',ic:'🌀',mana:L=>3+0.2*(L-1)},
  {id:'bbash',cls:'bar',t:0,n:'猛击',r:1,col:1,pre:[],kind:'melee',ic:'🔨',mana:L=>1},
  {id:'bmast',cls:'bar',t:1,n:'武器精通',r:1,col:0,pre:[],kind:'passive',ic:'⚔'},
  {id:'mfa',cls:'sor',t:1,n:'寒冰护甲',r:1,col:1,pre:[],kind:'cbuff',ic:'❄',mana:L=>7},
@@ -39,8 +39,8 @@ function clsInit(){const c=curCls();if(c==='nec'||S.ci)return;const D=CLS_DEF[c]
 // ---------- 技能数值 ----------
 function clsSV(id,L){const sy=syn(id),r=(a,b)=>[Math.round(a*sy),Math.round(b*sy)];
  switch(id){
- case'bbash':{const p=80+20*(L-1),f=2+2*(L-1);return{pct:p,flat:f,txt:`近战一击：武器伤害 +${p}%，额外 +${f} 物理伤害`}}
- case'bww':{const p=Math.round((20+15*(L-1))*sy),f=1+L;return{pct:p,flat:f,txt:`旋转攻击全部敌人（最多 8 个），武器伤害 +${p}%，额外 +${f} 物理伤害`}}
+ case'bbash':{const p=80+20*(L-1),f=3+3*(L-1);return{pct:p,flat:f,txt:`近战一击：武器伤害 +${p}%，额外 +${f} 物理伤害`}}
+ case'bww':{const p=Math.round((50+20*(L-1))*sy),f=2+3*(L-1);return{pct:p,flat:f,txt:`旋转攻击全部敌人（最多 8 个），武器伤害 +${p}%，额外 +${f} 物理伤害`}}
  case'bmast':{const d=20+8*(L-1),a=30+10*(L-1),c=Math.min(35,Math.round(dim(L,5,45))),i=Math.min(40,8+2*(L-1));return{dmg:d,ar:a,crit:c,ias:i,txt:`武器伤害 +${d}%，命中 +${a}%，攻速 +${i}%，${c}% 几率重击(双倍)`}}
  case'bshout':{const d=15+5*(L-1),df=20+10*(L-1),t=12+2*(L-1);return{dmg:d,def:df,dur:t,txt:`战吼：伤害 +${d}%，防御 +${df}%，持续 ${t} 秒`}}
  case'bhowl':{const t=+(1.5+0.25*(L-1)).toFixed(2),w=Math.min(60,20+3*(L-1));return{dur:t,wk:w,txt:`震慑所有敌人 ${t} 秒，并使其伤害 -${w}%（${t*3}秒）`}}
@@ -53,17 +53,18 @@ function clsSV(id,L){const sy=syn(id),r=(a,b)=>[Math.round(a*sy),Math.round(b*sy
  return{txt:''}}
 // ---------- 属性：被动/增益（由 game.js calc 末尾调用） ----------
 function clsCalc(o){const c=curCls();if(c==='nec')return;
- if(c==='bar'){const b0=bl('bmast'),L=b0?b0+o.allsk+(o.t1sk||0)+(o.sk_bmast||0):0;if(L){const v=clsSV('bmast',L);o.wmin=Math.floor(o.wmin*(1+v.dmg/100));o.wmax=Math.floor(o.wmax*(1+v.dmg/100));o.ar=Math.round(o.ar*(1+v.ar/100));o.bcrit=v.crit;o.atkT=1.5/(1+(o.ias+v.ias)/100)}
+ if(c==='bar'){const b0=bl('bmast'),L=b0?b0+o.allsk+((o.M||{}).tc_bar1||0)+(o.sk_bmast||0):0;if(L){const v=clsSV('bmast',L);o.wmin=Math.floor(o.wmin*(1+v.dmg/100));o.wmax=Math.floor(o.wmax*(1+v.dmg/100));o.ar=Math.round(o.ar*(1+v.ar/100));o.bcrit=v.crit;o.atkT=1.5/(1+(o.ias+v.ias)/100)}
+  if(BASEM[S.eq.shield?.b]?.block)o.block=Math.min(75,o.block+5);// 野蛮人职业格挡 25（亡灵术士/法师 20，已含在底材里）
   const b=H.cb;if(b&&b.id==='bshout'&&b.until>GT){o.wmin=Math.floor(o.wmin*(1+b.dmg/100));o.wmax=Math.floor(o.wmax*(1+b.dmg/100));o.def=Math.round(o.def*(1+b.def/100))}}
  if(c==='sor'){const b=H.cb;if(b&&b.id==='mfa'&&b.until>GT){o.def=Math.round(o.def*(1+b.def/100));o.res.cold=Math.min(75,o.res.cold+b.cres)}}}
 // ---------- 战斗 ----------
 function clsMelee(m,mul,flat){if(!hitChance(ST.ar,m.def*(1-ST.tdef/100),S.lvl,m.lv))return 0;let k=1+mul/100;if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
  const d=hitMon(m,{phys:Math.max(1,R(ST.wmin,ST.wmax)*k+(flat||0)),fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
- if(d){H.life=Math.min(ST.life,H.life+d*ST.ll/100);H.mana=Math.min(ST.mana,H.mana+d*ST.ml/100+(curCls()==='bar'?1:0))}return d}// 野蛮人：每次近战命中 +1 法力（挂机下保证战吼/旋风斩可持续）
+ if(d){H.life=Math.min(ST.life,H.life+d*ST.ll/100);H.mana=Math.min(ST.mana,H.mana+d*ST.ml/100+(curCls()==='bar'?2:0))}return d}// 野蛮人：每次近战命中 +2 法力（挂机下保证战吼/旋风斩可持续）
 function clsFxRing(c){if(TAB!=='fight')return;FX.push({k:'nova',pts:[],h:heroPos(),c,t:0,life:.7})}
 const CLS_CAST={
  bbash(ms,v){const tg=target(ms);clsMelee(tg,v.pct,v.flat);fx('slash',[tg]);return 2},
- bww(ms,v){const tg=ms.slice(0,8);for(const m of tg)clsMelee(m,v.pct,v.flat);fx('slash',tg);clsFxRing('#e8d0a0');return 2},
+ bww(ms,v){const tg=ms.slice(0,8);for(const m of tg)clsMelee(m,v.pct,v.flat);fx('slash',tg);clsFxRing('#e8d0a0');return 1}/* 旋风斩按施法节奏(连续旋转) */,
  bshout(ms,v){H.cb={id:'bshout',until:GT+v.dur,dmg:v.dmg,def:v.def};calc();floatHero('战吼!','#ffd76a');fx('shield');return 1},
  bhowl(ms,v){for(const m of ms){if(!m.boss)m.stun=Math.max(m.stun||0,v.dur);m.bwk={until:GT+v.dur*3,x:v.wk}}clsFxRing('#ffb050');floatHero('震慑!','#ffb050');return 1},
  mfb(ms,v){const tg=target(ms);hitMon(tg,{fire:R(v.dmg[0],v.dmg[1])},'hero','#f84');fx('boom',[tg]);return 1},
@@ -75,14 +76,14 @@ const CLS_CAST={
 for(const k of['melee','spell','cbuff','warcry'])if(!AC_KINDS.includes(k))AC_KINDS.push(k);
 {const f=acFeasible;acFeasible=function(id,ms){const s=SKM[id];if(!s||!s.cls)return f(id,ms);if(!castable(id))return 0;
  if(s.kind==='cbuff')return!(H.cb&&H.cb.id===id&&H.cb.until>GT+2);
- if(s.kind==='warcry')return ms.some(m=>!(m.stun>0));
+ if(s.kind==='warcry')return ms.some(m=>!(m.stun>0)&&!(m.bwk&&m.bwk.until>GT));
  return ms.length>0}}
-const CLS_SMART={bww:3,mmet:3,mnova:3,mcl:2,bhowl:3};
+const CLS_SMART={bww:2,mmet:3,mnova:3,mcl:2,bhowl:3};
 {const f=acSmart;acSmart=function(id,ms){const s=SKM[id];if(!s||!s.cls)return f(id,ms);const n=CLS_SMART[id];
  if(n)return ms.length>=n||(id!=='mnova'&&ms.some(m=>m.boss||m.fl==='uniq'));return 1}}
 {const f=acCast;acCast=function(id,ms){const s=SKM[id];if(!s||!s.cls)return f(id,ms);ACT[id]=GT;const v=SV(id,slvl(id));spend(id);return CLS_CAST[id](ms,v)}}
 {const f=acSmartTxt;acSmartTxt=function(id){const s=SKM[id];if(!s||!s.cls)return f(id);
- return{bbash:'有目标即用（主攻单体）',bww:'怪物≥3或有精英/首领',bshout:'战吼未生效时施放',bhowl:'怪物≥3或有精英/首领',mfb:'有目标即用（主攻单体）',mmet:'怪物≥3或有精英/首领',mnova:'怪物≥3',mcl:'怪物≥2或有精英/首领',mfa:'护甲未生效时施放'}[id]||''}}
+ return{bbash:'有目标即用（主攻单体）',bww:'怪物≥2或有精英/首领',bshout:'战吼未生效时施放',bhowl:'怪物≥3或有精英/首领',mfb:'有目标即用（主攻单体）',mmet:'怪物≥3或有精英/首领',mnova:'怪物≥3',mcl:'怪物≥2或有精英/首领',mfa:'护甲未生效时施放'}[id]||''}}
 // 增益到期重算属性；震慑战嚎的减伤：本帧怪物出手前临时降低伤害（step 结束后还原）
 {const f=step;step=function(dt){if(H.cb&&H.cb.until<=GT){H.cb=null;calc()}const sv=[];
  for(const m of MON)if(m.bwk&&m.bwk.until>GT&&m.hp>0){sv.push([m,m.dmg]);m.dmg=m.dmg.map(x=>x*(1-m.bwk.x/100))}
@@ -95,3 +96,27 @@ const CLS_SKPLAN={
  sor:{order:['mfb','mfa','mfb','mfb','mfb','mcl','mnova','mcl','mcl','mfb','mmet','mmet','mmet'],fill:()=>['mmet','mfb','mcl','mnova','mfa']},
 };
 function clsSkPlan(){return CLS_SKPLAN[curCls()]||null}
+// ===================================================================================
+// 职业专属底材 / 词缀 / 技能等级加成（b.ccls = 职业 id；缩颅标记为亡灵术士）
+// ===================================================================================
+TCAP.orb=[2,3,3];TCAP.bhelm=[2,3,3];ITYPES.orb=['armo','shld','orb'];ITYPES.bhelm=['armo','helm','phlm'];
+{const nb=[
+ A('orb1','shield','orb','鹰眼法球',1,0,[1,3],0,2),A('orb2','shield','orb','冰晶法球',12,0,[2,5],0,2),A('orb3','shield','orb','烈焰法球',22,0,[3,7],0,2),
+ A('orb4','shield','orb','星辰法球',36,1,[6,12],0,3),A('orb5','shield','orb','天穹法球',60,2,[10,20],0,3),
+ A('bh1','helm','bhelm','狼首盔',3,0,[8,11],25,2),A('bh2','helm','bhelm','獠牙战盔',12,0,[15,20],40,2),A('bh3','helm','bhelm','巨角盔',24,0,[25,35],55,3),
+ A('bh4','helm','bhelm','屠夫面盔',40,1,[50,70],80,3),A('bh5','helm','bhelm','苍狼王冠',62,2,[90,125],110,3)];
+ for(const b of nb){b.cls=1;b.ccls=b.cat==='orb'?'sor':'bar';BASES.push(b);BASEM[b.id]=b}
+ for(const b of BASES)if(b.cat==='head')b.ccls='nec'}
+{const add=(n,lv,rq,it,k,v)=>PREFIX.push(AF(n,lv,rq,'skill',it,{[k]:[v,v]}));
+ const T={bar:[['斗士的','战魂的','战神的'],['剑士的','锋主的','兵圣的'],['呼号的','咆哮的','雷吼的']],sor:[['焰语的','炎术的','焚天的'],['霜语的','冰术的','凛冬的'],['雷语的','电术的','天雷的']]};
+ const IT={bar:'phlm,amul',sor:'orb,amul'};
+ for(const c in T)for(let t=0;t<3;t++){const k='tc_'+c+t;MODT[k]='+{v} '+CLS_DEF[c].trees[t]+'（'+CLS_DEF[c].n+'专属）';HIDDEN_KEYS.add(k);T[c][t].forEach((n,i)=>add(n,[20,40,60][i],[15,30,45][i],IT[c],k,i+1))}
+ MODT.t0sk='+{v} 冥仆系技能（亡灵术士专属）';MODT.t1sk='+{v} 骨毒系技能（亡灵术士专属）';MODT.t2sk='+{v} 咒怨系技能（亡灵术士专属）'}
+const baseCls=b=>b&&b.ccls||null;
+// 职业专属底材：其他职业不可装备（缩颅/法球/野蛮人头盔）
+{const f=canEquip;canEquip=function(it){const b=it&&!it.k&&BASEM[it.b];if(b&&b.ccls&&b.ccls!==curCls())return false;return f(it)}}
+// 技能等级：职业技能吃 +全部技能、本职业系别(tc_<cls><t>)、单技能 sk_<id>；亡灵术士系别词缀(t0sk..)只对亡灵术士生效
+{const f=slvl;slvl=function(id){const s=SKM[id];if(!s||!s.cls)return f(id);const b=bl(id);if(!b)return 0;const M=ST.M||{};return b+ST.allsk+(M['tc_'+s.cls+s.t]||0)+(ST['sk_'+id]||0)}}
+// 法球/野蛮人头盔的法杖技能词缀只出本职业技能；魔杖/缩颅只出亡灵术士技能
+if(typeof staffMods==='function'){STAFFMOD_CATS.add('orb');STAFFMOD_CATS.add('bhelm');const f=staffMods;staffMods=function(it,b,ilvl){const c=(b&&b.ccls)||'nec';const all=SKILLS.slice();
+ SKILLS.length=0;for(const s of all)if((s.cls||'nec')===c)SKILLS.push(s);try{return f(it,b,ilvl)}finally{SKILLS.length=0;for(const s of all)SKILLS.push(s)}}}
