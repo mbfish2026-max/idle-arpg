@@ -8,9 +8,9 @@ const EG_DEF=()=>({v:1,clock:0,
  para:{lv:0,xp:0,pts:{}},
  lp:{arch:{},cube:{w:null,a:null,j:null}},
  season:null,ach:{},title:null,codex:{u:{},s:{}},
- ev:{tideB:0,ember:0,wbN:0,wbNext:0},stat:{}});
+ ev:{wbN:0,wbNext:0},stat:{}});
 function egFill(o,d){for(const k in d){if(o[k]===undefined||o[k]===null&&d[k]!==null)o[k]=d[k];else if(d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k])&&typeof o[k]==='object'&&o[k])egFill(o[k],d[k])}return o}
-function EG(){if(!S)return EG_DEF();if(!S.eg||typeof S.eg!=='object')S.eg=EG_DEF();else if(!S.eg._ok){egFill(S.eg,EG_DEF());Object.defineProperty(S.eg,'_ok',{value:1,enumerable:false})}return S.eg}
+function EG(){if(!S)return EG_DEF();if(!S.eg||typeof S.eg!=='object')S.eg=EG_DEF();else if(!S.eg._ok){egFill(S.eg,EG_DEF());const v=S.eg.ev;if(v&&typeof v==='object')for(const k of['tideB','ember','emberT','autoChest'])delete v[k];if(S.eg.ach)delete S.eg.ach.t1;if(S.eg.stat)for(const k of['tide','tchest'])delete S.eg.stat[k];Object.defineProperty(S.eg,'_ok',{value:1,enumerable:false})}return S.eg}
 function egStat(k,n=1){const s=EG().stat;s[k]=(s[k]||0)+n}
 // 进度判定
 function egDone(d,a){return !!(S.Q&&S.Q[d]&&S.Q[d][ACTS[a].fq])}

@@ -115,13 +115,7 @@ with sync_playwright() as p:
     if W in('event','all'):
         loadchar('tests/eg_char_normal.json')
         run(pg,"EG().ev.wbAuto=0;goAct(4,0,1);S.auto=0;goZone(3)")
-        a=run(pg,"(()=>{EG().clock=EG_TIDE.dur+10;const k0=S.kills,d0=EG().stat.egdie||0,x0=S.xp;egSim(900);return JSON.stringify({kills:S.kills-k0,xp:S.xp-x0})})()")
-        bb=run(pg,"(()=>{EG().clock=EG_TIDE.cyc*3;const k0=S.kills,x0=S.xp;egSim(890);return JSON.stringify({tide:egTideOn(),kills:S.kills-k0,xp:S.xp-x0,ember:EG().ev.ember})})()")
-        print('15min 无血潮',a,' 血潮',bb)
-        run(pg,"SPEED=1;EG().clock=EG_TIDE.cyc*4+60;MON=[];spawnT=0.1"); pg.wait_for_timeout(2500); shot('p5_tide_fight.png')
-        run(pg,"SPEED=0;EG().ev.ember=520")
         shot('p5_event.png','eg',"EGT='event'")
-        run(pg,"egTideChest()"); print('chest ok',run(pg,"EG().ev.ember"))
         # 精英词缀
         print('aff',run(pg,"(()=>{const r={};for(const k in EG_AFF){const m=mkMon('minion',45,'uniq');EG_AFF[k].f(m);r[k]=!!(m.egRegen||m.egBomb||m.egMirror||m.egWard||m.egThorn||m.egFrz)}return JSON.stringify(r)})()"))
         # 世界首领
