@@ -22,7 +22,14 @@ function summary(d){if(!d||!d.acct)return'（空）';return d.acct.chars.map(c=>
 function guestExport(){try{const a=JSON.parse(localStorage.getItem('anye_d2_acct'));if(!a)return null;const chars={};for(const c of a.chars){const r=localStorage.getItem('anye_d2_ch_'+c.id);if(r)chars[c.id]=JSON.parse(r)}return{fmt:1,acct:a,chars}}catch(e){return null}}
 async function uploadGuest(){const g=guestExport();if(g)importAccount(g);await upload();toast('已把游客存档上传到账号');closeM();render()}
 // ---------- 认证 ----------
-async function clSignUp(email,pw,nick){const sb=await sbReady();if(!sb)throw new Error(CL_ERR);const{data,error}=await sb.auth.signUp({email,password:pw,options:{data:{nickname:nick}}});if(error)throw error;
+// 账号名 → 内部合成邮箱（无需真实邮箱）：小写后 UTF-8 十六进制，u<hex>@anye-game.local
+const CL_ACCT_DOM='anye-game.local';
+function clName2Email(n){return 'u'+Array.from(new TextEncoder().encode(n.toLowerCase())).map(b=>b.toString(16).padStart(2,'0')).join('')+'@'+CL_ACCT_DOM}
+function clEmail2Name(e){const m=/^u([0-9a-f]+)@anye-game\.local$/i.exec(e||'');if(!m)return e||'';try{return new TextDecoder().decode(new Uint8Array(m[1].match(/../g).map(h=>parseInt(h,16))))}catch(x){return e}}
+function clCheckName(n){if(!/^[A-Za-z0-9_\u4e00-\u9fff]+$/.test(n))throw new Error('账号只能包含字母、数字、下划线或中文');if([...n].length<6)throw new Error('账号至少 6 位');if(clName2Email(n).split('@')[0].length>64)throw new Error('账号过长（中文最多 21 字，英文数字最多 31 位）')}
+function clAcctName(){return CU?clEmail2Name(CU.email):''}
+function clFriendlyErr(e){const m=(e&&e.message)||String(e);if(/already registered|already exists/i.test(m))return '账号已存在';if(/invalid login credentials/i.test(m))return '账号或密码错误';if(/password/i.test(m)&&/6/.test(m))return '密码至少 6 位';return m}
+async function clSignUp(email,pw,nick){const sb=await sbReady();if(!sb)throw new Error(CL_ERR);const{data,error}=await sb.auth.signUp({email,password:pw,options:{data:{nickname:nick,account:clEmail2Name(email)}}});if(error)throw error;
  if(!data.session){const r=await sb.auth.signInWithPassword({email,password:pw});if(r.error)throw r.error}await afterLogin(nick);return CU}
 async function clSignIn(email,pw){const sb=await sbReady();if(!sb)throw new Error(CL_ERR);const{error}=await sb.auth.signInWithPassword({email,password:pw});if(error)throw error;await afterLogin();return CU}
 async function clSignOut(){try{await syncNow(true)}catch(e){}if(SB)await SB.auth.signOut();CU=null;CLOUD={mode:'guest'};clMetaSave();switchNS(null);if(!window.__NOUI){toast('已退出登录（继续以游客模式本地游玩）');render()}}
@@ -45,7 +52,7 @@ async function syncNow(manual){if(!CU||!SB||CL_BUSY)return null;CL_BUSY=1;try{co
   const r=await upload();if(manual&&!window.__NOUI)toast('云同步完成');return r}catch(e){CL_ERR='同步失败：'+(e.message||e);if(manual&&!window.__NOUI)toast(CL_ERR);return null}finally{CL_BUSY=0}}
 let CL_PENDING=null;
 function conflictUI(rem,mode){CL_PENDING=rem;const loc=exportAccount();
- if(mode==='upload')return modal(`<div class="mtitle">上传本地存档</div><div class="gp"><div>账号 <b>${CLOUD.email}</b> 云端还没有存档。是否把本机游客存档复制到该账号并上传？</div><div class="dim">游客存档：${summary(guestExport())}</div><div class="btns c"><button class="btn gold" onclick="uploadGuest()">上传游客存档</button><button class="btn" onclick="upload().then(()=>{closeM();render()})">新开空白存档</button></div></div>`);
+ if(mode==='upload')return modal(`<div class="mtitle">上传本地存档</div><div class="gp"><div>账号 <b>${clEmail2Name(CLOUD.email)}</b> 云端还没有存档。是否把本机游客存档复制到该账号并上传？</div><div class="dim">游客存档：${summary(guestExport())}</div><div class="btns c"><button class="btn gold" onclick="uploadGuest()">上传游客存档</button><button class="btn" onclick="upload().then(()=>{closeM();render()})">新开空白存档</button></div></div>`);
  modal(`<div class="mtitle">存档冲突</div><div class="gp"><div>云端存档在其他设备上更新过（或本机首次登录），请选择保留哪一份：</div>
  <div class="row"><span><b>云端</b><div class="dim">${new Date(rem.updated_at).toLocaleString('zh-CN')} · ${summary(rem.data)}</div></span><button class="btn gold" onclick="clResolve('cloud')">保留云端</button></div>
  <div class="row"><span><b>本机</b><div class="dim">${new Date(loc.acct.t||Date.now()).toLocaleString('zh-CN')} · ${summary(loc)}</div></span><button class="btn" onclick="clResolve('local')">保留本机</button></div>
@@ -54,14 +61,16 @@ async function clResolve(w){try{if(w==='cloud'&&CL_PENDING){download(CL_PENDING)
 // ---------- 界面 ----------
 function loginUI(tab){tab=tab||'in';modal(`<div class="mtitle">暗夜挂机 · 账号</div><div class="gp login">
  <div class="stabs"><button class="${tab==='in'?'on':''}" onclick="loginUI('in')">登录</button><button class="${tab==='up'?'on':''}" onclick="loginUI('up')">注册</button></div>
- <input id="lg_em" type="email" placeholder="邮箱" autocomplete="email"><input id="lg_pw" type="password" placeholder="密码（至少 6 位）">${tab==='up'?'<input id="lg_nk" maxlength="16" placeholder="昵称">':''}
+ <input id="lg_em" type="text" maxlength="40" placeholder="${tab==='up'?'账号（至少6位）':'账号（至少6位）或邮箱'}" autocomplete="username"><input id="lg_pw" type="password" placeholder="密码（至少 6 位）" autocomplete="${tab==='up'?'new-password':'current-password'}">${tab==='up'?'<input id="lg_nk" maxlength="16" placeholder="昵称（可选，默认同账号）"><div class="dim">账号支持字母、数字、下划线、中文；无需邮箱，请牢记密码（无法通过邮件找回）。</div>':''}
  <div class="dim" id="lg_msg">${CL_ERR||'登录后存档自动云同步，可在多设备继续游戏。'}</div>
  <div class="btns c"><button class="btn gold" onclick="loginDo('${tab}')">${tab==='up'?'注册并登录':'登录'}</button></div>
  <div class="btns c"><button class="btn" onclick="CLOUD.mode='guest';clMetaSave();closeM()">游客先玩（仅本机保存）</button></div></div>`)}
-async function loginDo(tab){const em=$('#lg_em').value.trim(),pw=$('#lg_pw').value,nk=tab==='up'?$('#lg_nk').value.trim():'';const msg=$('#lg_msg');msg.textContent='请稍候…';
- try{if(tab==='up'){if(!nk)throw new Error('请填写昵称');await clSignUp(em,pw,nk)}else await clSignIn(em,pw);if(!$('#modal').classList.contains('hide')&&!CL_PENDING&&/账号/.test($('#modal').textContent))closeM();toast('已登录：'+CU.email);render()}catch(e){msg.textContent='失败：'+(e.message||e)}}
+async function loginDo(tab){const raw=$('#lg_em').value.trim(),pw=$('#lg_pw').value;let nk=tab==='up'?$('#lg_nk').value.trim():'';const msg=$('#lg_msg');msg.textContent='请稍候…';
+ try{if(!raw)throw new Error('请填写账号');if(pw.length<6)throw new Error('密码至少 6 位');let em;
+  if(raw.includes('@')){if(tab==='up')throw new Error('注册请使用账号名（无需邮箱）');em=raw}else{clCheckName(raw);em=clName2Email(raw)}
+  if(tab==='up'){if(!nk)nk=raw;await clSignUp(em,pw,nk)}else await clSignIn(em,pw);if(!$('#modal').classList.contains('hide')&&!CL_PENDING&&/账号/.test($('#modal').textContent))closeM();toast('已登录：'+clAcctName());render()}catch(e){msg.textContent='失败：'+clFriendlyErr(e)}}
 function accountPanel(){const t=CLOUD.last?new Date(CLOUD.last).toLocaleString('zh-CN'):'从未';
- return CU?`<div class="gp acct"><h3>账号与云存档</h3><div class="row"><span>账号</span><b>${CU.email}</b></div><div class="row"><span>昵称</span><b>${(CL_PROFILE&&CL_PROFILE.nickname)||'-'}</b></div><div class="row"><span>最后同步</span><b>${t}</b></div>${CL_ERR?`<div class="bad">${CL_ERR}</div>`:''}
+ return CU?`<div class="gp acct"><h3>账号与云存档</h3><div class="row"><span>账号</span><b>${clAcctName()}</b></div><div class="row"><span>昵称</span><b>${(CL_PROFILE&&CL_PROFILE.nickname)||'-'}</b></div><div class="row"><span>最后同步</span><b>${t}</b></div>${CL_ERR?`<div class="bad">${CL_ERR}</div>`:''}
  <div class="btns"><button class="btn sm gold" onclick="syncNow(true).then(()=>render())">手动同步</button><button class="btn sm" onclick="clSignOut()">退出登录</button></div>${chSwBtn()}<div class="dim">每 60 秒及切到后台时自动同步；云端被其他设备更新时会提示选择。</div></div>`
  :`<div class="gp acct"><h3>账号与云存档</h3><div class="dim">当前为游客模式，存档仅保存在本机浏览器。${CL_ERR?'<br>'+CL_ERR:''}</div><div class="btns"><button class="btn sm gold" onclick="loginUI('in')">登录 / 注册</button></div>${chSwBtn()}</div>`}
 function chSwBtn(){return typeof charUI==='function'?`<div class="btns"><button class="btn sm gold" onclick="charUI()">🔄 切换角色（${(typeof ACCT!=='undefined'&&ACCT?ACCT.chars.length:1)} 个）</button></div>`:''}
