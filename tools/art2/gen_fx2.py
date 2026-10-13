@@ -20,6 +20,12 @@ def put(canvas,sp,cx,cy,alpha=1.0,scale=1.0,rot=0):
     canvas.alpha_composite(sp,(int(cx-sp.width/2),int(cy-sp.height/2)))  # 允许越界裁切
 def safe_put(c,sp,cx,cy,**k):
     tmp=Image.new('RGBA',(S*3,S*3)); put(tmp,sp,cx+S,cy+S,**k); c.alpha_composite(tmp.crop((S,S,2*S,2*S)))
+def split_ring(p,r0=0.40,feather=0.06):
+    # 以半径 r0（相对半宽）为界拆成外圈/中心两层，边界羽化，两层相加=原图
+    w,h=p.size; yy,xx=np.mgrid[0:h,0:w]; r=np.hypot(xx-w/2,yy-h/2)/(min(w,h)/2)
+    m=np.clip((r-(r0-feather))/(2*feather),0,1); a=np.asarray(p).astype(np.float32)
+    o=a.copy(); o[...,3]*=m; i=a.copy(); i[...,3]*=1-m
+    return Image.fromarray(o.astype(np.uint8)),Image.fromarray(i.astype(np.uint8))
 def frames(id):
     sp=load(id); fr=[]
     for k in range(N):
@@ -28,8 +34,14 @@ def frames(id):
             p=fit(sp,(150,60)); safe_put(c,p,-40+t*300,128,alpha=1.0 if t<0.55 else max(0,1-(t-0.55)/0.45))
         elif id in('poison_nova','corpse_explosion'):  # 由小到大 + 淡出
             p=fit(sp,(250,250)); safe_put(c,p,128,128,scale=0.2+0.85*t**0.7,alpha=1.0 if t<0.5 else max(0,1-(t-0.5)/0.5)*0.95+0.05*(k<N-1))
-        elif id=='curse_aura':         # 缓慢旋转，可循环（8 帧转 45°，符文 8 重对称，首尾衔接）
-            p=fit(sp,(230,230)); safe_put(c,p,128,128,rot=-k*45/N,alpha=0.92)
+        elif id=='curse_aura':         # 外圈缓慢旋转 + 中心符文静止呼吸；无缝循环
+            # 外圈：rot(θk) 与 rot(θk-45°) 按 k/N 交叉淡化，θk=k·45°/N；第 N 帧恰等于第 0 帧 → 7→0 无缝
+            p=fit(sp,(230,230)); outer,inner=split_ring(p)
+            w=k/N; th=-k*45/N
+            ring=Image.new('RGBA',(S,S)); safe_put(ring,outer,128,128,rot=th,alpha=0.92*(1-w))
+            r2=Image.new('RGBA',(S,S)); safe_put(r2,outer,128,128,rot=th+45,alpha=0.92*w)
+            c.alpha_composite(ring); c.alpha_composite(r2)
+            safe_put(c,inner,128,128,alpha=0.80+0.20*math.cos(2*math.pi*k/N))  # 呼吸，周期=8 帧
         elif id=='bone_prison':        # 从下往上升起（底部遮罩），末帧略淡
             p=fit(sp,(220,150)); h=p.height; rise=min(1,t/0.7)
             y=230-h/2*rise-h/2*(1-rise)+h*(1-rise); tmp=Image.new('RGBA',(S,S)); safe_put(tmp,p,128,y)
