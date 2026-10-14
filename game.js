@@ -357,9 +357,18 @@ function renderSkills(){const P=$('#panel');const tabs=trees().map((t,i)=>`<butt
  <div class="dim">${s.kind==='passive'?'被动':'消耗 '+v.mana+' 法力'} · 施法 ${Math.round(ST.castT*25)}帧 · 需求 ${s.r}级${s.pre.length?' · 前置 '+s.pre.map(p=>SKM[p].n).join('、'):''}</div><div class="eff">${v.txt}</div>
  <div class="btns">${['attack'].includes(s.kind)&&L?`<button class="btn xs ${S.main===s.id?'on':''}" onclick="S.main=S.main==='${s.id}'?null:'${s.id}';render()">主攻</button>`:''}${s.kind==='curse'&&L?`<button class="btn xs ${S.curse===s.id?'on':''}" onclick="S.curse=S.curse==='${s.id}'?null:'${s.id}';render()">诅咒</button>`:''}</div></div>
  <button class="btn up" onclick="skPop('${s.id}')" ${canLearn(s.id)?'':'disabled'}>升级</button></div>`}).join('')}`;drawTree(list)}
-function drawTree(list){const t=$('.tree');if(!t)return;const o=t.getBoundingClientRect();let h='';for(const s of list)for(const p of s.pre){const a=$('#tn_'+p+' .ski'),b=$('#tn_'+s.id+' .ski');if(!a||!b)continue;const A=a.getBoundingClientRect(),B=b.getBoundingClientRect();
- const on=bl(p)>0;h+=`<line x1="${A.left-o.left+A.width/2}" y1="${A.bottom-o.top}" x2="${B.left-o.left+B.width/2}" y2="${B.top-o.top}" stroke="${on?'#c9a45a':'#4a3820'}" stroke-width="2" marker-end="url(#ar${on?1:0})"/>`}
- t.insertAdjacentHTML('beforeend',`<svg class="tlines" width="${o.width}" height="${o.height}"><defs><marker id="ar1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#c9a45a"/></marker><marker id="ar0" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#4a3820"/></marker></defs>${h}</svg>`)}
+function drawTree(list){const t=$('.tree');if(!t)return;const o=t.getBoundingClientRect();let h='',h2='';
+ // 折角连线：竖→横→竖，横段走两行图标之间的空隙；优先在父技能下方拐弯，子技能那一列竖段被别的图标挡住时改在子技能上方拐弯；
+ // 折角线后画并垫一层暗色底边，和竖线交叉处显示为“跨过去”，不会被看成连到中间技能
+ const R=[...t.querySelectorAll('.tn:not(.void) .ski')].map(e=>e.getBoundingClientRect()),rw=[...t.querySelectorAll('.trow')].map(e=>e.getBoundingClientRect().top),pitch=rw.length>1?rw[1]-rw[0]:48;
+ const hit=(x,y1,y2,ex)=>R.some(r=>r!==ex&&x>r.left&&x<r.right&&r.bottom>y1&&r.top<y2);
+ for(const s of list)for(const p of s.pre){const a=$('#tn_'+p+' .ski'),b=$('#tn_'+s.id+' .ski');if(!a||!b)continue;const A=a.getBoundingClientRect(),B=b.getBoundingClientRect();
+ const on=bl(p)>0,x1=A.left+A.width/2,y1=A.bottom,x2=B.left+B.width/2,y2=B.top,g=Math.max(4,(pitch-A.height)/2);
+ const ln=d=>`<path d="${d}" fill="none" stroke="${on?'#c9a45a':'#4a3820'}" stroke-width="2" stroke-linejoin="round" marker-end="url(#ar${on?1:0})"/>`;
+ if(Math.abs(x1-x2)<2){h+=ln(`M${x1-o.left},${y1-o.top}V${y2-o.top}`);continue}
+ const Bb=R.find(r=>r.top===B.top&&r.left===B.left),ym=hit(x2,y1+g,y2,Bb)?y2-g:y1+g,d=`M${x1-o.left},${y1-o.top}V${ym-o.top}H${x2-o.left}V${y2-o.top}`;
+ h2+=`<path d="${d}" fill="none" stroke="#120d09" stroke-width="7"/>`+ln(d)}
+ t.insertAdjacentHTML('beforeend',`<svg class="tlines" width="${o.width}" height="${o.height}"><defs><marker id="ar1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#c9a45a"/></marker><marker id="ar0" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="#4a3820"/></marker></defs>${h}${h2}</svg>`)}
 function skIcon(s){const i=SKILLS.filter(x=>x.t===s.t).indexOf(s);const k='sk_sheet'+s.t;return IMG[k]?`<i class="ski" style="background-image:url(${IMG[k]});background-position:${(i%5)*25}% ${Math.floor(i/5)*100}%"></i>`:`<i class="ski t${s.t}">${s.ic}</i>`}
 function canLearn(id){const s=SKM[id];return skOfCls(s)&&S.kp>0&&S.lvl>=s.r&&s.pre.every(p=>bl(p)>0)&&bl(id)<20}
 function skPop(id){const s=SKM[id],b=bl(id);const lo=Math.max(1,b-1),hi=Math.max(4,b+3);let rows='';for(let l=lo;l<=hi;l++){const v=SV(id,l);rows+=`<div class="lvr ${l===b?'cur':''} ${l===b+1?'nx':''}">${l}级：${v.txt}${v.mana?`，消耗 ${v.mana} 法力`:''}</div>`}

@@ -88,7 +88,7 @@ body{background:#000;color:var(--txt);font-family:"STKaiti","KaiTi","Songti SC",
 .stabs{display:flex;margin:8px 8px 0;border-bottom:1px solid #6b5230}.stabs button{flex:1;font-family:inherit;background:#1a130d;color:#a08a60;border:1px solid #4a3820;border-bottom:0;padding:6px 0;font-size:13px}
 .stabs button.on{background:linear-gradient(#5a3e1a,#2a1d10);color:#fff3cf;border-color:var(--gold)}.stabs.sm{margin:4px 0 6px}
 .tree{position:relative;margin:6px 8px;padding:6px;border:1px solid #4a3820;background:linear-gradient(#17110c,#0d0907)}
-.trow{display:flex;align-items:center;gap:8px;margin:3px 0}.trow .rq{width:22px;color:#6b5a44;font-size:11px;text-align:right}
+.trow{display:flex;align-items:center;gap:8px;margin:12px 0}.trow .rq{width:22px;color:#6b5a44;font-size:11px;text-align:right}
 .tn{flex:1;height:42px;display:flex;align-items:center;justify-content:center;gap:4px;position:relative}.tn.void{visibility:hidden}
 .tn .ski{opacity:.35}.tn.has .ski{opacity:1}.tn.can .ski{box-shadow:0 0 0 2px #5fe06a}.tn b{position:absolute;right:12px;bottom:0;color:#5fe06a;font:bold 11px sans-serif}
 .ski{width:38px;height:38px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;border:2px solid #8a6a3a;border-radius:4px;background-size:500% 200%;
