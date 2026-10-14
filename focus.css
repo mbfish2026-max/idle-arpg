@@ -1,0 +1,4 @@
+/* focus.js 点怪集火：被集火的怪物卡红色描边 + 左下「集火」标签（静态，无持续动画） */
+#mgrid .mc{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#mgrid .mc.focus{outline:2px solid #ff4a3a;outline-offset:1px}
+#mgrid .mc em.fcs{left:0;right:auto;top:auto;bottom:30px;background:rgba(170,20,10,.9);color:#fff;border-radius:2px;line-height:13px;z-index:3}
