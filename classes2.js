@@ -42,7 +42,11 @@ if(typeof EG_LP!=='undefined'){
   ms_rain:{c:'w',cls:'ama',n:'万箭齐发',d:'连珠箭箭矢数量 +3'},
   fury_chain:{c:'w',cls:'ama',n:'怒雷连环',d:'雷霆怒涛闪电 +4 道，闪电伤害 +20%'},
   valk_oath:{c:'a',cls:'ama',n:'英灵之誓',d:'英灵战姬生命 +50%，攻击伤害 +30%'},
-  echo_arrow:{c:'j',cls:'ama',n:'回响之矢',d:'寻踪矢命中后 30% 几率再射出一箭（不耗法力）'}});
+  echo_arrow:{c:'j',cls:'ama',n:'回响之矢',d:'寻踪矢命中后 30% 几率再射出一箭（不耗法力）'},
+  zeal_host:{c:'w',cls:'pal',n:'千刃热忱',d:'热忱连斩攻击目标 +2'},
+  ham_twin:{c:'w',cls:'pal',n:'双生圣锤',d:'圣佑旋锤有 30% 几率再盘旋一次（不耗法力）'},
+  aegis_wall:{c:'a',cls:'pal',n:'不破圣壁',d:'神佑圣盾格挡加成 +15%，防御加成 +50%'},
+  aura_echo:{c:'j',cls:'pal',n:'圣辉共鸣',d:'炽焰/霜誓/雷誓/圣域光环伤害 +40%'}});
  const lpOk=k=>EG_LP[k]&&(EG_LP[k].cls==='*'||EG_LP[k].cls===curCls());
  egLpRoll=function(it){const c=egLpCat(it);const ks=Object.keys(EG_LP).filter(k=>EG_LP[k].c===c&&lpOk(k));return pick(ks)};
  // 威能只在对应职业生效：重算生效集合时去掉他职业威能
@@ -58,6 +62,9 @@ if(typeof EG_LP!=='undefined'){
   if(id==='amul'&&egLp('ms_rain')){v.n+=3;v.txt+='（万箭齐发 +3）'}
   if(id==='afury'&&egLp('fury_chain')){v.cn+=4;v.cd=v.cd.map(x=>Math.round(x*1.2));v.txt+='（怒雷连环）'}
   if(id==='avalk'&&egLp('valk_oath')){v.hp=Math.round(v.hp*1.5);v.dmg=v.dmg.map(x=>Math.round(x*1.3));v.txt+='（英灵之誓）'}
+  if(id==='pzeal'&&egLp('zeal_host')){v.n+=2;v.txt+='（千刃热忱 +2 个目标）'}
+  if(id==='pshield'&&egLp('aegis_wall')){v.blk+=15;v.def=Math.round(v.def*1.5);v.txt+='（不破圣壁）'}
+  if(v.pulse&&SKM[id]&&SKM[id].cls==='pal'&&egLp('aura_echo')){v.dmg=v.dmg.map(x=>Math.round(x*1.4));v.txt+='（圣辉共鸣 +40%）'}
   return v}}
  // 技能引擎施放后钩子（classes.js clsCast 调用）：职业传说威能
  {const f=typeof clsAfterCast==='function'?clsAfterCast:null;window.clsAfterCast=function(s,v,ms,L){if(f)f(s,v,ms,L);const tg=L[0];
@@ -65,6 +72,7 @@ if(typeof EG_LP!=='undefined'){
   if(s.id==='bhowl'&&egLp('howl_blood'))H.life=Math.min(ST.life,H.life+ST.life*0.02*ms.length);
   if(s.id==='mmet'&&egLp('met_twin')&&rnd()<0.35){const l=liveMon();if(l.length)CLS_TY.aoe(s,v,l,l[0])}
   if(s.id==='aguide'&&egLp('echo_arrow')&&tg&&rnd()<0.3){const l=liveMon();if(l.length)CLS_TY.arw(s,v,l,l.includes(tg)?tg:l[0])}
+  if(s.id==='pham'&&egLp('ham_twin')&&rnd()<0.3){const l=liveMon();if(l.length)CLS_TY.aoe(s,v,l,l[0])}
   if(s.id==='mfb'&&egLp('fb_split'))for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))clsHit(m,'fire',clsRR(v.dmg)*0.5)}}
  {const f=step;step=function(dt){const h0=H.life;const r=f(dt);if(curCls()==='sor'&&egLp('ice_shell')&&buffOn('mfa')&&H.life<h0&&H.life>0)H.life=Math.min(ST.life,H.life+(h0-H.life)*0.2);return r}}
 }
