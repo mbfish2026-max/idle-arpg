@@ -46,7 +46,7 @@ egOn('kill',(m)=>{if(egLp('soul_feast')&&ST){H.life=Math.min(ST.life,H.life+ST.l
  if(egLp('curse_spread')&&m.cur&&m.cur.until>GT){const c=m.cur,o=liveMon().filter(x=>x!==m&&!(x.cur&&x.cur.until>GT)&&!(c.id==='tr'&&x.boss));for(const x of o.slice(0,2))x.cur=Object.assign({},c,{until:GT+Math.max(4,c.until-GT)})}});
 // 物品详情：显示威能 + 提取按钮
 const _eg_showItem=showItem;showItem=function(uid){_eg_showItem(uid);const f=findItem(uid);if(!f||!f.it||!f.it.lp)return;const L=EG_LP[f.it.lp];const p=document.querySelector('#modal .ipanel')||document.querySelector('#modal .mb');if(!p)return;
- const box=p.querySelector('.btns.c');const h=`<div class="eglp egsep">✸ 传说威能【${L.n}】<div>${L.d}</div><div class="dim">${EG_LPC[L.c]}类 · ${EG().lp.arch[f.it.lp]?'已收录于'+EG_LEG.cube:'可提取到'+EG_LEG.cube}</div></div>`;if(box)box.insertAdjacentHTML('beforebegin',h);else p.insertAdjacentHTML('beforeend',h);
+ const box=p.querySelector('.btns.c');const h=`<div class="eglp egsep">✸ 传说威能【${typeof egLpName==='function'?egLpName(f.it.lp):L.n}】<div>${L.d}</div><div class="dim">${EG_LPC[L.c]}类 · ${EG().lp.arch[f.it.lp]?'已收录于'+EG_LEG.cube:'可提取到'+EG_LEG.cube}</div></div>`;if(box)box.insertAdjacentHTML('beforebegin',h);else p.insertAdjacentHTML('beforeend',h);
  if(box&&f.i!=null)box.insertAdjacentHTML('afterbegin',`<button class="btn gold" onclick="egLpExtract(${uid})">提取威能</button>`)};
 function egLpExtract(uid){const f=findItem(uid);if(!f||f.i==null||!f.it.lp)return toast('只能提取背包中的物品');const it=f.it,cost=EG_LEG.cost(it.il||1);const gi=S.bag.findIndex(x=>x.k==='gem');
  if(gi<0)return toast('需要 1 颗任意宝石');if(S.gold<cost)return toast('需要 '+fmt(cost)+' 金币');
@@ -56,13 +56,13 @@ function egLpExtract(uid){const f=findItem(uid);if(!f||f.i==null||!f.it.lp)retur
 let EG_LPNOCONF=0;
 function egLpSet(c,k){const A=EG().lp;if(k&&!A.arch[k])return;A.cube[c]=k||null;calc();egRefresh()}
 function egLpPage(){const A=EG().lp;egLpRefresh();const eqp=Object.keys(S.eq).map(k=>S.eq[k]).filter(it=>it&&it.lp);
- const slots=Object.keys(EG_LPC).map(c=>{const cur=A.cube[c];const opts=Object.keys(EG_LP).filter(k=>EG_LP[k].c===c);
+ const slots=Object.keys(EG_LPC).map(c=>{const cur=A.cube[c];const opts=Object.keys(EG_LP).filter(k=>EG_LP[k].c===c&&(typeof egLpOk!=='function'||egLpOk(k)||A.arch[k]));
   return`<div class="egslot"><b>${EG_LPC[c]}槽</b>：${cur?`<span class="eglp">【${EG_LP[cur].n}】</span><div class="dim">${EG_LP[cur].d}</div>`:'<span class="dim">空</span>'}
-  <div class="btns">${opts.map(k=>`<button class="btn xs ${cur===k?'on':''}" ${A.arch[k]?'':'disabled'} onclick="egLpSet('${c}','${cur===k?'':k}')">${A.arch[k]?'':'🔒'}${EG_LP[k].n}</button>`).join('')}</div></div>`}).join('');
+  <div class="btns">${opts.map(k=>`<button class="btn xs ${cur===k?'on':''}" ${A.arch[k]?'':'disabled'} onclick="egLpSet('${c}','${cur===k?'':k}')">${A.arch[k]?'':'🔒'}${(typeof egLpName==='function'?egLpName(k):EG_LP[k].n)}</button>`).join('')}</div></div>`}).join('');
  const bagL=S.bag.filter(it=>it.lp);
  return`<div class="gp"><h3>${EG_LEG.cube} <span class="r dim">已收录 ${Object.keys(A.arch).length}/${Object.keys(EG_LP).length}</span></h3>${slots}<div class="dim">提取：在物品详情点「提取威能」（摧毁物品，消耗 1 颗任意宝石 + 金币）。三个槽各可装 1 个已收录威能，与装备上的威能同时生效（同名不叠加）。</div></div>
  <div class="gp"><h3>当前生效 ${EG_LPS.size}</h3>${[...EG_LPS].map(k=>`<div class="row"><span class="eglp">【${EG_LP[k].n}】</span><span class="dim">${EG_LP[k].d}</span></div>`).join('')||'<div class="dim">无</div>'}
  ${eqp.length?`<div class="dim">来自装备：${eqp.map(it=>itemName(it)).join('、')}</div>`:''}</div>
  <div class="gp"><h3>背包中的威能装备</h3>${bagL.length?`<div class="grid">${bagL.map(it=>cell(it,`showItem(${it.uid})`)).join('')}</div>`:'<div class="dim">暂无。暗金装备 25% 带威能；稀有装备 3% 升格为「传说」品质（橙红色）并带威能；深渊虚隙层数越高几率越大。</div>'}</div>
- <div class="gp"><h3>威能图录</h3>${Object.keys(EG_LP).map(k=>`<div class="row"><span class="${A.arch[k]?'eglp':'dim'}">${A.arch[k]?'✔':'○'} ${EG_LP[k].n} <small class="dim">${EG_LPC[EG_LP[k].c]}</small></span><span class="dim" style="text-align:right">${EG_LP[k].d}</span></div>`).join('')}</div>`}
+ <div class="gp"><h3>威能图录</h3>${Object.keys(EG_LP).map(k=>`<div class="row"><span class="${A.arch[k]?'eglp':'dim'}">${A.arch[k]?'✔':'○'} ${(typeof egLpName==='function'?egLpName(k):EG_LP[k].n)} <small class="dim">${EG_LPC[EG_LP[k].c]}</small></span><span class="dim" style="text-align:right">${EG_LP[k].d}</span></div>`).join('')}</div>`}
 egPage({k:'power',n:'威能',render:egLpPage,dot:()=>S.bag.some(it=>it.lp&&!EG().lp.arch[it.lp])});
