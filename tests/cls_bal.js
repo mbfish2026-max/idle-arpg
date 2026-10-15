@@ -1,4 +1,4 @@
-// 职业调平：node tests/cls_bal.js [职业,逗号分隔=nec,sor,bar,dru] [每项次数=24]
+// 职业调平：node tests/cls_bal.js [职业,逗号分隔=nec,sor,bar,dru,ama] [每项次数=24]
 // 各职业在 1/12/24/30 级自动加点（技能计划/属性），普通难度、怪物等级≈角色等级的区域连续刷 60 秒，统计击杀与死亡。
 // 装备两档：开局装（职业初始武器），好武器（同类最好的白色武器，需求等级≤角色等级）。输出与亡灵术士的击杀比。
 const fs=require('fs'),vm=require('vm'),path=require('path');const root=path.join(__dirname,'..');
@@ -11,7 +11,7 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const files=[...
 for(const f of files)try{vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx,{filename:f})}catch(e){console.error('load',f,e.message)}
 const G=s=>vm.runInContext(s,ctx);
 G(`function balRun(c,L,good){S=newSave();S.cls=c;S.ci=0;S.eq={};if(c==='nec'){S.sk={rs:1};for(const b of['wand1','shd1'])S.eq[BASEM[b].s]=makeBase(BASEM[b],1)}else clsInit();
- const W={nec:'wand',sor:'wand',bar:'sword',dru:'mace'}[c];if(good){const w=BASES.filter(b=>b.cat===W&&b.q<=L).sort((a,b)=>(b.dmg[0]+b.dmg[1])-(a.dmg[0]+a.dmg[1]))[0];if(w)S.eq.weapon=makeBase(w,L)}
+ const W={nec:'wand',sor:'wand',bar:'sword',dru:'mace',ama:'bow'}[c];if(good){const w=BASES.filter(b=>b.cat===W&&b.q<=L).sort((a,b)=>(b.dmg[0]+b.dmg[1])-(a.dmg[0]+a.dmg[1]))[0];if(w)S.eq.weapon=makeBase(w,L)}
  S.lvl=L;S.xp=xpNeed(L);S.kp=L-1;S.sp=5*(L-1);S.auto=0;S.autoEq=0;S.gold=0;calc();autoTick();calc();
  let best=null;for(let a=0;a<ACTS.length;a++)ACTS[a].zones.forEach((z,i)=>{if(z.boss)return;const d=Math.abs(z.ml-L);if(!best||d<best.d)best={a,i,d}});S.act=best.a;S.zone=best.i;S.diff=0;S.wave=0;
  resetRuntime();MON=[];ALLY=[];CORPSE=[];H.life=ST.life;H.mana=ST.mana;H.abs=0;spawnT=0.1;const k0=S.kills||0;let dead=0;const od=die;die=function(){dead++;od()};

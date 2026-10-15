@@ -40,7 +40,7 @@ function resetRuntime(){MON=[];ALLY=[];CORPSE=[];killWin=[];spawnT=2;LOGS.length
 function switchChar(id){if(!ACCT.chars.some(c=>c.id===id))return false;if(id!==ACCT.cur){save();ACCT.cur=id;acctSave()}resetRuntime();load();S.last=Date.now();calc();H.life=ST.life;H.mana=ST.mana;save();
  if(typeof syncNow==='function')try{syncNow()}catch(e){}
  if(!window.__NOUI){closeM();TAB='hero';render();toast('已切换到 '+S.name)}return true}
-const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与诅咒',ic:'☠',open:1},{id:'ama',n:'荒野射手',d:'弓弩与标枪，元素箭矢',ic:'🏹'},{id:'sor',n:'法师',d:'火焰弹/陨石、霜冻新星/寒冰护甲、连锁闪电',ic:'🔮',open:1},
+const CLASSES=[{id:'nec',n:'亡灵术士',d:'召唤骷髅与魔像、骨矛与诅咒',ic:'☠',open:1},{id:'ama',n:'荒野射手',d:'连珠/爆燃/冰封箭、雷矛与疫病标枪、闪避与英灵战姬',ic:'🏹',open:1},{id:'sor',n:'法师',d:'火焰弹/陨石、霜冻新星/寒冰护甲、连锁闪电',ic:'🔮',open:1},
  {id:'pal',n:'圣誓骑士',d:'光环与神圣近战',ic:'🛡'},{id:'bar',n:'野蛮人',d:'猛击/旋风斩、武器精通、战吼与震慑',ic:'🪓',open:1},{id:'ass',n:'影杀刺客',d:'陷阱、武学与暗影',ic:'🗡'},{id:'dru',n:'德鲁伊',d:'野火/火山/陨火、狼人熊人变身、召唤狼群与灵体',ic:'🐺',open:1}];
 let NEWCLS='nec',NEWMODE='normal';
 function newChar(name,cls,mode){cls=cls||'nec';const C=CLASSES.find(c=>c.id===cls);if(!C||!C.open){if(!window.__NOUI)toast('该职业敬请期待');return 0}

@@ -38,7 +38,11 @@ if(typeof EG_LP!=='undefined'){
   pack_alpha:{c:'w',cls:'dru',n:'头狼之魂',d:'灵狼与恐狼数量上限 +2'},
   fury_storm:{c:'w',cls:'dru',n:'狂风利爪',d:'狂怒连击攻击目标 +2'},
   oak_bloom:{c:'a',cls:'dru',n:'古橡新芽',d:'橡木之灵的生命加成 +50%，并每秒回复 1% 生命'},
-  arm_rain:{c:'j',cls:'dru',n:'陨火如雨',d:'陨火天降每次多落 2 颗陨火'}});
+  arm_rain:{c:'j',cls:'dru',n:'陨火如雨',d:'陨火天降每次多落 2 颗陨火'},
+  ms_rain:{c:'w',cls:'ama',n:'万箭齐发',d:'连珠箭箭矢数量 +3'},
+  fury_chain:{c:'w',cls:'ama',n:'怒雷连环',d:'雷霆怒涛闪电 +4 道，闪电伤害 +20%'},
+  valk_oath:{c:'a',cls:'ama',n:'英灵之誓',d:'英灵战姬生命 +50%，攻击伤害 +30%'},
+  echo_arrow:{c:'j',cls:'ama',n:'回响之矢',d:'寻踪矢命中后 30% 几率再射出一箭（不耗法力）'}});
  const lpOk=k=>EG_LP[k]&&(EG_LP[k].cls==='*'||EG_LP[k].cls===curCls());
  egLpRoll=function(it){const c=egLpCat(it);const ks=Object.keys(EG_LP).filter(k=>EG_LP[k].c===c&&lpOk(k));return pick(ks)};
  // 威能只在对应职业生效：重算生效集合时去掉他职业威能
@@ -51,12 +55,16 @@ if(typeof EG_LP!=='undefined'){
   if(id==='dfury'&&egLp('fury_storm')){v.n+=2;v.txt+='（狂风利爪 +2 个目标）'}
   if(id==='doak'&&egLp('oak_bloom')){v.aura={life:Math.round(v.aura.life*1.5)};v.heal=1;v.txt+='（古橡新芽）'}
   if(id==='darm'&&egLp('arm_rain')){v.n+=2;v.txt+='（陨火如雨 +2）'}
+  if(id==='amul'&&egLp('ms_rain')){v.n+=3;v.txt+='（万箭齐发 +3）'}
+  if(id==='afury'&&egLp('fury_chain')){v.cn+=4;v.cd=v.cd.map(x=>Math.round(x*1.2));v.txt+='（怒雷连环）'}
+  if(id==='avalk'&&egLp('valk_oath')){v.hp=Math.round(v.hp*1.5);v.dmg=v.dmg.map(x=>Math.round(x*1.3));v.txt+='（英灵之誓）'}
   return v}}
  // 技能引擎施放后钩子（classes.js clsCast 调用）：职业传说威能
  {const f=typeof clsAfterCast==='function'?clsAfterCast:null;window.clsAfterCast=function(s,v,ms,L){if(f)f(s,v,ms,L);const tg=L[0];
   if(s.id==='bbash'&&egLp('bash_quake')&&tg&&!tg.boss&&tg.hp>0&&rnd()<0.3)tg.stun=Math.max(tg.stun||0,1.5);
   if(s.id==='bhowl'&&egLp('howl_blood'))H.life=Math.min(ST.life,H.life+ST.life*0.02*ms.length);
   if(s.id==='mmet'&&egLp('met_twin')&&rnd()<0.35){const l=liveMon();if(l.length)CLS_TY.aoe(s,v,l,l[0])}
+  if(s.id==='aguide'&&egLp('echo_arrow')&&tg&&rnd()<0.3){const l=liveMon();if(l.length)CLS_TY.arw(s,v,l,l.includes(tg)?tg:l[0])}
   if(s.id==='mfb'&&egLp('fb_split'))for(const m of ms.filter(x=>x!==tg&&x.hp>0).slice(0,2))clsHit(m,'fire',clsRR(v.dmg)*0.5)}}
  {const f=step;step=function(dt){const h0=H.life;const r=f(dt);if(curCls()==='sor'&&egLp('ice_shell')&&buffOn('mfa')&&H.life<h0&&H.life>0)H.life=Math.min(ST.life,H.life+(h0-H.life)*0.2);return r}}
 }

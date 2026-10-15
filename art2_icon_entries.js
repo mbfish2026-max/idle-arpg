@@ -15,3 +15,4 @@ ICON2.lcha_n='assets/icon2/lcha_n.webp'; ICON2.lcha_x='assets/icon2/lcha_x.webp'
 ICON2.jewel_n='assets/icon2/jewel_n.webp'; ICON2.jewel_x='assets/icon2/jewel_x.webp'; ICON2.jewel_e='assets/icon2/jewel_e.webp';
 ICON2.bh1='assets/icon2/bh1.webp'; ICON2.bh2='assets/icon2/bh2.webp'; ICON2.bh3='assets/icon2/bh3.webp'; ICON2.bh4='assets/icon2/bh4.webp'; ICON2.bh5='assets/icon2/bh5.webp'; // 野蛮人专属头盔（底材 id）
 ICON2.dp1='assets/icon2/dp1.webp'; ICON2.dp2='assets/icon2/dp2.webp'; ICON2.dp3='assets/icon2/dp3.webp'; ICON2.dp4='assets/icon2/dp4.webp'; ICON2.dp5='assets/icon2/dp5.webp'; // 德鲁伊专属头饰（底材 id）
+ICON2.aw1='assets/icon2/aw1.webp'; ICON2.aw2='assets/icon2/aw2.webp'; ICON2.aw3='assets/icon2/aw3.webp'; ICON2.aw4='assets/icon2/aw4.webp'; ICON2.aw5='assets/icon2/aw5.webp'; // 荒野射手专属弓/标枪（底材 id）
