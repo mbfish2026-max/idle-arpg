@@ -8,3 +8,6 @@
 .DS_Store
 __pycache__/
 node_modules/
+
+# gen_image.py 下载的原图
+tools/gen_raw/
