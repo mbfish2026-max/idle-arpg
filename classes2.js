@@ -34,7 +34,11 @@ if(typeof EG_LP!=='undefined'){
   met_twin:{c:'w',cls:'sor',n:'双星坠落',d:'陨石术有 35% 几率再坠落一次（不耗法力）'},
   fb_split:{c:'w',cls:'sor',n:'分裂火焰',d:'火焰弹额外分裂 2 枚，对其他敌人造成 50% 伤害'},
   ice_shell:{c:'a',cls:'sor',n:'冰晶外壳',d:'寒冰护甲期间受到的伤害 -20%'},
-  cl_fork:{c:'j',cls:'sor',n:'叉形闪电',d:'连锁闪电弹跳目标 +3，伤害 +20%'}});
+  cl_fork:{c:'j',cls:'sor',n:'叉形闪电',d:'连锁闪电弹跳目标 +3，伤害 +20%'},
+  pack_alpha:{c:'w',cls:'dru',n:'头狼之魂',d:'灵狼与恐狼数量上限 +2'},
+  fury_storm:{c:'w',cls:'dru',n:'狂风利爪',d:'狂怒连击攻击目标 +2'},
+  oak_bloom:{c:'a',cls:'dru',n:'古橡新芽',d:'橡木之灵的生命加成 +50%，并每秒回复 1% 生命'},
+  arm_rain:{c:'j',cls:'dru',n:'陨火如雨',d:'陨火天降每次多落 2 颗陨火'}});
  const lpOk=k=>EG_LP[k]&&(EG_LP[k].cls==='*'||EG_LP[k].cls===curCls());
  egLpRoll=function(it){const c=egLpCat(it);const ks=Object.keys(EG_LP).filter(k=>EG_LP[k].c===c&&lpOk(k));return pick(ks)};
  // 威能只在对应职业生效：重算生效集合时去掉他职业威能
@@ -43,6 +47,10 @@ if(typeof EG_LP!=='undefined'){
   if(id==='bww'&&egLp('ww_tempest')){v.pct=Math.round((100+v.pct)*1.5-100);v.txt+='（裂风旋刃 +50%）'}
   if(id==='bshout'&&egLp('shout_iron')){v.dur*=2;v.def=Math.round(v.def*1.5);v.txt+='（钢铁战吼）'}
   if(id==='mcl'&&egLp('cl_fork')){v.n+=3;v.dmg=v.dmg.map(x=>Math.round(x*1.2));v.txt+='（叉形闪电）'}
+  if((id==='dswolf'||id==='ddire')&&egLp('pack_alpha')){v.n+=2;v.txt+='（头狼之魂 +2）'}
+  if(id==='dfury'&&egLp('fury_storm')){v.n+=2;v.txt+='（狂风利爪 +2 个目标）'}
+  if(id==='doak'&&egLp('oak_bloom')){v.aura={life:Math.round(v.aura.life*1.5)};v.heal=1;v.txt+='（古橡新芽）'}
+  if(id==='darm'&&egLp('arm_rain')){v.n+=2;v.txt+='（陨火如雨 +2）'}
   return v}}
  // 技能引擎施放后钩子（classes.js clsCast 调用）：职业传说威能
  {const f=typeof clsAfterCast==='function'?clsAfterCast:null;window.clsAfterCast=function(s,v,ms,L){if(f)f(s,v,ms,L);const tg=L[0];
@@ -55,5 +63,5 @@ if(typeof EG_LP!=='undefined'){
 
 // 职业技能音效：每个新技能有独立音效 id（技能定义 sfx 字段，形如 sfx_<id>）。音乐 bot 往 AUDIO_SK.table 里加 sfx_<id> 配方即生效；没有配方时静默
 // 独立音效 id 尚无配方时回退到同元素/同类旧技能音效（否则 25 个新技能施放时完全无声）
-if(window.AUDIO_SK&&AUDIO_SK.table){const T=AUDIO_SK.table,FB={fire:'mfb',cold:'mnova',light:'mcl',magic:'mcl',phys:'bbash',buff:'mfa',cbuff:'bshout',warcry:'bhowl',melee:'bbash'};
+if(window.AUDIO_SK&&AUDIO_SK.table){const T=AUDIO_SK.table,FB={fire:'mfb',cold:'mnova',light:'mcl',magic:'mcl',phys:'bbash',pois:'bbash',buff:'mfa',cbuff:'bshout',warcry:'bhowl',melee:'bbash',csum:'rs'};
  for(const s of CLS_SKILLS)if(!T[s.id]&&s.sfx!==s.id)T[s.id]=(D,t)=>{const f=T[s.sfx]||T[FB[s.el]]||T[FB[s.kind]]||T[s.cls==='bar'?'bbash':'mfb'];if(f)f(D,t)}}

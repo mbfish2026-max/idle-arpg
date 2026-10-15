@@ -11,7 +11,7 @@ function clsBalK(t){const l=(typeof S!=='undefined'&&S&&S.lvl)||1;if(l<=t[0][0])
 const CLS_DEF={
  nec:{n:'亡灵术士',ic:'☠',glyph:'🧙‍♂️',at:{str:15,dex:25,vit:15,ene:25},life0:45,lpl:1.5,lpv:2,mana0:25,mpl:2,mpe:2,trees:['冥仆系','骨毒系','咒怨系']},
  bar:{n:'野蛮人',ic:'🪓',glyph:'🪓',at:{str:30,dex:20,vit:25,ene:10},life0:55,lpl:2,lpv:4,mana0:10,mpl:1,mpe:1,trees:['战斗技能','武器精通','战吼'],
-  sk:{bbash:1},eq:['swd1','shd1'],mk:()=>clsBalK(CLS_BAL.bar),autoEne:()=>false},
+  sk:{bbash:1},eq:['swd1','shd1'],ww:1,mk:()=>clsBalK(CLS_BAL.bar),autoEne:()=>false},
  sor:{n:'法师',ic:'🔮',glyph:'🧝‍♀️',at:{str:10,dex:25,vit:10,ene:35},life0:40,lpl:1,lpv:2,mana0:35,mpl:2,mpe:2,trees:['火焰法术','冰霜法术','闪电法术'],
   sk:{mfb:1},eq:['wand1'],dk:()=>clsBalK(CLS_BAL.sor),autoEne:()=>S.at.ene<Math.floor(S.lvl*1.5)+35},
 };
@@ -37,7 +37,7 @@ const CLS_DR=(a,b,ga,gb,L,sy)=>[Math.round((a+ga*(L-1))*sy),Math.round((b+gb*(L-
 const CLS_TYK={bolt:'spell',splash:'spell',cone:'spell',multi:'spell',chain:'spell',aoe:'spell',burn:'spell',static:'spell',turret:'spell',
  buff:'cbuff',passive:'passive',hit:'melee',mhit:'melee',mall:'melee',throw:'melee',debuff:'warcry',wcry:'warcry'};
 const CLS_PRI={buff:0,debuff:1,wcry:2,turret:3,burn:4,static:4,aoe:5,mall:5,chain:6,splash:6,cone:7,multi:7,mhit:7,throw:7,bolt:8,hit:8,passive:9};
-const CLS_SINGLE=new Set(['bolt','cone','multi','hit','mhit','throw']),CLS_AOE=new Set(['aoe','splash','chain','mall','burn']);
+const CLS_SINGLE=new Set(['bolt','cone','multi','hit','mhit','throw']),CLS_AOE=new Set(['aoe','splash','chain','mall','burn']),CLS_MELEE=new Set(['hit','mhit','mall','throw']);// CLS_MELEE：按武器伤害估算的近战类型（druid.js 追加）
 function clsDef(cls,list){for(const o of list){const s=Object.assign({cls,pre:[],sm:1,sfx:CLS_LEGACY.has(o.id)?o.id:'sfx_'+o.id,mana:()=>0},o);s.kind=CLS_TYK[s.ty]||'spell';s.pri=CLS_PRI[s.ty]??8;CLS_SKILLS.push(s)}}
 function clsRegister(){CLS_SKILLS.sort((a,b)=>a.pri-b.pri);for(const s of CLS_SKILLS){if(SKM[s.id])continue;SKILLS.push(s);SKM[s.id]=s;MODT['sk_'+s.id]='+{v} '+s.n+'（'+CLS_DEF[s.cls].n+'专属）';HIDDEN_KEYS.add('sk_'+s.id);if(s.syn)SYN[s.id]=s.syn}}
 // ---------- 美术清单 ----------
@@ -63,10 +63,10 @@ function clsMelee(m,pct,flat,o){o=o||{};if(!m||m.hp<=0)return 0;const db=m.dbf&&
  if(!o.sure&&!hitChance(ST.ar*(1+(o.ar||0)/100),df,S.lvl,m.lv))return 0;let k=1+(pct||0)/100;if(ST.bcrit&&rnd()*100<ST.bcrit)k*=2;
  const base=Math.max(1,(clsWRoll()*k+(flat||0))*clsMk());const d=o.el?hitMon(m,{[o.el]:base},'hero',CLS_ELC[o.el]):hitMon(m,{phys:base,fire:ST.fire,cold:ST.cold,light:ST.light?R(1,ST.light):0,pois:ST.pois},'hero','#fff');
  if(d){H.life=Math.min(ST.life,H.life+d*(ST.ll+(ST.bll||0))/100);H.mana=Math.min(ST.mana,H.mana+d*ST.ml/100+(curCls()==='bar'?2:0));clsCC(m,o)}return d}// 野蛮人：每次近战命中 +2 法力
-// 野蛮人武器权重（修复好武器偏强）：伤害 = 20% 实际武器 + 80% 等级基准武器(2+0.9×等级)，基准同样吃力量/精通/增益倍率
-const CLS_WW=0.2;function clsWRef(){return(2+0.9*S.lvl)*(ST.wmul||1)}
-function clsWRoll(){const w=R(ST.wmin,ST.wmax);return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
-function clsWAvg(){const w=(ST.wmin+ST.wmax)/2;return curCls()==='bar'?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
+// 近战职业武器权重（ww:1，野蛮人/德鲁伊；修复好武器偏强）：伤害 = 20% 实际武器 + 80% 等级基准武器(2+0.9×等级)，基准同样吃力量/精通/增益倍率
+const CLS_WW=0.2;const clsWW=()=>!!CLS_DEF[curCls()].ww;function clsWRef(){return(2+0.9*S.lvl)*(ST.wmul||1)}
+function clsWRoll(){const w=R(ST.wmin,ST.wmax);return clsWW()?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
+function clsWAvg(){const w=(ST.wmin+ST.wmax)/2;return clsWW()?CLS_WW*w+(1-CLS_WW)*clsWRef():w}
 function setBuff(id,v,g){H.cbs=H.cbs||{};if(g)for(const k in H.cbs)if(k!==id&&H.cbs[k].g===g)delete H.cbs[k];H.cbs[id]=Object.assign({},v,{g,until:GT+(v.dur||30)});calc()}
 const CLS_TY={
  bolt(s,v,ms,tg){clsHit(tg,s.el,clsRR(v.dmg));clsCC(tg,v);return[tg]},
@@ -96,12 +96,14 @@ function clsCast(id,ms){const s=SKM[id],v=SV(id,slvl(id));spend(id);ACT[id]=GT;c
 // ---------- 自动施法 ----------
 for(const k of['melee','spell','cbuff','warcry'])if(!AC_KINDS.includes(k))AC_KINDS.push(k);
 function clsEst(s,ms){const v=SV(s.id,slvl(s.id)),n=ms.length;const tn=CLS_SINGLE.has(s.ty)?Math.min(n,s.ty==='hit'?1:(v.n||1)):Math.min(n,v.n||8);
- if(['hit','mhit','mall','throw'].includes(s.ty))return(clsWAvg()*(1+(v.pct||0)/100)+(v.flat||0)+clsAvgD(v.dmg))*(v.hits||1)*tn;
+ if(CLS_MELEE.has(s.ty))return(clsWAvg()*(1+(v.pct||0)/100)+(v.flat||0)+clsAvgD(v.dmg))*(v.hits||1)*tn;
  if(s.ty==='burn')return v.dps*(v.bdur||4)*elMul('fire')*tn;if(s.ty==='multi')return clsAvgD(v.dmg)*elMul(s.el)*(v.n||3)*(v.acc||0.7);
  return(clsAvgD(v.dmg)*(s.ty==='splash'?1+(tn-1)*(v.sp||50)/100:tn)+(v.dps?v.dps*(v.bdur||3)*tn:0))*elMul(s.el)}
 function clsBest(set,ms){let b=null,bv=-1;for(const s of SKILLS){if(!s.cls||!skOfCls(s)||!set.has(s.ty)||!bl(s.id)||!castable(s.id)||!acCfg(s.id).on)continue;if(CLS_AOE.has(s.ty)&&ms.length<s.sm&&!ms.some(m=>m.boss||m.fl==='uniq'))continue;const e=clsEst(s,ms);if(e>bv){bv=e;b=s.id}}return b}
+// 同组互斥技能（护甲/变身/藤蔓/灵体）：只自动施放已学且开启自动施法、等级最高的一个，避免互相顶掉来回切换
+function clsGroupPick(g){let b=null,bv=-1;for(const s of CLS_SKILLS){if(s.g!==g||!skOfCls(s)||!bl(s.id)||!acCfg(s.id).on)continue;const L=slvl(s.id)+s.r/100;if(L>bv){bv=L;b=s.id}}return b}
 {const f=acFeasible;acFeasible=function(id,ms){const s=SKM[id];if(!s||!s.cls)return f(id,ms);if(!castable(id))return 0;
- switch(s.ty){case'buff':{const b=buffOn(id);return!(b&&b.until>GT+2)}case'passive':return 0;
+ switch(s.ty){case'buff':{if(s.g&&clsGroupPick(s.g)!==id)return 0;const b=buffOn(id);return!(b&&b.until>GT+2)}case'passive':return 0;
   case'turret':return ms.length>0&&!(H.tur&&H.tur[id]&&H.tur[id].until>GT+1);case'debuff':return ms.some(m=>!(m.dbf&&m.dbf.id===id&&m.dbf.until>GT)&&!(m.stun>0));
   case'static':return ms.some(m=>m.hp>m.max*0.4);case'burn':return ms.some(m=>!(m.burn&&m.burn.left>1))}
  return ms.length>0}}

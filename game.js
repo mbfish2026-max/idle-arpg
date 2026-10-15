@@ -32,7 +32,7 @@ function itemLocal(it){const b=BASEM[it.b],m=allMods(it),o={};
  if(b.def){o.def=Math.floor(it.def*(1+(m.edef||0)/100))+(m.def||0)}return o}
 function itemReq(it){const b=BASEM[it.b];let l=it.req||0;for(const x of it.soc||[])if(x.r!=null)l=Math.max(l,RUNES[x.r][1]);if(it.rw!=null)l=Math.max(l,RUNEWORDS[it.rw].lv);
  const f=it.q===0?0.8:1;return{lv:l,str:Math.floor((b.str||0)*f),dex:Math.floor((b.dex||0)*f)}}
-function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;if(BASEM[it.b]&&BASEM[it.b].cls&&typeof curCls==='function'&&curCls()!=='nec')return false;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
+function canEquip(it){const r=itemReq(it),A=ST?ST.attr:S.at;if(BASEM[it.b]&&BASEM[it.b].cls&&typeof curCls==='function'&&(BASEM[it.b].ccls||'nec')!==curCls())return false;return S.lvl>=r.lv&&A.str>=r.str&&A.dex>=r.dex}
 function itemName(it){if(!it)return'损坏物品';if(it.k==='gem')return GEMS[it.g]?(GEMG[it.lv]||'')+GEMS[it.g].n:'未知宝石';if(it.k==='rune')return RUNES[it.r]?RUNES[it.r][0]+'符文':'未知符文';return it.rw!=null?(RUNEWORDS[it.rw]?RUNEWORDS[it.rw].n:'未知符文之语'):(it.name||'未知物品')}
 function itemColor(it){if(it.k==='gem')return GEMS[it.g].c;if(it.k==='rune')return'#ffa040';if(it.rw!=null)return QC[8];if((it.q===1||it.q===2)&&it.sock)return'#a0a0a0';return QC[it.q]}
 function power(it){if(it.k)return 0;const m=allMods(it),l=itemLocal(it);let p=(l.def||0)*1+((l.min||0)+(l.max||0))*2;
