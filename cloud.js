@@ -9,7 +9,16 @@ const SB_URL='https://yzhjhyroekrcdqqjrlgm.supabase.co',SB_KEY='sb_publishable_R
 let SB=null,CU=null,CLOUD={},CL_BUSY=0,CL_ERR='',CL_PROFILE=null;
 const CL={ready:0,dirty:0,state:'',fail:0,retryT:null,lastUp:0,kicked:0,warned:0};
 function clMetaSave(){}
-function sbReady(){if(SB)return Promise.resolve(SB);return new Promise(res=>{const done=()=>{try{SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'anye_sb_auth'}})}catch(e){CL_ERR='云服务不可用'}res(SB)};
+// 登录态持久化：Supabase 会话（含长期 refresh token）写 localStorage，并镜像到 IndexedDB；localStorage 被清时从 IndexedDB 恢复（iOS 主屏幕 Web App）
+const CL_IDB=(()=>{let p=null;const db=()=>p||(p=new Promise((res,rej)=>{try{const r=indexedDB.open('anye_auth',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}));
+ const tx=(m,f)=>db().then(d=>new Promise((res,rej)=>{const t=d.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})).catch(()=>null);
+ return{get:k=>tx('readonly',s=>s.get(k)),set:(k,v)=>tx('readwrite',s=>s.put(v,k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+const CL_STORE={getItem:async k=>{let v=null;try{v=localStorage.getItem(k)}catch(e){}if(v!=null)return v;v=await CL_IDB.get(k);if(v!=null)try{localStorage.setItem(k,v)}catch(e){}return v==null?null:v},
+ setItem:async(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}await CL_IDB.set(k,v)},removeItem:async k=>{try{localStorage.removeItem(k)}catch(e){}await CL_IDB.del(k)}};
+async function clHasStored(){try{return!!(await CL_STORE.getItem('anye_sb_auth'))}catch(e){return false}}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+function restoringUI(err){CL_GATE=1;modal(`<div class="mtitle">暗夜挂机</div><div class="gp login"><div class="dim" id="lg_msg" style="text-align:center;padding:14px 0">${err?'连接云端失败，正在自动重试…<br>'+err:'正在恢复登录…'}</div>${err?'<div class="btns c"><button class="btn" onclick="cloudBoot()">立即重试</button> <button class="btn" onclick="loginUI(\'in\')">重新登录</button></div>':''}</div>`)}
+function sbReady(){if(SB)return Promise.resolve(SB);return new Promise(res=>{const done=()=>{try{SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'anye_sb_auth',detectSessionInUrl:false,storage:CL_STORE}})}catch(e){CL_ERR='云服务不可用'}res(SB)};
  if(window.supabase&&window.supabase.createClient)return done();const s=document.createElement('script');s.src=SB_CDN;s.onload=done;s.onerror=()=>{CL_ERR='无法加载云服务，请检查网络后刷新';res(null)};document.head.appendChild(s)})}
 // ---------- 状态指示 ----------
 function clSetState(st){CL.state=st;if(typeof document==='undefined'||window.__NOUI)return;let e=document.getElementById('clsync');
@@ -99,9 +108,9 @@ function clBeacon(){if(!CU||!CL.ready||CL.kicked)return;try{save();if(!CL.dirty)
 let CL_GATE=0;
 function loginUI(tab){tab=tab||'in';CL_GATE=1;modal(`<div class="mtitle">暗夜挂机 · 账号</div><div class="gp login">
  <div class="stabs"><button class="${tab==='in'?'on':''}" onclick="loginUI('in')">登录</button><button class="${tab==='up'?'on':''}" onclick="loginUI('up')">注册</button></div>
- <input id="lg_em" type="text" maxlength="40" placeholder="${tab==='up'?'账号（至少6位）':'账号（至少6位）或邮箱'}" autocomplete="username"><input id="lg_pw" type="password" placeholder="密码（至少 6 位）" autocomplete="${tab==='up'?'new-password':'current-password'}">${tab==='up'?'<input id="lg_nk" maxlength="16" placeholder="昵称（可选，默认同账号）"><div class="dim">账号支持字母、数字、下划线、中文；无需邮箱，请牢记密码（无法通过邮件找回）。</div>':''}
+ <form id="lg_form" autocomplete="on" onsubmit="event.preventDefault();loginDo('${tab}')"><input id="lg_em" name="username" type="text" maxlength="40" placeholder="${tab==='up'?'账号（至少6位）':'账号（至少6位）或邮箱'}" autocomplete="username"><input id="lg_pw" name="password" type="password" placeholder="密码（至少 6 位）" autocomplete="${tab==='up'?'new-password':'current-password'}">${tab==='up'?'<input id="lg_nk" maxlength="16" placeholder="昵称（可选，默认同账号）"><div class="dim">账号支持字母、数字、下划线、中文；无需邮箱，请牢记密码（无法通过邮件找回）。</div>':''}
  <div class="dim" id="lg_msg">${CL_ERR||'存档全部保存在云端，登录后即可在任意设备继续游戏。'}</div>
- <div class="btns c"><button class="btn gold" onclick="loginDo('${tab}')">${tab==='up'?'注册并登录':'登录'}</button></div></div>`)}
+ <div class="btns c"><button type="submit" class="btn gold">${tab==='up'?'注册并登录':'登录'}</button></div></form></div>`)}
 async function loginDo(tab){const raw=$('#lg_em').value.trim(),pw=$('#lg_pw').value;let nk=tab==='up'?$('#lg_nk').value.trim():'';const msg=$('#lg_msg');msg.textContent='请稍候…';
  try{if(!raw)throw new Error('请填写账号');if(pw.length<6)throw new Error('密码至少 6 位');let em;
   if(raw.includes('@')){if(tab==='up')throw new Error('注册请使用账号名（无需邮箱）');em=raw}else{clCheckName(raw);em=clName2Email(raw)}
@@ -117,10 +126,11 @@ const _cl_closeM=closeM;closeM=function(){if(CL_GATE&&!CU&&!window.__NOUI)return
 // 重要事件立即同步
 function clHookEvents(){for(const n of['switchChar','newChar','deleteChar','toggleLock','resetChar']){const f=window[n];if(typeof f!=='function'||f._cl)continue;const g=function(...a){const r=f.apply(this,a);clSyncSoon();return r};g._cl=1;window[n]=g;try{eval(n+'=g')}catch(e){}}
  if(typeof addBag==='function'&&!addBag._cl){const f=addBag;addBag=function(it){const r=f.apply(this,arguments);if(it&&(it.q===5||it.set))clSyncSoon();return r};addBag._cl=1}}
-async function cloudBoot(){clHookEvents();const sb=await sbReady();if(!sb){loginUI('in');return}
- sb.auth.onAuthStateChange((ev,s)=>{CL.token=s&&s.access_token||null});
- try{const{data}=await sb.auth.getSession();if(data.session){CU=data.session.user;CL.token=data.session.access_token;const p=await sb.from('profiles').select('nickname').eq('id',CU.id).maybeSingle();CL_PROFILE=p.data;await firstSync();CL_GATE=0;if(!window.__NOUI){closeM();render();clShowOff()}}
- else loginUI('in')}catch(e){CL_ERR='云服务连接失败：'+clFriendlyErr(e);clSetState('err');CL.bootFail=(CL.bootFail||0)+1;if(!window.__NOUI){loginUI('in');setTimeout(()=>{if(!CL.ready)cloudBoot()},Math.min(60000,3000*2**CL.bootFail))}}}
+async function cloudBoot(){if(CL.ready||CL.booting)return;CL.booting=1;try{return await cloudBoot0()}finally{CL.booting=0}}
+async function cloudBoot0(){clHookEvents();const stored=await clHasStored();const sb=await sbReady();if(!sb){stored?restoringUI(CL_ERR):loginUI('in');if(stored)setTimeout(cloudBoot,5000);return}
+ if(!CL.authHook){CL.authHook=1;sb.auth.onAuthStateChange((ev,s)=>{CL.token=s&&s.access_token||null})}
+ try{const{data,error}=await sb.auth.getSession();if(!data.session&&error&&await clHasStored())throw error;if(data.session){CU=data.session.user;CL.token=data.session.access_token;const p=await sb.from('profiles').select('nickname').eq('id',CU.id).maybeSingle();CL_PROFILE=p.data;await firstSync();CL_GATE=0;if(!window.__NOUI){closeM();render();clShowOff()}}
+ else loginUI('in')}catch(e){CL_ERR='云服务连接失败：'+clFriendlyErr(e);clSetState('err');CL.bootFail=(CL.bootFail||0)+1;if(!window.__NOUI){const st2=await clHasStored();st2?restoringUI(CL_ERR):loginUI('in');setTimeout(()=>{if(!CL.ready)cloudBoot()},Math.min(60000,3000*2**CL.bootFail))}}}
 if(typeof window!=='undefined'&&typeof document!=='undefined'&&document.addEventListener&&!window.__NOUI){
- window.addEventListener('load',()=>{loginUI('in');setTimeout(cloudBoot,50);setInterval(()=>{if(CL.ready&&(CL.dirty||Date.now()-CL.lastUp>60000))flushNow()},20000)});
+ window.addEventListener('load',()=>{restoringUI();setTimeout(cloudBoot,50);setInterval(()=>{if(CL.ready&&(CL.dirty||Date.now()-CL.lastUp>60000))flushNow()},20000)});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushNow()});window.addEventListener('pagehide',clBeacon);window.addEventListener('beforeunload',e=>{clBeacon();if(CL.dirty&&CL.state==='err'){e.preventDefault();e.returnValue=''}})}
