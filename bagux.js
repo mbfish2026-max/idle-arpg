@@ -52,11 +52,13 @@ function buxPage(grid,dir){const sg=grid.classList.contains('sgrid');let v,n;
   if(Math.abs(dx)>50&&Math.abs(dx)>1.6*Math.abs(dy)&&Date.now()-t0<800){BUX.swiped=Date.now();buxPage(G,dx<0?1:-1)}},{passive:true})}
 // ---------- 长按快捷菜单 ----------
 function buxUid(cell){const s=cell.getAttribute('onclick')||'';const m=/(?:showItem|depositUid|withdrawUid|qtyUI|stTap)\((\d+)/.exec(s);return m?+m[1]:null}
+function buxImbue(uid){imbue(uid);render();if(findItem(uid))buxQuick(uid)}
 function buxQuick(uid){const f=findItem(uid);if(!f)return;const it=f.it,lk=!!it.lk,b=[];
  b.push(`<button class="btn gold" onclick="showItem(${uid})">${!it.k&&!f.slot&&typeof cmpTarget==='function'&&cmpTarget(it)?'详情 / 对比':'详情'}</button>`);
  if(typeof toggleLock==='function'&&!it.k)b.push(`<button class="btn" onclick="toggleLock(${uid});closeM();render()">${lk?'🔓 解锁':'🔒 锁定'}</button>`);
  if(f.stash){b.push(`<button class="btn" onclick="fromStash(${uid})">取回背包</button>`,`<button class="btn" onclick="stashToStash(${uid})">转到${f.where==='s'?'个人':'共享'}仓库</button>`)}
  else if(!f.slot){b.push(`<button class="btn" onclick="depositUid(${uid},'p')">存个人仓库</button>`,`<button class="btn" onclick="depositUid(${uid},'s')">存共享仓库</button>`);
+  if(S.imbue>0&&!it.k&&(it.q===1||it.q===2)&&!(it.soc&&it.soc.length)&&typeof imbue==='function')b.push(`<button class="btn gold" onclick="buxImbue(${uid})">灌注（剩 ${S.imbue}）</button>`);
   if(!lk)b.push(`<button class="btn" onclick="sell(${uid})">出售 ${sellPrice(it)}◈</button>`)}
  modal(`<div class="buxq ipanel"><div class="ih">${itemIcon(it)}<div><b style="color:${itemColor(it)}">${itemName(it)}</b><div class="dim">${f.stash?(f.where==='s'?'共享仓库':'个人仓库'):f.slot?'已装备':'背包'}${lk?' · 已锁定':''}</div></div></div><div class="btns c buxbtns">${b.join('')}<button class="btn" onclick="closeM()">关闭</button></div></div>`)}
 {const P=()=>document.getElementById('panel');let x0=0,y0=0;

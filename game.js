@@ -390,7 +390,7 @@ function renderBag(){const P=$('#panel');const doll=SLOTS.map(k=>{const it=S.eq[
  const sc=setCount();const sets=Object.entries(sc).map(([k,n])=>`<span class="setb">${SETS[k].n} ${n}件</span>`).join('');
  const fl=[['all','全部'],['eq','装备'],['misc','符文宝石']];const items=S.bag.filter(it=>BAGF==='all'||(BAGF==='eq'?!it.k:!!it.k));
  P.innerHTML=`<div class="gp"><h3>装备 <span class="dim">战力 ${SLOTS.reduce((a,k)=>a+(S.eq[k]?power(S.eq[k]):0),0)}</span></h3><div class="doll">${doll}</div>${sets}</div>
- <div class="gp"><h3>背包 ${S.bag.length}/40 <span class="r"><button class="btn xs" onclick="cubeUI()">炼金匣</button>${S.imbue?'<button class="btn xs gold" onclick="toast(\'在白色物品详情中点“灌注”\')">灌注×1</button>':''}<button class="btn xs" onclick="sellJunk()">一键出售白/蓝</button></span></h3>
+ <div class="gp"><h3>背包 ${S.bag.length}/40 <span class="r"><button class="btn xs" onclick="cubeUI()">炼金匣</button><button class="btn xs" onclick="sellJunk()">出售白/蓝</button></span></h3>
  <div class="stabs sm">${fl.map(([k,n])=>`<button class="${BAGF===k?'on':''}" onclick="BAGF='${k}';render()">${n}</button>`).join('')}</div>
  <div class="grid">${items.map(it=>cell(it,`showItem(${it.uid},'bag')`)).join('')||'<div class="dim">空</div>'}</div></div>`}
 function findItem(uid){for(const k of SLOTS)if(S.eq[k]&&S.eq[k].uid===uid)return{it:S.eq[k],slot:k};const i=S.bag.findIndex(x=>x.uid===uid);return i>=0?{it:S.bag[i],i}:null}
