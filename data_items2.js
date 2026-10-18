@@ -279,3 +279,11 @@ const NEW_RW3=[
  RW2('虚步',[27,25],['boots'],{allres:20,mf:[25,35],dex:15,fhr:20},59),
 ];
 for(const w of NEW_RW3)RUNEWORDS.push(w);
+// 前期带技能符文之语（20261019z）：手套/靴子/腰带/头盔各一个，+1 全部技能，全职业通用（ac:1 → 图鉴对全职业显示）
+const NEW_RW4=[
+ RW2('启智',[2,4],['helm'],{allsk:1,mana:15},15),
+ RW2('巧思',[0,5],['gloves'],{allsk:1,ar:30},15),
+ RW2('凝神',[3,6],['belt'],{allsk:1,life:15},17),
+ RW2('灵步',[1,7],['boots'],{allsk:1,fres:10},19),
+];
+for(const w of NEW_RW4){w.ac=1;RUNEWORDS.push(w)}

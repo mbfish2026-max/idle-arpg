@@ -11,7 +11,7 @@ function rwxScore(w){const m=w.m,has=k=>m[k]!=null;let c=0,me=0;
  for(const k of['allsk','fcr','mana','manapct','ene','mregen','t1sk','sumdmg'])if(has(k))c+=k==='allsk'||k==='fcr'?2:1;
  for(const k in m)if(/^sk_/.test(k))c+=2;
  for(const k of['ias','edmg','cb','ll','ow','ds','ignoredef','mindmg','maxdmg','ar','ml','kb','str','noheal','dex'])if(has(k))me+=k==='ias'||k==='edmg'||k==='cb'||k==='ds'?2:1;return{c,me}}
-function rwxClasses(w){if(w._cls)return w._cls;if(w.cats.every(c=>c==='gloves'||c==='belt'||c==='boots'))return w._cls=RWX_CLS.map(x=>x[0]);const{c,me}=rwxScore(w),cats=w.cats,set=new Set(),wc=cats.filter(x=>RWX_W.has(x)),m=w.m;
+function rwxClasses(w){if(w._cls)return w._cls;if(w.ac||w.cats.every(c=>c==='gloves'||c==='belt'||c==='boots'))return w._cls=RWX_CLS.map(x=>x[0]);const{c,me}=rwxScore(w),cats=w.cats,set=new Set(),wc=cats.filter(x=>RWX_W.has(x)),m=w.m;
  const add=(...a)=>a.forEach(x=>set.add(x));
  if(Object.keys(m).some(k=>/^sk_/.test(k))||cats.includes('head'))add('nec');
  if(wc.length){const caster=c>me;
