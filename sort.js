@@ -1,15 +1,16 @@
 'use strict';
 // ===================================================================================
 // sort.js — 背包 / 个人仓库 / 共享仓库「自动整理」增强（包装 stash.js 的 sortArr/sortPages/sortKey 等，不改他人文件）
-// 排序：类型（装备按部位 武器→副手→头盔→铠甲→手套→腰带→鞋→护符→戒指→护身符→珠宝 → 宝石 → 符文 → 材料 → 其他）→ 品质高到低 → 等级高到低 → 名称
+// 排序：品质高到低（暗金/符文之语→套装→合成→稀有→魔法→已开孔白装→超强→普通→低劣；非装备最后）→ 类型（武器→头盔→铠甲→盾牌→手套→鞋子→腰带→戒指→项链→护身符→珠宝 → 宝石 → 符文 → 材料 → 其他）→ 等级高到低（符文按等级）→ 名称
 // 压紧空格、同类可堆叠合并；锁定与未锁定物品分开堆叠（stackKey/mergeMats/pushInto 区分 lk），锁定状态不变。
 // 选项「整理时先自动存仓」：S.ast.onSort（缺省 0），复用 stash.js 自动存仓的类型与目标设置（跳过锁定物品）。
 // ===================================================================================
-const SORT_T={weapon:0,shield:1,helm:2,armor:3,gloves:4,belt:5,boots:6,amulet:7,ring:8,charm:9,jewel:10,gem:20,rune:21,mat:22,pot:23};
-const SORT_Q={8:9,7:8,5:7,6:6,4:5,3:4,2:3,1:2,0:1};
+const SORT_T={weapon:0,helm:1,armor:2,shield:3,gloves:4,boots:5,belt:6,ring:7,amulet:8,charm:9,jewel:10,gem:20,rune:21,mat:22,pot:23};
+const SORT_Q={5:9,6:8,7:7.5,4:7,3:6,2:4,1:3,0:2};
+function sortQ(it){if(it.k)return 0;if(it.rw!=null)return 9;const q=it.q||0;if(q<=2&&it.sock)return 5;return SORT_Q[q]||0}
 function sortType(it){if(it.k)return SORT_T[it.k]??30;const b=BASEM[it.b];if(!b)return 30;return SORT_T[b.s==='weapon'?'weapon':b.s]??15}
 function sortLv(it){if(it.k==='gem')return it.lv||0;if(it.k==='rune')return it.r||0;if(it.k)return 0;return Math.max(it.il||0,typeof itemReq==='function'?(itemReq(it).lv||0):0)}
-sortKey=function(it){return[sortType(it),it.k?0:-(SORT_Q[it.rw!=null?8:(it.q||0)]||0),it.k==='gem'?(it.g||''):'',-sortLv(it),itemName(it),it.lk?1:0]};
+sortKey=function(it){return[-sortQ(it),sortType(it),it.k==='gem'?(it.g||''):'',-sortLv(it),itemName(it),it.lk?1:0]};
 cmpIt=function(a,b){const x=sortKey(a),y=sortKey(b);for(let i=0;i<x.length;i++){if(x[i]<y[i])return-1;if(x[i]>y[i])return 1}return 0};
 // 锁定物品单独成组 / 不与未锁定堆叠合并
 {const f=stackKey;stackKey=function(it){const k=f(it);return k&&it.lk?k+':lk':k}}

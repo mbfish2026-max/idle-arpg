@@ -155,5 +155,10 @@ ok(G('shopSellPrice(_sold)<=buyPrice(_sold)'),'卖价低于买价');
 G('S.gold=0;buyPot("hp");buyPot("rej")');ok(G('S.gold')===0,'金币不足无法购买');
 G('S.gold=1e12;S.lvl=60');const qc={};for(let i=0;i<20000;i++){G('S.bag=[]');const it=G('gamble(0)');qc[it.q]=(qc[it.q]||0)+1;const il=it.il;if(il<55||il>64)qc.bad=(qc.bad||0)+1}
 console.log('  赌博戒指 20000 次：',JSON.stringify(qc));ok(!qc.bad,'赌博 ilvl 范围');ok(Math.abs((qc[4]||0)/20000-0.1)<0.012,'稀有约 10%');ok((qc[5]||0)<60&&(qc[6]||0)+(qc[3]||0)>15000,'暗金/套装稀少');
+// 自动整理顺序：品质 → 类型 → 等级（sort.js）
+{vm.runInContext(fs.readFileSync(path.join(root,'sort.js'),'utf8'),ctx,{filename:'sort.js'});const ks=G(`(()=>{const w=Object.values(BASEM).find(b=>b.s==='weapon'),h=Object.values(BASEM).find(b=>b.s==='helm');
+const A=[{b:h.id,q:3,il:10,uid:9001},{b:w.id,q:1,il:30,uid:9002},{k:'rune',r:5,n:1,uid:9003},{b:w.id,q:5,il:5,uid:9004},{b:w.id,q:1,il:5,sock:2,uid:9005},{k:'rune',r:12,n:1,uid:9006},{b:h.id,q:4,il:20,uid:9007},{b:w.id,q:3,il:20,uid:9008},{b:w.id,q:6,il:1,uid:9009,lk:1}];
+return A.map(x=>({x,s:sortKey(x)})).sort((a,b)=>cmpIt(a.x,b.x)).map(o=>o.x.uid).join(',')})()`);
+ok(ks==='9004,9009,9007,9008,9001,9005,9002,9006,9003','整理顺序 品质→类型→等级 '+ks)}
 
 console.log(`\n结果：通过 ${passes}，失败 ${fails}`);process.exit(fails?1:0);
