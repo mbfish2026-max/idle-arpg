@@ -1,5 +1,5 @@
 /* 静态资源缓存；index.html 网络优先；从不缓存 supabase / 跨域请求 */
-var V='anye-20261020d';
+var V='anye-20261020e';
 self.addEventListener('install',function(){self.skipWaiting()});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k!==V}).map(function(k){return caches.delete(k)}))}).then(function(){return self.clients.claim()}))});
 self.addEventListener('fetch',function(e){
