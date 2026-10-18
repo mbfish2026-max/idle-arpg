@@ -73,16 +73,22 @@ const NB_NAMES=new Set([...NB_SETITEMS,...NB_UNIQUES].map(x=>x.n));
 // 无数值的机制词缀：显示时不带数字
 {const f=modsTxt;modsTxt=function(m){const o={},fl=[];for(const k in m){if(/^nb_(boom|split|plague|u_)/.test(k)){fl.push(MODT[k].replace('{v}',''));continue}o[k]=m[k]}const t=f(o);return fl.length?(t?t+'，':'')+fl.join('，'):t}}
 // ---------- 汇总：流派 + 装备 → ST.nb ----------
-function nbOn(){return(typeof curCls==='function'?curCls():'nec')==='nec'&&NB.builds[S.build]?S.build:null}
+function nbCls(){return typeof curCls==='function'?curCls():'nec'}
+function nbBc(B){return(B&&B.cls)||'nec'}
+function nbOn(){const B=NB.builds[S.build];return B&&nbBc(B)===nbCls()?S.build:null}
+function nbClsBuilds(c){c=c||nbCls();return Object.entries(NB.builds).filter(([k,B])=>nbBc(B)===c)}
 function nbM(k){return(ST&&ST.M&&ST.M[k])||0}
 function nbSetN(set){const c=typeof setCount==='function'?setCount():{};return c[set]||0}
-{const f=calc;calc=function(...a){const r=f.apply(this,a);try{if(!ST)return r;const b=nbOn(),M=ST.M||{},nec=(typeof curCls!=='function'||curCls()==='nec');
+{const f=calc;calc=function(...a){const r=f.apply(this,a);try{if(!ST)return r;const b=nbOn(),M=ST.M||{},nec=true;
   const N={skd:{bs:M.skd_bs||0,bx:M.skd_bx||0,pn:M.skd_pn||0,pe:M.skd_pe||0,ce:M.skd_pe||0},pois:M.nb_pois||0,boss:M.nb_boss||0,bsmana:M.nb_bsmana||0,skel:M.nb_skel||0,skdr:M.nb_skdr||0,
    cekeep:M.nb_cekeep||0,boom:!!M.nb_boom,split:!!M.nb_split,plague:!!M.nb_plague,u:{},pres:0};
   for(const k in M)if(/^nb_u_/.test(k)&&M[k])N.u[k.slice(5)]=1;
+  N.mech=[];N.e={};for(const k in M){if(!M[k])continue;let x;if((x=/^skd_(\w+)$/.exec(k))&&!['bs','bx','pn','pe'].includes(x[1]))N.skd[x[1]]=(N.skd[x[1]]||0)+M[k];else if((x=/^nb_m_(split|echo|burst)_(\w+)$/.exec(k)))N.mech.push({t:x[1],id:x[2]});else if((x=/^nb_e_(\w+)$/.exec(k)))N.e[x[1]]=(N.e[x[1]]||0)+M[k]}
+  const PB=b&&NB.builds[b].pm;if(PB)for(const k in PB){let x;if((x=/^skd_(\w+)$/.exec(k)))N.skd[x[1]]=(N.skd[x[1]]||0)+PB[k];else if(k==='sumdmg'||k==='sumlife')ST[k]+=PB[k];else if(k==='nb_boss')N.boss+=PB[k];else if(k==='nb_pois')N.pois+=PB[k];else if(k==='cdr')ST.cdr=Math.min(75,(ST.cdr||0)+PB[k]);else if(k==='res'){for(const r in ST.res)ST.res[r]=Math.min(75,ST.res[r]+PB[k])}else if(k==='ll')ST.ll+=PB[k];else if(/^nb_e_/.test(k))N.e[k.slice(5)]=(N.e[k.slice(5)]||0)+PB[k]}
+  if(N.e.dr)ST.cdr=Math.min(75,(ST.cdr||0)+N.e.dr);
   if(b==='sum'){ST.sumdmg+=10;ST.sumlife+=10}else if(b==='bone'){N.skd.bs+=10;N.skd.bx+=10}else if(b==='plague'){N.pois+=10;N.pres=5}
   ST.nb=nec?N:{skd:{},u:{}};
-  if(typeof LATE_SHARE!=='undefined'){NB.defShare=NB.defShare||LATE_SHARE.nec;LATE_SHARE.nec=(b&&NB.builds[b].share)||NB.defShare}}catch(e){console.warn('nb calc',e)}return r}}
+  if(typeof LATE_SHARE!=='undefined'){const c=nbCls();NB.defShare=NB.defShare||{};if(!(c in NB.defShare))NB.defShare[c]=LATE_SHARE[c];LATE_SHARE[c]=(b&&NB.builds[b].share)||NB.defShare[c]}}catch(e){console.warn('nb calc',e)}return r}}
 // ---------- 技能数值：骨仆数量 / 骨矛法力 ----------
 {const f=SV;SV=function(id,L){const v=f(id,L);try{const N=ST&&ST.nb;if(!N||!v)return v;
   if(id==='rs'&&N.skel&&typeof v.n==='number'){v.n+=N.skel;if(v.txt)v.txt+=`（流派装备 +${N.skel}）`}
@@ -146,18 +152,20 @@ function nbInMj(){return typeof EGM!=='undefined'&&EGM&&EGM.k==='mj'}
 {const f=genItem;genItem=function(ilvl,opt){const it=f(ilvl,opt);try{if(it&&NB_NAMES.has(it.name)&&!(opt&&opt.nb)&&!(S.diff===2||nbInMj()))return f(ilvl,Object.assign({},opt||{},{q:4}))}catch(e){}return it}}
 function nbMake(def,ilvl){const b=BASEM[def.b];const it=makeBase(b,Math.max(ilvl||0,def.lv));it.name=def.n;it.req=def.rq;it.m=rollMods(def.m);if(def.set){it.q=6;it.set=def.set}else it.q=5;
  if(typeof finishDefense==='function')finishDefense(it,b);return it}
-function nbDropPool(){const b=nbOn();return[...NB_SETITEMS,...NB_UNIQUES].filter(x=>!b||x.nb===b||rnd()<0.5)}
-{const f=killMon;killMon=function(m){const r=f(m);try{if(typeof curCls==='function'&&curCls()!=='nec')return r;let p=0;
+function nbDropPool(){const b=nbOn(),c=nbCls();return[...NB_SETITEMS,...NB_UNIQUES].filter(x=>nbBc(NB.builds[x.nb])===c&&(!b||x.nb===b||rnd()<0.5))}
+{const f=killMon;killMon=function(m){const r=f(m);try{if(!nbClsBuilds().length)return r;let p=0;
   if(nbInMj()&&m.boss){const L=(EGM&&EGM.L)||1;p=1/60*(1+0.1*Math.floor(L/10))}
   else if(S.diff===2&&S.act>=3&&(m.boss||m.fl==='champ'||m.fl==='uniq'))p=1/400;
   if(p&&rnd()<p){const pool=nbDropPool();const def=pool[Math.floor(rnd()*pool.length)];if(def){const it=nbMake(def,m.lv);if(typeof groundLoot==='function')groundLoot(it);addBag(it);
    log(`<b style="color:${itemColor(it)}">流派装备掉落：${itemName(it)}</b>`)}}}catch(e){console.warn('nb drop',e)}return r}}
 // ---------- 选流派 ----------
 function nbPlan(){const b=nbOn();if(!b)return undefined;const B=NB.builds[b];return{order:B.order,fill:B.fill}}
-if(typeof CLS_SKPLAN!=='undefined')Object.defineProperty(CLS_SKPLAN,'nec',{get:nbPlan,configurable:true,enumerable:true});
-function nbApplyAc(b){const a=acState();const pri=NB.builds[b].ac;a.order=[...pri.filter(id=>a.order.includes(id)),...a.order.filter(id=>!pri.includes(id))];S.main=null;S.curse=NB.builds[b].curse||null}
+NB.origPlan={};
+function nbHookPlans(){if(typeof CLS_SKPLAN==='undefined'||typeof CLS_DEF==='undefined')return;for(const c in CLS_DEF){if(NB.origPlan.hasOwnProperty(c))continue;const d=Object.getOwnPropertyDescriptor(CLS_SKPLAN,c);NB.origPlan[c]=d&&!d.get?d.value:undefined;Object.defineProperty(CLS_SKPLAN,c,{get:()=>(nbCls()===c&&nbPlan())||NB.origPlan[c],set:v=>{NB.origPlan[c]=v},configurable:true,enumerable:true})}}
+nbHookPlans();
+function nbApplyAc(b){const a=acState();const pri=NB.builds[b].ac;a.order=[...pri.filter(id=>a.order.includes(id)),...a.order.filter(id=>!pri.includes(id))];S.main=null;S.curse=nbCls()==='nec'?(NB.builds[b].curse||null):S.curse}
 function nbCost(b){return !S.build?0:S.build===b?-1:1}
-function nbPick(b){if(curCls()!=='nec')return;if(b&&!NB.builds[b])return;if((S.build||null)===(b||null))return;
+function nbPick(b){if(b&&(!NB.builds[b]||nbBc(NB.builds[b])!==nbCls()))return;if((S.build||null)===(b||null))return;
  const free=!S.build&&!S.buildN,R=respN();
  if(!free&&R.sk<=0)return toast('切换流派需要 1 瓶技能重置药水（商人处购买）');
  const nm=b?NB.builds[b].n:'无流派';
@@ -170,10 +178,10 @@ function nbPick(b){if(curCls()!=='nec')return;if(b&&!NB.builds[b])return;if((S.b
  log(`<b style="color:#ffd76a">流派：${nm}${free?'（首次免费）':'（消耗技能重置药水）'}，已自动重新加点</b>`);save();if(!window.__NOUI){toast('流派：'+nm);render()}}
 function nbPanel(){const b=nbOn(),R=respN();const free=!S.build&&!S.buildN;
  const btn=(k,n)=>`<button class="btn xs ${(S.build||'')===k?'on':''}" onclick="nbPick(${k?`'${k}'`:'null'})">${n}</button>`;
- let info;if(b){const B=NB.builds[b],sn=SETS[B.set];info=`<div class="dim">${B.d}</div><div>流派被动：<b class="g">${B.pas}</b></div><div class="dim">${sn.n} ${nbSetN(B.set)}/6 · 推荐加点与自动施法已按流派设置</div>`}
+ let info;if(b){const B=NB.builds[b],sn=SETS[B.set];info=`<div class="dim">${B.d}</div><div>流派被动：<b class="g">${B.pas}</b></div><div class="dim">${sn.n} ${nbSetN(B.set)}/6 · 推荐加点与自动施法已按流派设置</div>`;NB.panelB=b}
  else info=`<div class="dim">未选流派：沿用默认计划。选流派会设置推荐加点、自动施法顺序与属性比例，并获得约 10% 小被动；技能点仍可自由加。</div>`;
- return`<div class="gp nbgp"><h3>流派 <span class="r dim">${free?'首次免费':'切换需技能重置药水 ×1（持有 '+R.sk+'）'}</span></h3><div class="btns nbb">${btn('','无')}${Object.entries(NB.builds).map(([k,B])=>btn(k,B.ic+' '+B.n)).join('')}</div>${info}</div>`}
-{const f=renderSkills;renderSkills=function(...a){const r=f.apply(this,a);try{if(window.__NOUI||SKT>2||curCls()!=='nec')return r;const P=document.getElementById('panel');const t=P&&P.querySelector('.stabs');
+ return`<div class="gp nbgp"><h3>流派 <span class="r dim">${free?'首次免费':'切换需技能重置药水 ×1（持有 '+R.sk+'）'}</span></h3><div class="btns nbb">${btn('','无')}${nbClsBuilds().map(([k,B])=>btn(k,B.ic+' '+B.n)).join('')}</div>${info}</div>`}
+{const f=renderSkills;renderSkills=function(...a){const r=f.apply(this,a);try{if(window.__NOUI||SKT>2||!nbClsBuilds().length)return r;const P=document.getElementById('panel');const t=P&&P.querySelector('.stabs');
   if(t&&!P.querySelector('.nbgp'))t.insertAdjacentHTML('afterend',nbPanel())}catch(e){console.warn('nb ui',e)}return r}}
 // ---------- 秘晶兑换（秘境页） ----------
 function nbExList(b){return[...NB_SETITEMS.filter(x=>x.nb===b),...NB_UNIQUES.filter(x=>x.nb===b)]}
@@ -182,8 +190,8 @@ function nbExBuy(n){const d=[...NB_SETITEMS,...NB_UNIQUES].find(x=>x.n===n);if(!
  if(M.cr<p)return toast(`需要 ${p} 秘晶`);if(S.bag.length>=40)return toast('背包已满');
  if(!window.__NOUI&&typeof confirm==='function'&&!confirm(`花费 ${p} 秘晶兑换「${d.n}」（属性随机）？`))return;
  M.cr-=p;const it=nbMake(d,EG_MJ.ml(M.cur||1));S.bag.push(it);log(`秘晶兑换：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);toast('兑换成功：'+d.n);save();egRefresh()}
-function nbExHtml(){const M=egMj(),b=NB.mjB;const tabs=Object.entries(NB.builds).map(([k,B])=>`<button class="btn xs ${k===b?'on':''}" onclick="NB.mjB='${k}';egRefresh()">${B.n}</button>`).join('');
+function nbExHtml(){const M=egMj(),L=nbClsBuilds();if(!L.length)return'';if(!L.some(x=>x[0]===NB.mjB))NB.mjB=nbOn()||L[0][0];const b=NB.mjB;const tabs=L.map(([k,B])=>`<button class="btn xs ${k===b?'on':''}" onclick="NB.mjB='${k}';egRefresh()">${B.n}</button>`).join('');
  const rows=nbExList(b).map(d=>{const p=nbExPrice(d),sl=NB_SLOTN[BASEM[d.b].s]||BASEM[d.b].s;return`<div class="row"><span>${d.set?'<b class="nbs">套</b>':'<b class="nbu">金</b>'} ${d.n} <span class="dim">${sl}</span></span><button class="btn xs ${M.cr>=p?'gold':''}" onclick="nbExBuy('${d.n}')">◆${p}</button></div>`}).join('');
- return`<div class="gp nbex"><h3>流派装备兑换 <span class="r">◆秘晶 ×${M.cr}</span></h3><div class="btns">${tabs}</div>${rows}<div class="dim">兑换指定部位，属性在范围内随机。亡灵术士专属。</div></div>`}
-{const p=typeof EG_PAGES!=='undefined'&&EG_PAGES.find(x=>x.k==='mj');if(p){const f=p.render;p.render=function(...a){const h=f.apply(this,a);try{if(curCls()!=='nec')return h;const x=nbExHtml();return h+x}catch(e){return h}}}}
+ return`<div class="gp nbex"><h3>流派装备兑换 <span class="r">◆秘晶 ×${M.cr}</span></h3><div class="btns">${tabs}</div>${rows}<div class="dim">兑换指定部位，属性在范围内随机。本职业专属。</div></div>`}
+{const p=typeof EG_PAGES!=='undefined'&&EG_PAGES.find(x=>x.k==='mj');if(p){const f=p.render;p.render=function(...a){const h=f.apply(this,a);try{if(!nbClsBuilds().length)return h;const x=nbExHtml();return h+x}catch(e){return h}}}}
 document.head.insertAdjacentHTML('beforeend',`<style>.nbgp .nbb{flex-wrap:wrap;gap:4px}.nbgp .g{color:#8f8}.nbex .nbs{color:#3c3}.nbex .nbu{color:#c8963c}.nbex .row{align-items:center}</style>`);

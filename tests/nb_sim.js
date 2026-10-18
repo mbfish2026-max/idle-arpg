@@ -9,18 +9,22 @@ ctx.window=ctx;vm.createContext(ctx);ctx.__NOUI=1;ctx.__NOSHOWLOGIN=1;
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const files=[...html.matchAll(/<script src="([^"?]+)/g)].map(m=>m[1]).filter(f=>!/^(cloud|login_flow|audio|power|ui_art|icon2|art2_)/.test(f));
 for(const f of files)try{vm.runInContext(fs.readFileSync(path.join(root,f),'utf8'),ctx,{filename:f})}catch(e){console.error('load',f,e.message)}
 const G=s=>vm.runInContext(s,ctx);
-G(`function nbRun(b,gear,T,zi){S=newSave();S.cls='nec';S.ci=1;S.sk={rs:1};S.eq={};const L=85;S.lvl=L;S.xp=xpNeed(L);S.kp=L-1+12;S.sp=5*(L-1);S.auto=0;S.autoEq=0;S.autoSk=1;S.autoAt=1;S.gold=0;S.diff=2;applyDiff();S.build=null;S.buildN=0;
- const best=s=>BASES.filter(x=>x.s===s&&!x.jew&&x.q<=L&&(s!=='weapon'||x.cat==='wand')&&(s!=='shield'||x.cat==='head')).sort((x,y)=>(y.tier|0)-(x.tier|0)||y.q-x.q)[0];
- for(const s of['weapon','shield','helm','armor','gloves','belt','boots']){const B=best(s);if(B)S.eq[s]=makeBase(B,L)}
+if(process.env.MJ){const L=+process.env.MJ;G(`{const f=mkMon;mkMon=function(...a){const m=f(...a);m.max=m.hp=Math.round(m.max*Math.pow(1.08,${L}));m.dmg=m.dmg.map(x=>x*Math.pow(1.035,${L}));return m}}`)}
+G(`function nbRun(b,gear,T,zi,cls){cls=cls||'nec';S=newSave();S.cls=cls;S.ci=0;S.eq={};if(cls==='nec'){S.ci=1;S.sk={rs:1}}else clsInit();S.eq={};const L=85;S.lvl=L;S.xp=xpNeed(L);S.kp=L-1+12;S.sp=5*(L-1);S.auto=0;S.autoEq=0;S.autoSk=1;S.autoAt=1;S.gold=0;S.diff=2;applyDiff();S.build=null;S.buildN=0;
+ const WC={nec:'wand',bar:'sword',sor:'wand',dru:'staff',ama:'abow',pal:'sword'}[cls],SC={nec:'head',bar:'shield',sor:'orb',dru:null,ama:null,pal:'pshd'}[cls],HC={bar:'bhelm',dru:'pelt'}[cls];
+ const bw=b&&NB.builds[b]&&gear?null:null;const wcat=(b&&{bar_bers:'axe',pal_ham:'mace',pal_fist:'mace',ama_jav:'ajav',ama_strafe:'bow',ama_elem:'bow'}[b])||WC;
+ const best=s=>BASES.filter(x=>x.s===s&&!x.jew&&x.q<=L&&(!x.ccls||x.ccls===cls)&&(s!=='weapon'||x.cat===wcat)&&(s!=='shield'||x.cat===SC)&&(s!=='helm'||!HC||x.cat===HC)).sort((x,y)=>(y.tier|0)-(x.tier|0)||y.q-x.q)[0];
+ for(const s of['weapon','shield','helm','armor','gloves','belt','boots']){if(s==='shield'&&(!SC||TWOH.has(wcat)))continue;const B=best(s);if(B)S.eq[s]=makeBase(B,L)}
  calc();if(b)nbPick(b);
- if(gear&&b){const set=NB.builds[b].set;for(const d of SETITEMS.filter(x=>x.set===set)){const it=nbMake(d,L);it.m=Object.fromEntries(Object.entries(d.m).map(([k,v])=>[k,Array.isArray(v)?v[1]:v]));S.eq[BASEM[d.b].s]=it}
+ if(gear&&b){const set=NB.builds[b].set;for(const d of SETITEMS.filter(x=>x.set===set)){const it=nbMake(d,L);it.m=Object.fromEntries(Object.entries(d.m).map(([k,v])=>[k,Array.isArray(v)?v[1]:v]));S.eq[BASEM[d.b].s]=it;if(BASEM[d.b].s==='weapon'&&TWOH.has(BASEM[d.b].cat))delete S.eq.shield}
   for(const d of UNIQUES.filter(x=>x.nb===b)){const it=nbMake(d,L);const s=BASEM[d.b].s;const k=s==='ring'?(S.eq.ring1?'ring2':'ring1'):s;if(s==='weapon'&&S.eq.weapon&&S.eq.weapon.set)continue;S.eq[k]=it}}
  calc();for(let i=0;i<40;i++){autoTick();calc()}
  const Z=[];ACTS[4].zones.forEach((q,i)=>{if(q.boss||!Array.isArray(q.mons))return;Z.push({i,ml:q.ml})});const z=Z[(zi||0)%Z.length];S.act=4;S.zone=z.i;S.wave=0;
  resetRuntime();MON=[];ALLY=[];CORPSE=[];H.life=ST.life;H.mana=ST.mana;H.abs=0;spawnT=0.1;const k0=S.kills||0;let dead=0;const od=die;die=function(){dead++;od()};
  const oz=zoneClear;zoneClear=function(){S.wave=0};
  let mlv=0;try{for(let t=0;t<T;t+=0.05){if(!liveMon().length)spawnT=Math.min(spawnT,0.05);step(0.05);for(const m of MON)mlv=Math.max(mlv,m.lv)}}finally{die=od;zoneClear=oz}return[(S.kills||0)-k0,dead,mlv,Object.entries(S.sk).filter(x=>x[1]>=5).map(x=>SKM[x[0]].n+x[1]).join(' ')]}`);
-if(process.env.NBDBG){for(const g of[0,1]){G(`nbRun('${process.env.NBDBG}',${g},30)`);console.log(G(process.env.NBX||`JSON.stringify({sk:S.sk,mana:ST.mana,castT:ST.castT,hm:Math.round(H.mana),bsL:slvl('bs'),bs:SV('bs',slvl('bs')).dmg,ene:ST.attr.ene,late:lateMul(),main:mainSkill(),ord:acState().order.slice(0,8),skd:ST.nb.skd})`))}process.exit(0)}
+if(process.env.NBQ){console.log(G(process.env.NBQ));process.exit(0)}
+if(process.env.NBDBG){for(const g of[0,1]){G(`nbRun('${process.env.NBDBG}',${g},30,${process.env.ZI||0},'${process.env.CLS||'nec'}')`);console.log(G(process.env.NBX||`JSON.stringify({sk:S.sk,mana:ST.mana,castT:ST.castT,hm:Math.round(H.mana),bsL:slvl('bs'),bs:SV('bs',slvl('bs')).dmg,ene:ST.attr.ene,late:lateMul(),main:mainSkill(),ord:acState().order.slice(0,8),skd:ST.nb.skd})`))}process.exit(0)}
 const N=+process.argv[2]||6,T=+process.argv[3]||90;const R={};
-for(const b of['','sum','bone','plague'])for(const g of(b?[0,1]:[0])){let k=0,d=0,info='';for(let i=0;i<N;i++){const r=G(`nbRun('${b}',${g},${T},${i})`);k+=r[0];d+=r[1];info='怪物'+r[2]+'级 '+r[3]}R[b+g]=k/N;
- console.log(`${(b||'无流派').padEnd(7)} ${g?'全套+暗金':'白装    '}  击杀 ${(k/N).toFixed(1).padStart(6)}  死亡 ${(d/N).toFixed(1)}  ${g?'×'+(k/N/Math.max(0.1,R[b+'0'])).toFixed(2)+' 对白装':''}\n   ${info}`)}
+const CL=(process.env.CLS||'nec').split(',');for(const C of CL){const BL=['',...G(`nbClsBuilds('${C}').map(x=>x[0]).join(',')`).split(',')];console.log('== '+C);for(const b of BL)for(const g of(b?[0,1]:[0])){let k=0,d=0,info='';for(let i=0;i<N;i++){const r=G(`nbRun('${b}',${g},${T},${i},'${C}')`);k+=r[0];d+=r[1];info='怪物'+r[2]+'级 '+r[3]}R[b+g]=k/N;
+ console.log(`${(b||'无流派').padEnd(7)} ${g?'全套+暗金':'白装    '}  击杀 ${(k/N).toFixed(1).padStart(6)}  死亡 ${(d/N).toFixed(1)}  ${g?'×'+(k/N/Math.max(0.1,R[b+'0'])).toFixed(2)+' 对白装':''}\n   ${info}`)}}
