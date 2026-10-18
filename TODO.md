@@ -186,3 +186,4 @@
 - [x] mlvl=该难度第五章末(45/68/85)+1，首领牛魔王+2；25波(第25波首领)，每波约2倍密度(同屏上限12不变，清屏0.35s刷下一波)；经验×1.25、寻宝+60、小怪额外符文4%/首领必掉1符文；清图后原地循环
 - [ ] 【美术bot】奶牛关美术：狂蛮牛魔/铁角蛮牛 怪物立绘、牛魔王 首领立绘、哞哞牧场 战斗背景（目前借用雪原魔猿/断骨重锤/瓦拉克斯贴图 + CSS 滤镜、bg_snow）
 - [x] 亡灵流派 26 件套装/暗金图标（美术）：GenerateImage 手绘 4 张黑底网格图集 → tools/art/gen_nec_icons.py 按格检测物体裁切（手套/靴子成对保留）、软 alpha、居中 128×128 webp q80 → assets/icon2/nec/<id>.webp；art_nec_icons.js 按物品名 it.name 覆盖（包装 icon2Url + 最外层 itemIcon），背包/详情/装备栏/仓库通用；?v=20261019j
+- [x] 5 职业 15 流派 90 件套装 + 30 件流派暗金图标（by 美术2）：GenerateImage 黑底单图 → tools/art2/proc_cls.py（亮度 alpha+unmultiply、裁切、方形 128×128 webp）→ assets/icon2/cls/<key>.webp；art_cls_icons.js 按物品名覆盖（镜像 art_nec_icons.js）；?v=20261019q
