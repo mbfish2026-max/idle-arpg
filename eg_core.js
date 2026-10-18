@@ -56,7 +56,7 @@ function egPage(p){EG_PAGES.push(p)}
 function egTabBtn(){const nav=$('#tabs');if(!nav||nav.querySelector('[data-t=eg]'))return;const b=document.createElement('button');b.dataset.t='eg';b.innerHTML='<i>✠</i>终局';b.onclick=()=>{TAB='eg';render()};nav.appendChild(b)}
 const _eg_render=render;render=function(){_eg_render();if(TAB==='eg')renderEG()};
 function renderEG(){const P=$('#panel');const ps=EG_PAGES;if(!ps.find(p=>p.k===EGT))EGT=ps[0].k;
- const tabs=ps.map(p=>`<button class="${EGT===p.k?'on':''}" onclick="EGT='${p.k}';render()">${p.n}${p.dot&&p.dot()?'<em class="egdot"></em>':''}</button>`).join('');
+ const cur=ps.find(p=>p.k===EGT)||{};const tabs=ps.filter(p=>!p.hide).map(p=>`<button class="${EGT===p.k||cur.parent===p.k?'on':''}" onclick="EGT='${p.k}';render()">${p.n}${p.dot&&p.dot()?'<em class="egdot"></em>':''}</button>`).join('');
  const p=ps.find(x=>x.k===EGT);const lk=p.lock&&p.lock();
  P.innerHTML=`<div class="stabs egtabs">${tabs}</div>`+(lk?`<div class="gp"><h3>${p.n}</h3><div class="dim">🔒 ${lk}</div>${p.intro?`<div class="egintro">${p.intro}</div>`:''}</div>`:p.render())}
 function egRefresh(){if(TAB==='eg')render()}
