@@ -6,9 +6,10 @@
 // 必须在 skills.js 之后加载（包装其自动施法函数）。
 // ===================================================================================
 // 平衡系数表（按角色等级线性插值）：法师=技能伤害系数 dk，野蛮人=近战伤害系数 mk。依据 1/12/24/30 级 60 秒击杀与亡灵术士对比调校
-const CLS_BAL={sor:[[1,0.26],[12,1.3],[24,0.24],[30,0.21],[45,0.2],[60,0.2],[85,0.2]],bar:[[1,0.7],[12,0.2],[24,0.5],[30,0.45],[45,0.55],[60,0.6],[85,0.62]]};// 30 级后延伸到 85 级（地狱终章）
+const CLS_BAL={sor:[[1,0.26],[12,1.3],[24,0.24],[30,0.21],[45,0.2],[60,0.2],[85,0.2]],bar:[[1,0.7],[12,0.35],[24,0.4],[30,0.45],[45,0.55],[60,0.6],[85,0.62]]};// 30 级后延伸到 85 级（地狱终章）
 // 对首领/精英(冠军/头目)的额外伤害系数（按等级插值）：60 秒击杀主要反映清杂，首领战按全程 sim 卡关情况另调
-const CLS_EK={sor:[[1,1],[18,2],[24,3],[30,2.4],[40,2.2],[60,2.4],[85,2.8]],bar:[[1,1],[24,1.3],[30,1.35],[40,2.5],[60,3],[85,3.5]]};
+const CLS_EK={sor:[[1,1],[18,2],[24,3],[30,2.4],[40,2.2],[60,2.4],[85,2.8]],bar:[[1,1.5],[12,2],[24,2.5],[30,2.5],[40,3.5],[60,5.5],[85,7]],
+ ama:[[1,1],[18,1.8],[24,2.5],[30,2.2],[60,4],[85,5]],dru:[[1,1],[40,1.4],[85,2]]};// 荒野射手/德鲁伊：全程 sim 普通卡萨尔、地狱首领偏慢
 function clsEK(m){const c=curCls(),t=CLS_EK[c];return(t&&m&&(m.boss||m.fl==='uniq'||m.fl==='champ'))?clsBalK(t):1}
 function clsBalK(t){const l=(typeof S!=='undefined'&&S&&S.lvl)||1;if(l<=t[0][0])return t[0][1];for(let i=1;i<t.length;i++)if(l<=t[i][0]){const[a,x]=t[i-1],[b,y]=t[i];return x+(y-x)*(l-a)/(b-a)}return t[t.length-1][1]}
 const CLS_DEF={
@@ -225,7 +226,7 @@ clsDef('bar',[
 // 寻药：击杀时概率回复
 {const f=killMon;killMon=function(m){const r=f(m);if(curCls()==='bar'){const v=pasV('bpot');if(v&&rnd()*100<v.potch&&ST){H.life=Math.min(ST.life,H.life+ST.life*0.1);H.mana=Math.min(ST.mana,H.mana+ST.mana*0.1)}}return r}}
 const CLS_SKPLAN={
- bar:{order:['bbash','bshout','bmast','bbash','bmast','bhowl','bbash','bmast','bshout','bmast','bbash','bww','bstam','bww','bww','bww','bbo','bww','bww','biron','bww','bww','bbo','bww','bww','bbo','bww','bww','bbash','bww','bww','bbcmd','bnres','bbo','bww','bww'],
+ bar:{order:['bbash','bshout','bmast','bbash','bmast','bhowl','bbash','bmast','bshout','bmast','bbash','bww','bstam','bww','bww','bww','bbo','bww','bww','biron','bww','bww','bbo','bww','bww','bbo','bww','bww','bbash','bww','bww','bbcmd','bnres','bbers','bbers','bbers','bbo','bww','bww','bbers','bbers'],
   fill:()=>bl('bww')<20?['bww','bbo']:bl('bbers')<10?['bbers','bbo']:bl('bbo')<10?['bbo','bbash']:bl('bbash')<12?['bbash','bmast']:bl('bmast')<20?['bmast','bnres']:['bnres','biron','bfury','bshout','bstam','bbo']},// 旋风斩主修，狂暴(魔法伤害)应对物理免疫(如熔火河深坑巨魔)，战斗号令(生命/法力)、猛击(旋风斩协同)、自然抗性/铁肤保生存
  sor:{order:['mfb','mfa','mfb','mwarm','minf','mfb','mfb','mblaze','mfb','mfb','mfb','mfb','mfball','mmet','mshiv','mfball','mfball','mmet','mfball','menc','mfwall','mfball','mmet','mfball','mmet','mhyd','mchill','mfball','mmet','mfball','mmet','mfm','mfball','mmet','mfm'],
   fill:()=>bl('mfball')<20?['mfball','mmet']:bl('mmet')<20?['mmet','mbliz']:bl('mbliz')<20?['mbliz','mcm']:bl('mcm')<10?['mcm','mfm']:['mfm','mcm','mfb','mchill','menc']},// 火系主修（爆炎球/陨石术），护甲链保生存；之后副修暴雪+冰霜精通应对地狱火免/电免（如憎恨之囚：血裔领主火免、赦罪司祭电免）

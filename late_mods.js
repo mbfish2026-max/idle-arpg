@@ -9,10 +9,10 @@ clsDef('nec',[
  {id:'xn_lord',t:0,n:'冥主统御',r:75,col:1,pre:['rv'],ty:'passive',ic:'👑',v:L=>{const d=XM_P(L,25,5,120),h=XM_P(L,10,3,60);return{sumdmg:d,sumlife:h,txt:`召唤物伤害 +${d}%，召唤物生命 +${h}%`}}}]);
 clsDef('sor',[
  {id:'xs_chain',t:0,n:'星火连爆',r:60,col:0,pre:['mmet'],ty:'passive',ic:'🎆',xboom:{el:'fire',n:5},v:L=>{const p=XM_P(L,8,1,25);return{boom:p,txt:`怪物死亡时爆燃：对最多 5 个敌人造成其最大生命 ${p}% 的火焰伤害（首领减半，可连锁 2 层）`}}},
- {id:'xs_tide',t:1,n:'寂灭冰潮',r:75,col:1,pre:['mbliz'],ty:'aoe',el:'cold',ic:'🌊',fx:'boom',sm:3,mana:L=>30+L,v:(L,sy)=>{const d=CLS_DR(60,90,24,32,L,sy);return{dmg:d,n:12,slow:4,txt:`冰潮席卷最多 12 个敌人 ${clsDtx(d,'cold')}，减速 4 秒`}}}]);
+ {id:'xs_tide',t:1,n:'寂灭冰潮',r:75,col:1,pre:['mbliz'],ty:'aoe',el:'cold',ic:'🌊',fx:'boom',sm:3,mana:L=>8,v:(L,sy)=>{const k=1.6+0.05*(L-1),B=['mbliz','mmet','mfball'].filter(x=>bl(x)).map(x=>clsSV(x,Math.max(1,slvl(x))).dmg).reduce((a,b)=>(b[0]+b[1]>a[0]+a[1]?b:a),CLS_DR(60,90,24,32,L,sy)),d=B.map(x=>Math.round(x*k));return{dmg:d,n:12,slow:4,txt:`冰潮席卷最多 12 个敌人 ${clsDtx(d,'cold')}（取暴雪/陨石术/爆炎球中最高伤害 ×${k.toFixed(2)}），减速 4 秒`}}}]);
 clsDef('bar',[
  {id:'xb_blood',t:1,n:'血怒狂潮',r:60,col:1,pre:['bfury'],ty:'passive',ic:'🩸',v:L=>{const ll=XM_P(L,2,0.3,8),dr=XM_P(L,5,0.5,15);return{xll:ll,xdr:dr,txt:`攻击吸取 ${ll}% 生命，受到伤害 -${dr}%`}}},
- {id:'xb_quake',t:2,n:'裂地震吼',r:75,col:2,pre:['bbo'],ty:'mall',ic:'🌋',sm:3,mana:L=>12+0.4*L,v:(L,sy)=>{const p=Math.round((60+12*(L-1))*sy),f=4+3*(L-1);return{pct:p,flat:f,n:12,stun:1,txt:`震吼撼地：最多 12 个敌人 ${clsMtx(p,f)}，并眩晕 1 秒`}}}]);
+ {id:'xb_quake',t:2,n:'裂地震吼',r:75,col:2,pre:['bbo'],ty:'mall',ic:'🌋',sm:3,mana:L=>8+0.3*L,v:(L,sy)=>{const k=1.15+0.05*(L-1),W=bl('bww')?clsSV('bww',Math.max(1,slvl('bww'))):{pct:Math.round((60+12*(L-1))*sy),flat:4+3*(L-1)};const p=Math.round((100+W.pct)*k-100),f=Math.round((W.flat||0)*k);return{pct:p,flat:f,n:12,stun:1,txt:`震吼撼地：最多 12 个敌人 ${clsMtx(p,f)}（旋风斩 ×${k.toFixed(2)}），并眩晕 1 秒`}}}]);
 clsDef('dru',[
  {id:'xd_rift',t:0,n:'元素崩解',r:60,col:0,pre:['darm'],ty:'passive',ic:'🌀',xboom:{el:'magic',n:5},v:L=>{const p=XM_P(L,9,1,26);return{boom:p,txt:`怪物死亡时元素崩解：对最多 5 个敌人造成其最大生命 ${p}% 的魔法伤害（首领减半，可连锁 2 层）`}}},
  {id:'xd_wild',t:2,n:'荒野之潮',r:75,col:1,pre:['dgriz'],ty:'passive',ic:'🐺',v:L=>{const d=XM_P(L,25,5,120),ll=XM_P(L,2,0.2,6);return{sumdmg:d,xll:ll,txt:`召唤物伤害 +${d}%，你的攻击吸取 ${ll}% 生命`}}}]);
