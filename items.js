@@ -179,3 +179,16 @@ craft=function(t){toast('请使用新合成配方')};
 
 // 若 game.js 未延迟 init（旧版入口），在此补齐存档字段
 if(typeof S!=='undefined'&&S&&!S.stash)S.stash=[];
+// ---------- 防具力量/敏捷需求缩放（D3 式放宽） ----------
+// 原版底材需求（精英腰带 106、精英盔甲 158 力量）远超法系默认加点（自动加点只把力量加到「背包里够得着的装备」，法系 85 级约 25 力量）。
+// 防具类（头/甲/盾/手/腰/鞋）：50 以内不变，超出部分 ×0.35（106→70、158→88；重甲仍高于轻甲）。武器不变。
+// 法系流派套装/暗金（亡灵 3 流派 + cls_build 中 role:'caster' 的流派）：力量/敏捷需求再封顶 30。
+const REQ_ARMS=new Set(['helm','armor','shield','gloves','belt','boots']);
+function reqScale(v){return v>50?50+Math.round((v-50)*0.35):v}
+function reqCasterBuild(it){if(!it||!it.name||typeof NB_NAMES==='undefined'||!NB_NAMES.has(it.name))return false;const k=it.nb||(it.set&&SETS[it.set]&&SETS[it.set].nb)||(typeof UNIQUES!=='undefined'&&(UNIQUES.find(u=>u.n===it.name)||{}).nb);if(!k)return false;
+ if(['sum','bone','plague'].includes(k))return true;const c=typeof CB_SPECS!=='undefined'&&CB_SPECS.find(x=>x.k===k);return!!(c&&c.role==='caster')}
+{const f=itemReq;itemReq=function(it){const r=f(it);try{const b=BASEM[it.b];if(b&&REQ_ARMS.has(b.s)){r.str=reqScale(r.str);r.dex=reqScale(r.dex)}if(reqCasterBuild(it)){r.str=Math.min(r.str,30);r.dex=Math.min(r.dex,30)}}catch(e){}return r}}
+// 自动加点的力量目标：原来只看「需求 ≤ 当前力量+10」的装备且封顶 60，法系力量永远停在初始值附近。
+// 改为：背包中需求等级 ≤ 角色等级+3、力量需求 ≤ 20+0.6×等级（30 级 38 / 60 级 56 / 85 级 71）的装备里取最高需求。
+function reqStrCap(){return Math.round(20+0.6*((S&&S.lvl)||1))}
+needStr=function(){const cap=reqStrCap();let n=0;for(const it of S.bag)if(it&&!it.k&&BASEM[it.b]){const r=itemReq(it);if(r.lv<=S.lvl+3&&r.str<=cap)n=Math.max(n,r.str)}return Math.min(n,cap)};
