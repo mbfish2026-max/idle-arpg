@@ -7,7 +7,7 @@ const LATE_AN={str:'力量',dex:'敏捷',ene:'精力',vit:'体力'};
 const LATE_SL=0.05;
 // 职业后期成长系数（按角色等级插值；≤30 级接近 1，保持 1–30 级平衡）
 const LATE_K={
- nec:[[1,1],[24,1],[30,0.56],[50,1.51],[70,4.63],[85,2.95]],
+ nec:[[1,1],[24,1],[30,0.56],[50,1.51],[70,1.3],[85,2.4]],// 原 70:4.63 / 85:2.95——地狱段(64–80 级)伤害约为相邻节点的 3 倍，满屏秒怪；全程通关模拟 57.7h→65.2h
  sor:[[1,1],[24,1],[30,0.7],[50,0.47],[70,0.35],[85,7.5]],
  bar:[[1,1],[24,1],[30,0.45],[50,0.9],[70,1.2],[85,0.5]],
  dru:[[1,1],[24,1],[30,0.82],[50,0.58],[70,0.4],[85,2.0]],
@@ -45,3 +45,10 @@ let LATE_DISP=0;
 // 详情显示：伤害没有走协同系数的技能（如亡灵召唤物），把伤害区间按倍率换算后替换到文字里
 {const f=SV;SV=function(id,L){const v=f(id,L);if(!LATE_DISP||!v||!Array.isArray(v.dmg))return v;const d0=LATE_DISP;LATE_DISP=0;let raw;try{raw=f(id,L)}finally{LATE_DISP=d0}
  if(raw&&Array.isArray(raw.dmg)&&raw.dmg[0]===v.dmg[0]&&raw.dmg[1]===v.dmg[1]){const n=v.dmg.map(x=>Math.round(x*d0)),o=v.dmg.join('-');if(v.txt&&v.txt.includes(o)){v.txt=v.txt.replace(o,n.join('-'));v.dmg=n}}return v}}
+// 亡者复生：原数量 = 技能等级（20 级 20 只、+技能后更多），远多于骨仆（20 级 8 只）。同时存在数量上限改为同等级骨仆数量。
+{const f=SV;SV=function(id,L,...a){const v=f(id,L,...a);try{if(id==='rv'&&v&&v.n>0){const n=Math.max(1,f('rs',L).n|0);if(v.n>n)return Object.assign({},v,{n,txt:String(v.txt||'').replace(/复生 \d+ 只/,`复生 ${n} 只`)})}}catch(e){}return v}}
+// 亡者复生：伤害直接取自尸体怪物（mkMon 已含 等级成长 × 地狱难度 × 怪物难度 1–9），再吃上面的后期系数/召唤物加成就是双重成长，
+// 地狱 + 高怪物难度时复生每击远超骨仆、单体秒怪。每击平均伤害上限 = 同技能等级骨仆的平均伤害 × LATE_REVK（低于上限的不变）。
+const LATE_REVK=1;
+{const f=addAlly;addAlly=function(kind,o){if(kind==='rev'&&o&&Array.isArray(o.dmg)&&typeof SV==='function'){try{const L=Math.max(1,slvl('rv')||0),v=SV('rs',L);
+  const cap=(v.dmg[0]+v.dmg[1])/2*LATE_REVK,avg=(o.dmg[0]+o.dmg[1])/2;if(cap>0&&avg>cap){const k=cap/avg;o=Object.assign({},o,{dmg:o.dmg.map(x=>x*k)})}}catch(e){}}return f(kind,o)}}
