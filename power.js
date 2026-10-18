@@ -12,6 +12,8 @@ function apply(){PWRF.fps=P.eco?15:30;PWRF.ui=P.eco?0.5:0.25;window.PWR_ECO=!!P.
 // 省电模式下跳过：飘字、技能特效（画布/图片/帧动画）、地面掉落标签
 for(const n of['spawnFloat','fx','fxLine','art2FxAt','art2PlayFx','clsFxRing','groundLoot']){const f=window[n];if(typeof f!=='function')continue;
  window[n]=function(){if(P.eco)return;return f.apply(this,arguments)}}
+// 粒子上限：同屏飘字最多 30 个（加速挂机时不无限堆 DOM；特效照常显示）
+if(typeof spawnFloat==='function'){const f=spawnFloat;let live=0;spawnFloat=function(){if(live>=30)return;live++;setTimeout(()=>{live--},900);return f.apply(this,arguments)}}
 // ---------- 后台 / 锁屏：停止推进与渲染，回来后按离线公式结算 ----------
 let hidAt=0;
 function settle(from){if(!from||typeof S!=='object'||!S)return;if(Date.now()-from<60000)return;S.last=from;try{offline()}catch(e){console.error(e)}}
@@ -63,7 +65,7 @@ function morphKids(a,b){const bc=[...b.childNodes];let ids=null,nid=null;
   if(!an){a.appendChild(bn);continue}
   if(sameNode(an,bn)){patchNode(an,bn);ac=an.nextSibling}else{a.insertBefore(bn,an);ac=an}}
  while(ac){const nx=ac.nextSibling;a.removeChild(ac);ac=nx}}
-function diffHTML(el,html){NATIVE_IH.set.call(TPL,html);morphKids(el,TPL.content)}
+function diffHTML(el,html){NATIVE_IH.set.call(TPL,html);if(typeof window.grpPre==='function')try{window.grpPre(el.id,TPL.content)}catch(e){console.warn('grpPre',e)}morphKids(el,TPL.content)}
 const DIFF_IDS=['ftop','mgrid','arow','flog','fquest','fzone'];
 function installDiff(){for(const id of DIFF_IDS){const el=document.getElementById(id);if(!el||el.__diff)continue;el.__diff=1;
  Object.defineProperty(el,'innerHTML',{configurable:true,get(){return NATIVE_IH.get.call(this)},set(v){v=String(v);if(v===this.__last)return;this.__last=v;diffHTML(this,v)}})}

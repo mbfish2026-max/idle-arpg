@@ -311,7 +311,7 @@ function rectOf(id){const e=document.getElementById(id),b=$('#fbattle');if(!e||!
 function heroPos(){return rectOf('chero')||{x:60,y:300}}
 function fx(kind,tg=[]){if(TAB!=='fight')return;const pts=tg.map(m=>rectOf('c'+m.uid)).filter(Boolean),h=heroPos();
  const col={spear:'#f4ecd0',spirit:'#bff',teeth:'#eee',nova:'#5f5',cloud:'#5c5',boom:'#f80',slash:'#fff',stab:'#5f5',prison:'#dcb',shield:'#ddd',summon:'#7f7',curse:'#c3f'}[kind]||'#fff';
- FX.push({k:kind,pts,h,c:col,t:0,life:kind==='nova'?0.7:0.45})}
+ if(FX.length>=48)FX.shift();FX.push({k:kind,pts,h,c:col,t:0,life:kind==='nova'?0.7:0.45})}
 function fxCurse(ms){fx('curse',ms)}
 function fxLine(fromUid,toUid,c){if(TAB!=='fight')return;const a=rectOf('ca'+fromUid),b=rectOf('c'+toUid);if(a&&b)FX.push({k:'line',pts:[b],h:a,c,t:0,life:.3})}
 function floatNum(id,v,c){if(TAB!=='fight')return;const p=rectOf(typeof id==='string'?'c'+id:'c'+id);if(!p)return;spawnFloat(p.x+R(-14,14),p.y-10,typeof v==='number'?'-'+v:v,c)}
@@ -490,12 +490,16 @@ let arowN=0,lastT=performance.now(),autoT=0,acc=0,uiT=0,saveT=0;
 const PWRF={fps:30,ui:0.25,paused:0};
 // 暂停（息屏/后台）时彻底停掉 rAF，不空转；恢复时调用 PWRF.resume()
 PWRF.stopped=0;PWRF.resume=()=>{if(!PWRF.stopped)return;PWRF.stopped=0;lastT=performance.now();requestAnimationFrame(loop)};
-function loop(now){if(PWRF.paused){PWRF.stopped=1;return}if(now-lastT>=1000/PWRF.fps-2){try{loop0(now)}catch(e){console.error(e)}}requestAnimationFrame(loop)}
-function loop0(now){let dt=Math.min(0.1,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
- uiT+=dt;if(uiT>PWRF.ui){uiT=0;if(TAB==='fight'){renderFight();if(++arowN%4===0)arowHint()}}drawFX(dt);
+// 省电：非战斗页不需要画面，改为 4 次/秒的定时器只跑模拟（不再每帧唤醒 rAF）；回到战斗页立即切回 rAF
+PWRF.bgMs=250;let loopTm=0;
+function loopSched(){if(TAB==='fight'){requestAnimationFrame(loop)}else{loopTm=setTimeout(()=>{loopTm=0;loop(performance.now())},PWRF.bgMs)}}
+PWRF.kick=()=>{if(PWRF.stopped||PWRF.paused||!loopTm||TAB!=='fight')return;clearTimeout(loopTm);loopTm=0;requestAnimationFrame(loop)};
+function loop(now){if(PWRF.paused){PWRF.stopped=1;return}if(TAB!=='fight'||now-lastT>=1000/PWRF.fps-2){try{loop0(now)}catch(e){console.error(e)}}loopSched()}
+function loop0(now){let dt=Math.min(TAB==='fight'?0.1:0.3,(now-lastT)/1000);lastT=now;const sim=dt*SPEED;let n=Math.ceil(sim/0.05);for(let i=0;i<n;i++)step(sim/n);
+ uiT+=dt;if(uiT>PWRF.ui){uiT=0;if(TAB==='fight'){renderFight();if(++arowN%4===0)arowHint()}}if(TAB==='fight')drawFX(dt);else if(FX.length){FX.length=0;drawFX(0)}
  autoT+=dt*SPEED;if(autoT>1){autoT=0;autoTick()}saveT+=dt;if(saveT>5){saveT=0;killWin=killWin.filter(t=>GT-t<120);if(GT>60)S.kpm=killWin.length/Math.min(2,GT/60);save()}}
 function init(){load();calc();H.life=ST.life;H.mana=ST.mana;loadAssets();
- document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render()});
+ document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;render();PWRF.kick()});
  $('#modal').onclick=e=>{if(e.target.id==='modal')closeM()};
  for(const k of['hp','mp','rej','tp'])$('#pb_'+k).onclick=()=>usePot(k);
  if(S.lvl===1&&!S.kills){log('欢迎来到暮土。'+clsName()+'，从<b>荒血原野</b>开始你的旅程。');}
