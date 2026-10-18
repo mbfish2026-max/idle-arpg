@@ -221,3 +221,61 @@ const UPGRADE_RECIPES=[
 ];
 const REPAIR_RECIPES=[['w',1],['a',0]]; // 破旧→普通：武器 2号符文+碎裂宝石；防具 1号符文+碎裂宝石
 Object.assign(MODT,{reqp:'需求 -{v}%'});
+// ---------- 符文之语扩充（20261019x）----------
+// 1) 职业专属底材沿用父类型符文之语：圣徽盾=盾、毛皮头饰/野蛮人头盔=头盔、专属弓=弓、法球=施法类（魔杖/法杖）。匹配统一走 rwCatOk。
+const RW_CATMAP={pshd:['shield'],pelt:['helm'],bhelm:['helm'],abow:['bow'],orb:['wand','staff']};
+function rwCatOk(w,cat){return w.cats.includes(cat)||(RW_CATMAP[cat]||[]).some(c=>w.cats.includes(c))}
+// 2) 去掉孔数达不到的类别（魔杖最多2孔、匕首3孔、缩颅2孔、锤5孔）
+{const drop={'恶念':['wand'],'毒噬':['wand'],'刚毅':['wand','dagger'],'裁决之手':['wand','dagger'],'激情':['wand','dagger'],'永恒':['dagger'],'古誓':['head'],'遗愿':['mace']};
+ for(const w of RUNEWORDS)if(drop[w.n])w.cats=w.cats.filter(c=>!drop[w.n].includes(c))}
+// 4) 手套/腰带/靴子可带凹槽（上限 2；掉落/铁匠/炼金匣打孔同其他装备）
+Object.assign(TCAP,{gloves:[1,2,2],belt:[1,2,2],boots:[1,2,2]});
+for(const b of BASES)if(['gloves','belt','boots'].includes(b.cat)&&!b.cls)b.sock=TCAP[b.cat].slice();
+Object.assign(SOCKET_RECIPES,{gloves:[5,8,'eme'],belt:[3,9,'top'],boots:[4,7,'sap']});
+// 3) 新增符文之语（只追加到末尾，旧存档 it.rw 索引不变）
+const NEW_RW3=[
+ // 头盔
+ RW2('新芽',[1,0],['helm'],{life:20,edef:30,lres:15},13),
+ RW2('鹰目',[4,2],['helm'],{ar:60,dex:5,mregen:20,mf:10},17),
+ RW2('静心',[9,6],['helm'],{fhr:20,cres:20,pres:20,edef:40,mana:20},25),
+ RW2('战嚎',[12,10,13],['helm'],{str:10,life:40,ias:10,thorns:10,regen:5},33),
+ RW2('星识',[16,4,17],['helm'],{allsk:1,fcr:15,ene:10,mana:40},39),
+ RW2('狂血',[18,13,19],['helm'],{str:15,dex:10,ll:4,cb:10,life:50},45),
+ RW2('守望',[21,22],['helm'],{allres:25,mdr:7,edef:[80,120],fhr:20},50),
+ RW2('王冠',[24,28,30],['helm'],{allsk:2,lifepct:8,allres:20,mf:[20,30]},67),
+ // 盾牌
+ RW2('橡壁',[0,3],['shield'],{block:10,def:30,fres:15},13),
+ RW2('回响',[2,7,5],['shield'],{block:15,fhr:20,mregen:25,allres:10},19),
+ RW2('棘墙',[10,11,3],['shield'],{thorns:[15,25],dr:5,edef:60,block:10},27),
+ RW2('晨壁',[14,13,15,20],['shield'],{edef:[100,140],block:20,vit:15,regen:7,allres:15},43),
+ RW2('寒铁',[26,9,22],['shield'],{maxcres:5,cres:40,mdr:10,edef:[120,160],fhr:25},57),
+ RW2('神佑',[29,21,28,24],['shield'],{allsk:1,allres:[35,45],block:25,drp:8},65),
+ // 法杖（3孔，法球同样可用）
+ RW2('余烬',[7,4,2],['staff'],{fcr:15,firemin:10,mana:25,ene:5},19),
+ RW2('霜语',[9,16,5],['staff'],{fcr:20,coldmin:20,allsk:1,mana:40,cres:20},37),
+ RW2('天穹',[17,28,20],['staff'],{allsk:2,fcr:30,manapct:10,mregen:50,allres:20},61),
+ // 魔杖（2孔，法球同样可用）
+ RW2('骨笛',[6,1],['wand'],{fcr:10,mana:20,sumdmg:10,pres:15},17),
+ RW2('亡语',[13,5],['wand'],{fcr:20,sumlife:15,sumdmg:15,mregen:30},31),
+ RW2('冥契',[22,23],['wand'],{allsk:1,fcr:20,sumdmg:25,mf:15,mdr:5},51),
+ // 缩颅（2孔）
+ RW2('枯语',[3,6],['head'],{sumlife:10,pres:25,def:25,mana:15},17),
+ RW2('腐息',[8,10],['head'],{sumdmg:15,lres:25,thorns:10,block:10},25),
+ RW2('冥颅',[25,27],['head'],{allsk:1,sumdmg:25,sumlife:20,allres:20},57),
+ // 手套
+ RW2('灵巧',[1],['gloves'],{ar:40,dex:3,ias:5},11),
+ RW2('握力',[5,10],['gloves'],{ias:10,cb:5,str:5,thorns:5},25),
+ RW2('吸星',[13,18],['gloves'],{ll:4,ml:3,ias:15,str:10},41),
+ RW2('迅握',[28,17],['gloves'],{ias:20,dex:15,cb:10,ll:3},61),
+ // 腰带
+ RW2('束身',[3],['belt'],{life:15,def:15},13),
+ RW2('韧带',[11,8],['belt'],{dr:5,life:30,lres:20,fhr:10},27),
+ RW2('血誓',[15,12],['belt'],{vit:12,fhr:20,life:40,regen:4},35),
+ RW2('巨力',[30,21],['belt'],{lifepct:6,allres:20,str:15,mdr:5},65),
+ // 靴子
+ RW2('轻步',[2],['boots'],{dex:3,fres:10,gf:15},13),
+ RW2('旅者',[7,4],['boots'],{fhr:10,mf:10,fres:20,mregen:15},19),
+ RW2('风行',[17,19],['boots'],{dex:12,mf:20,gf:40,fhr:15},43),
+ RW2('虚步',[27,25],['boots'],{allres:20,mf:[25,35],dex:15,fhr:20},59),
+];
+for(const w of NEW_RW3)RUNEWORDS.push(w);

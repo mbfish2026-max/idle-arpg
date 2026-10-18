@@ -4,7 +4,7 @@
 // 一键按配方顺序镶嵌（符文取自 背包→个人仓库→共享仓库），走原 doSock 逻辑，结果与手动镶嵌一致。加载于 rwx.js 之后。
 // ===================================================================================
 const RWC_LOC={eq:'身上',bag:'背包',p:'个人仓库',s:'共享仓库'};
-function rwcOk(it,w){if(!it||it.k||it.rw!=null)return false;const b=BASEM[it.b];if(!b||b.jew||!w.cats.includes(b.cat))return false;
+function rwcOk(it,w){if(!it||it.k||it.rw!=null)return false;const b=BASEM[it.b];if(!b||b.jew||!rwCatOk(w,b.cat))return false;
  return(it.q===1||it.q===2)&&it.sock===w.r.length&&!(it.soc&&it.soc.length)}
 function rwcCands(wi){const w=RUNEWORDS[wi],out=[],add=(it,loc)=>{if(rwcOk(it,w))out.push({it,loc})};
  for(const k of SLOTS)add(S.eq[k],'eq');for(const it of S.bag)add(it,'bag');for(const p of S.pst||[])for(const it of p)add(it,'p');

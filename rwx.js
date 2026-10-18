@@ -5,7 +5,7 @@
 // ===================================================================================
 const RWX_W=new Set(['wand','dagger','sword','axe','mace','bow','xbow','polearm','spear','staff','jav','throw','orb','abow','ajav']);
 const RWX_CLS=[['nec','亡灵'],['bar','野蛮人'],['sor','法师'],['dru','德鲁伊'],['ama','荒野射手'],['pal','圣誓骑士']];
-const RWX_GRP={w:['武器',c=>RWX_W.has(c)],armor:['铠甲',c=>c==='armor'],helm:['头盔',c=>c==='helm'||c==='head'],shield:['盾牌',c=>c==='shield'||c==='head'||c==='pshd']};
+const RWX_GRP={w:['武器',c=>RWX_W.has(c)],armor:['铠甲',c=>c==='armor'],helm:['头盔',c=>c==='helm'||c==='head'],shield:['盾牌',c=>c==='shield'||c==='head'||c==='pshd'],gloves:['手套',c=>c==='gloves'],belt:['腰带',c=>c==='belt'],boots:['靴子',c=>c==='boots']};
 // 适合职业：施法向(+技能/FCR/法力/能量) vs 近战向(IAS/ED/CB/LL/压碎…) vs 弓弩；按可用底材类别 + 词缀倾向推导
 function rwxScore(w){const m=w.m,has=k=>m[k]!=null;let c=0,me=0;
  for(const k of['allsk','fcr','mana','manapct','ene','mregen','t1sk','sumdmg'])if(has(k))c+=k==='allsk'||k==='fcr'?2:1;
@@ -34,7 +34,7 @@ function rwxChips(k,opts,cur){return`<div class="rwxch">${opts.map(([v,n])=>`<bu
 function rwxPanel(){const F=rwxF(),{L,own}=rwxList();
  const head=`<h3>符文之语 <span class="dim">${L.length}/${RUNEWORDS.length} 个</span></h3>`+
  rwxChips('g',[['all','全部'],...Object.entries(RWX_GRP).map(([k,v])=>[k,v[0]])],F.g)+
- rwxChips('n',[[0,'孔数不限'],[2,'2孔'],[3,'3孔'],[4,'4孔'],[5,'5孔'],[6,'6孔']],F.n)+
+ rwxChips('n',[[0,'孔数不限'],[1,'1孔'],[2,'2孔'],[3,'3孔'],[4,'4孔'],[5,'5孔'],[6,'6孔']],F.n)+
  rwxChips('c',[['all','全职业'],...RWX_CLS],F.c)+
  `<div class="rwxch"><span class="dim">排序</span>${[['lv','需求等级'],['n','符文数'],['p','可合成优先'],['name','名称']].map(([v,n])=>`<button class="${F.s===v?'on':''}" onclick="rwxSet('s','${v}')">${n}</button>`).join('')}</div>`;
  const rows=L.map(({w,i,p})=>`<div class="rw rwx" onclick="rwxShow(${i})"><b class="uq">${w.n}</b> ${p>=1?'<span class="rwxok">可合成</span>':p>0?`<span class="rwxpg">${Math.round(p*w.r.length)}/${w.r.length}</span>`:''}<span class="dim"> ${w.r.map(r=>`<span class="${own[r]?'g':''}">${RUNES[r][0]}</span>`).join('+')} · ${w.cats.map(c=>CATN[c]||c).join('/')} ${w.r.length}孔 · 需求${w.lv}</span>
@@ -51,7 +51,7 @@ function rwxNeedIl(b,n){if(!b.sock)return null;for(let i=0;i<3;i++)if(b.sock[i]>
 function rwxWhere(il){const out=[];for(let d=0;d<DIFFS.length;d++){let hit=null;ACTS.forEach((A,a)=>{if(hit||A.lock)return;let best=null;A.zones.forEach(z=>{const ml=mlD(z.ml0!=null?z.ml0:z.ml,d);if(ml>=il&&(!best||ml<best[1]))best=[z,ml]});if(best)hit=`${DIFFS[d].n}·第${'一二三四五'[a]}章 ${best[0].n}（怪物等级${best[1]}）起`});if(hit){out.push(hit);if(d===0)break}else if(d===DIFFS.length-1)out.push('当前开放区域无法达到')}
  return out.join('；')}
 function rwxShopTxt(il){for(let d=0;d<ACT_CAP.length;d++)for(let a=0;a<ACT_CAP[d].length;a++)if(ACT_CAP[d][a]>=il)return`商店白装货架（${DIFFS[d].n}·第${'一二三四五'[a]}章起，角色等级≥${il}）可能带孔`;return''}
-function rwxBases(cat,n){return BASES.filter(b=>!b.jew&&b.cat===cat).map(b=>({b,il:rwxNeedIl(b,n)})).filter(x=>x.il!=null).sort((x,y)=>x.il-y.il)}
+function rwxBases(cat,n){return BASES.filter(b=>!b.jew&&(b.cat===cat||(RW_CATMAP[b.cat]||[]).includes(cat))).map(b=>({b,il:rwxNeedIl(b,n)})).filter(x=>x.il!=null).sort((x,y)=>x.il-y.il)}
 function rwxSockSrc(cat){const s=BASEM[(BASES.find(b=>b.cat===cat)||{}).id];const slot=s?(s.s==='weapon'?'weapon':s.s):null;const R=typeof SOCKET_RECIPES!=='undefined'&&SOCKET_RECIPES[slot];
  return['白色/精良底材掉落时 18% 带孔，孔数随机 1~上限（上限由物品等级决定）',R?`炼金匣打孔：${RUNES[R[0]][0]}+${RUNES[R[1]][0]}+完美${(GEMS[R[2]]||{}).n||R[2]}`:'','第五章铁匠任务：白色底材直接打满孔'].filter(Boolean).join('；')}
 function rwxBaseHtml(w,open){const n=w.r.length;return w.cats.map(cat=>{const L=rwxBases(cat,n);if(!L.length)return`<details><summary>${CATN[cat]||cat}</summary><div class="dim">没有可开 ${n} 孔的底材</div></details>`;
@@ -67,7 +67,7 @@ function rwxShow(i){const w=RUNEWORDS[i],own=rwxOwned();
 // 物品详情（白色/精良底材）：可做的符文之语 + 补孔来源
 {const f=showItem;showItem=function(uid){f.apply(this,arguments);if(window.__NOUI)return;const fi=findItem(uid);if(!fi||fi.slot)return;const it=fi.it,b=BASEM[it.b];
  if(!b||it.k||it.rw!=null||!(it.q===1||it.q===2)||!b.sock||(it.soc&&it.soc.length))return;const mx=maxSock(b,it.il),ns=it.sock||0;
- const L=RUNEWORDS.map((w,i)=>({w,i})).filter(({w})=>w.cats.includes(b.cat)&&(ns?w.r.length===ns:w.r.length<=mx)).sort((x,y)=>x.w.lv-y.w.lv).slice(0,8);if(!L.length&&ns)return;
+ const L=RUNEWORDS.map((w,i)=>({w,i})).filter(({w})=>rwCatOk(w,b.cat)&&(ns?w.r.length===ns:w.r.length<=mx)).sort((x,y)=>x.w.lv-y.w.lv).slice(0,8);if(!L.length&&ns)return;
  const bs=document.querySelectorAll('#modal .btns.c'),box=bs[bs.length-1];if(!box)return;
  box.insertAdjacentHTML('beforebegin',`<div class="sec rwxin"><h4>【底材 · 可做符文之语】</h4>${ns?`<div class="dim">当前 ${ns} 孔</div>`:`<div class="dim">无孔；本物品等级 ${it.il} 最多可开 ${mx} 孔</div>`}
  ${L.map(({w,i})=>`<div class="rwx" onclick="rwxShow(${i})"><b class="uq">${w.n}</b> <span class="dim">${w.r.map(r=>RUNES[r][0]).join('+')} · 需求${w.lv}</span></div>`).join('')||'<div class="dim">该类型暂无符文之语</div>'}

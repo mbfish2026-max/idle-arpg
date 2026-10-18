@@ -145,7 +145,7 @@ function cubeRecipes(){const rec=[];const gc={},rc={};
  const chip=S.bag.filter(x=>x.k==='gem'&&x.lv===0);const mw=S.bag.find(x=>!x.k&&x.q===3&&BASEM[x.b].s==='weapon'&&!x.sock&&maxSock(BASEM[x.b],x.il));
  if(chip.length>=3&&mw)rec.push([`3×碎裂宝石 + ${itemName(mw)} → 魔法武器 +1 凹槽`,`cubeMagSock(${mw.uid})`]);
  // 普通底材加孔
- for(const it of S.bag){if(it.k||it.q!==1||it.sock||it.rw!=null)continue;const b=BASEM[it.b];const cs=b.s==='weapon'?'weapon':b.s==='armor'?'armor':b.s==='helm'?'helm':b.s==='shield'?'shield':null;if(!cs||!maxSock(b,it.il))continue;
+ for(const it of S.bag){if(it.k||it.q!==1||it.sock||it.rw!=null)continue;const b=BASEM[it.b];const cs=b.s==='weapon'?'weapon':b.s==='armor'?'armor':b.s==='helm'?'helm':b.s==='shield'?'shield':SOCKET_RECIPES[b.s]?b.s:null;if(!cs||!maxSock(b,it.il))continue;
   const[r1,r2,g]=SOCKET_RECIPES[cs];if(bagHas(x=>x.k==='rune'&&x.r===r1)&&bagHas(x=>x.k==='rune'&&x.r===r2&&(r1!==r2))&&bagHas(gemOf(g,4)))rec.push([`${RUNES[r1][0]}+${RUNES[r2][0]}+完美${GEMS[g].n} + ${itemName(it)} → 随机凹槽`,`cubeSocket(${it.uid})`])}
  // 拆镶嵌：有镶嵌物的物品 + 简符文 + 回城卷轴 → 清空凹槽（镶嵌物销毁）
  if(bagHas(x=>x.k==='rune'&&x.r===14)&&S.pot.tp>0)for(const it of S.bag.concat(Object.values(S.eq)))if(it&&!it.k&&it.soc&&it.soc.length)rec.push([`${itemName(it)} + 15号符文 + 回城卷轴 → 拆除镶嵌（镶嵌物销毁）`,`cubeUnsock(${it.uid})`]);
