@@ -3,3 +3,7 @@
 .sortbar .sortbtn{flex:1;font-size:14px;padding:6px 0}
 .sttools .sortbtn{white-space:nowrap}
 .sortbar .btn.xs{flex:0 0 auto;font-size:11px;line-height:1.2;padding:3px 8px;white-space:normal}
+.stsortbar{flex-wrap:nowrap}.stsortbar .stcube{font-size:13px;padding:6px 12px;white-space:nowrap}
+.stash2 .pager{flex-wrap:nowrap;gap:2px}.stash2 .pager button{flex:1 1 0;min-width:0!important;padding:3px 0!important;font-size:11px;white-space:nowrap}.stash2 .pager>.dim{flex:0 0 auto;font-size:10px;white-space:nowrap}
+.stash2 .pager button small{display:none}.stash2 .pager button{font-size:13px;padding:5px 0!important}
+.stash2 .stabs.pg{display:block}.stash2 .stabs.pg .pager{width:100%;display:flex}
