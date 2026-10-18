@@ -53,10 +53,10 @@ for(const t in MERC_WCATS)if(typeof MERCS!=='undefined'&&MERCS[t]){MERCS[t].wcat
 const mercUp=()=>!!(typeof S!=='undefined'&&S&&S.merc&&S.merc.t&&!S.merc.off&&MERCS[S.merc.t]);
 const bagFull=()=>typeof slotsUsed==='function'&&typeof BAG_SZ!=='undefined'?slotsUsed(S.bag)>=BAG_SZ:S.bag.length>=40;
 function mercXpNeed(L,t,d){if(L<=1)return 0;const m=S.merc||{};const r=(MERC_XPR[t||m.t]||[110,115,120])[d??m.hd??0];return Math.floor(xpNeed(L)*r/100)}
-function mercHireLv(t,d=S.diff){const r=MERC_HIRELV[MERCS[t].act]||MERC_HIRELV[0];const[lo,hi]=r[d]||r[0];return Math.max(1,Math.min(S.lvl,lo+(S.lvl+t.length)%(hi-lo+1)))}
-function mercNorm(){if(typeof S==='undefined'||!S)return;const m=S.merc;if(!m||m._v===MERC_V)return;
+function mercHireLv(t,d=S.diff){return Math.max(1,S.lvl||1);const r=MERC_HIRELV[MERCS[t].act]||MERC_HIRELV[0];const[lo,hi]=r[d]||r[0];return Math.max(1,Math.min(S.lvl,lo+(S.lvl+t.length)%(hi-lo+1)))}
+function mercNorm(){if(typeof S==='undefined'||!S)return;const m=S.merc;if(m&&m._v===MERC_V&&m.t&&m.lvl!==Math.max(1,S.lvl||1)){m.lvl=Math.max(1,S.lvl||1);m.xp=mercXpNeed(m.lvl,m.t,m.hd)}if(!m||m._v===MERC_V)return;
  if(!m.t||!MERCS[m.t]){S.merc={_v:MERC_V,t:null,off:1,eq:{},lvl:1,xp:0};return}
- m.eq=m.eq&&typeof m.eq==='object'?m.eq:{};m.hd=m.hd??(S.diff||0);if(m.lvl==null)m.lvl=Math.max(1,S.lvl||1);m.lvl=Math.max(1,Math.min(m.lvl,S.lvl||1));
+ m.eq=m.eq&&typeof m.eq==='object'?m.eq:{};m.hd=m.hd??(S.diff||0);if(m.lvl==null)m.lvl=Math.max(1,S.lvl||1);m.lvl=Math.max(1,S.lvl||1);// 佣兵等级始终=角色等级
  if(m.xp==null||m.xp<mercXpNeed(m.lvl,m.t,m.hd))m.xp=mercXpNeed(m.lvl,m.t,m.hd);m.dead=m.dead?1:0;m.off=m.off?1:0;if(m.auto==null)m.auto=S.autoMerc??1;if(m.ar==null)m.ar=1;m.hires=m.hires||1;
  if(!m.nm){const ns=MERC_NAMES[m.t];m.nm=ns[(S.uid||0)%ns.length]}
  if(!mercVarDef(m.t,m.v)||!mercVars(m.t,m.hd)[m.v]){const vs=mercVars(m.t,m.hd);m.v=vs[m.v]?m.v:(vs[MERCS[m.t].vd]?MERCS[m.t].vd:Object.keys(vs)[0])}
@@ -121,7 +121,7 @@ hireCost=function(){return mercHireCost(S.merc&&S.merc.lvl||S.lvl)};
 // 原版：min(int(lvl²/2)×15, 50000)
 reviveCost=function(){const L=S.merc&&S.merc.lvl||1;return Math.min(Math.floor(L*L/2)*15,50000)};
 function mercReturnEq(m){for(const k of MERC_SLOTS){const it=m.eq&&m.eq[k];if(it){S.bag.push(it);delete m.eq[k]}}}
-hireMerc=function(t,v,free,opt){opt=opt||{};if(!MERCS[t])return;const d=opt.hd??S.diff,L=opt.lvl??mercHireLv(t,d);
+hireMerc=function(t,v,free,opt){opt=opt||{};if(!MERCS[t])return;const d=opt.hd??S.diff,L=Math.max(1,S.lvl||1);
  if(!free){const c=opt.cost??mercHireCost(L);if(S.gold<c)return toast('金币不足');S.gold-=c}
  const old=S.merc;if(old&&old.t&&!old.off){mercReturnEq(old);old.prev=null}
  const vs=mercVars(t,d);v=v&&vs[v]?v:(vs[MERCS[t].vd]?MERCS[t].vd:Object.keys(vs)[0]);
@@ -131,14 +131,14 @@ hireMerc=function(t,v,free,opt){opt=opt||{};if(!MERCS[t])return;const d=opt.hd??
  if(!free)log(`雇佣了 <b>${nm}</b>（${MERCS[t].n}·${mercVarDef(t,v).n}，Lv.${L}）`);if(typeof TAB!=='undefined'&&TAB!=='fight'&&!window.__NOUI)render()};
 function mercDismiss(ok){if(!mercUp())return;if(!ok&&!window.__NOUI)return modal(`<div class="mtitle">解雇佣兵</div><div class="gp"><div>确定解雇 <b>${S.merc.nm}</b>？装备将退回背包。可在下方「召回」以原等级重新雇用（需雇佣费）。</div><div class="btns c"><button class="btn gold" onclick="mercDismiss(1);closeM()">解雇</button><button class="btn" onclick="closeM()">取消</button></div></div>`);
  const m=S.merc;mercReturnEq(m);m.prev={t:m.t,v:m.v,nm:m.nm,lvl:m.lvl,xp:m.xp,hd:m.hd};m.off=1;m.dead=0;ALLY=ALLY.filter(a=>a.kind!=='merc');if(typeof ACX!=='undefined')ACX.mercOn=0;calc();log(`解雇了佣兵 ${m.nm}`);if(!window.__NOUI)render()}
-function mercRecall(){const p=S.merc&&S.merc.prev;if(!p)return;const L=Math.min(p.lvl,S.lvl);hireMerc(p.t,p.v,0,{lvl:L,xp:Math.min(p.xp,mercXpNeed(L+1,p.t,p.hd)),hd:p.hd,nm:p.nm,keepPrev:1})}
+function mercRecall(){const p=S.merc&&S.merc.prev;if(!p)return;const L=S.lvl;hireMerc(p.t,p.v,0,{lvl:L,xp:Math.min(p.xp,mercXpNeed(L+1,p.t,p.hd)),hd:p.hd,nm:p.nm,keepPrev:1})}
 mercRevive=function(auto){if(!mercDead())return;const c=reviveCost();if(S.gold<c){if(!auto)toast('金币不足');return}S.gold-=c;S.merc.dead=0;calc();log(`花费 ${c} 金币复活佣兵 ${S.merc.nm}`);if(!auto&&!window.__NOUI)render()};
 
 // ---------- 经验 ----------
-function mercGainXp(x){if(!mercUp()||S.merc.dead||x<=0)return;const m=S.merc;m.xp+=x;const cap=mercXpNeed(S.lvl+1)-1;if(S.lvl<99&&m.xp>cap)m.xp=Math.max(cap,mercXpNeed(m.lvl));
+function mercGainXp(x){if(mercUp()&&S.merc.lvl!==S.lvl){S.merc.lvl=S.lvl;S.merc.xp=mercXpNeed(S.lvl);calc()}return;if(!mercUp()||S.merc.dead||x<=0)return;const m=S.merc;m.xp+=x;const cap=mercXpNeed(S.lvl+1)-1;if(S.lvl<99&&m.xp>cap)m.xp=Math.max(cap,mercXpNeed(m.lvl));
  if(m.lvl>S.lvl)m.lvl=S.lvl;let up=0;while(m.lvl<S.lvl&&m.lvl<99&&m.xp>=mercXpNeed(m.lvl+1)){m.lvl++;up=1}if(up){log(`<b style="color:#8cf">佣兵 ${m.nm} 升到 ${m.lvl} 级</b>`);calc()}}
 // 佣兵经验：等量获得角色的全部经验（击杀/任务/离线结算）；升级需求按原版 ExpPerLvl 放大，上限为角色等级
-const _mx_gx=gainXp;gainXp=function(x){_mx_gx(x);if(mercUp()&&x>0)mercGainXp(x)};
+const _mx_gx=gainXp;gainXp=function(x){_mx_gx(x);if(mercUp())mercGainXp(x)};// 角色升级后佣兵立即同步等级（不再独立累计经验）
 
 // ---------- 装备 ----------
 canMercEquip=function(it,k){if(!mercUp()||!it||it.k)return false;const b=BASEM[it.b];if(!b)return false;k=k||mercSlotFor(it);if(!MERC_SLOTS.includes(k)||!mercFits(it,k,S.merc.t))return false;const r=itemReq(it),ms=mercStats();return ms.L>=r.lv&&ms.str>=r.str&&ms.dex>=r.dex};
@@ -203,7 +203,7 @@ function mercGrowHTML(ms){const row=(a,b)=>`<div class="mrow"><span>${a}</span><
 function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<div class="mercpg">';
  if(mercUp()){const ms=mercStats(),T=MERCS[m.t],V=mercVarDef(m.t,m.v),need0=mercXpNeed(m.lvl),need1=mercXpNeed(m.lvl+1);const pct=m.lvl>=S.lvl?100:Math.max(0,Math.min(100,(m.xp-need0)/Math.max(1,need1-need0)*100));
   h+=`<div class="gp mhead">${mercPortrait(m.t,m.v,1)}<div class="minfo"><div class="mname">${m.nm}${m.dead?' <span class="bad">阵亡</span>':''}</div><div class="dim">${T.n} · ${T.kind}</div><div class="mver"><b class="diff d${m.hd}">${DIFFS[m.hd].n}</b> ${V.n}</div>
-   <div class="mlv">Lv.<b>${m.lvl}</b> <small class="dim">/ 上限 ${S.lvl}（角色等级）</small></div><div class="mxp"><i style="width:${pct.toFixed(1)}%"></i><span>${m.lvl>=S.lvl?'已达角色等级':fmt(m.xp-need0)+' / '+fmt(need1-need0)}</span></div></div></div>`;
+   <div class="mlv">Lv.<b>${m.lvl}</b> <small class="dim">（与角色等级同步）</small></div></div></div>`;
   h+=`<div class="gp"><h3>装备</h3><div class="mdoll">${MERC_SLOTS.map(k=>{const it=m.eq[k];return`<div class="mslot ms_${k} ${k==='shield'&&!MERC_SHIELD[m.t]?'lock':''}" onclick="mercSlotUI('${k}')"><small>${SLOTN[k]}${k==='shield'&&!MERC_SHIELD[m.t]?'·不可用':''}${k==='weapon'?'·'+MERC_WCATS[m.t].map(c=>CATN?CATN[c]:c).join('/'):''}</small>${it?cell(it,''):`<div class="cell empty"><small>空</small></div>`}</div>`}).join('')}</div>
    ${Object.keys(ms.sets).length?`<div class="dim">套装：${Object.entries(ms.sets).map(([s,n])=>SETS[s].n+' '+n+'件').join('、')}</div>`:''}<div class="dim">点格子：从背包/仓库穿戴、卸下、对比属性。武器限制按原版：${T.n}只能使用${MERC_WCATS[m.t].map(c=>CATN[c]).join('/')}${MERC_SHIELD[m.t]?'，可持盾(双手武器时不可)':'，不能持盾'}。</div></div>`;
   h+=`<div class="gp"><h3>属性</h3><div class="mstats">${mercStatsHTML(ms)}</div></div>`;
@@ -216,7 +216,7 @@ function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<
    <div class="dim">复活费用（原版）：min(⌊等级²/2⌋×15, 50000) = ${fmt(reviveCost())}</div></div>`}
  else h+=`<div class="gp"><h3>佣兵</h3><div class="dim">${S.mercU?'当前没有佣兵，可在下方雇佣。':'完成第一章任务「堕落女猎手」后可获得佣兵。'}</div></div>`;
  if(S.mercU||mercUp()){h+=`<div class="gp"><h3>营地雇佣 <span class="dim">${DIFFS[S.diff].n}版本</span></h3><div class="dim">雇佣新佣兵会替换当前佣兵（装备退回背包）。等级按原版营地范围，且不超过角色等级。</div>`;
-  const p=m&&m.off&&m.prev;if(p)h+=`<div class="mhire"><span>↺ 召回 <b>${p.nm}</b> ${MERCS[p.t].n}·${mercVarDef(p.t,p.v).n} Lv.${Math.min(p.lvl,S.lvl)}</span><button class="btn xs gold" onclick="mercRecall()">${fmt(mercHireCost(Math.min(p.lvl,S.lvl)))}◈</button></div>`;
+  const p=m&&m.off&&m.prev;if(p)h+=`<div class="mhire"><span>↺ 召回 <b>${p.nm}</b> ${MERCS[p.t].n}·${mercVarDef(p.t,p.v).n} Lv.${S.lvl}</span><button class="btn xs gold" onclick="mercRecall()">${fmt(mercHireCost(S.lvl))}◈</button></div>`;
   for(const t of mercAvail()){const T=MERCS[t],L=mercHireLv(t);h+=`<div class="mhire"><span>${T.ic} ${T.n} <span class="dim">Lv.${L} · ${ACTS[T.act].camp}</span></span><span class="btns">${Object.entries(mercVars(t,S.diff)).map(([v,V])=>`<button class="btn xs" onclick="hireMerc('${t}','${v}')">${V.n} ${fmt(mercHireCost(L))}◈</button>`).join('')}</span></div>`}h+='</div>'}
  P.innerHTML=h+'</div>'}
 function mercCands(k){const out=[];const add=(it,src)=>{if(!it||it.k)return;const b=BASEM[it.b];if(b&&b.s===mslotBase(k)&&(mercFits(it,k,S.merc.t)||(k==='shield'&&MERC_SHIELD[S.merc.t]&&b.cat==='shield')))out.push({it,src})};
