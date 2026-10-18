@@ -51,7 +51,7 @@ function buxPage(grid,dir){const sg=grid.classList.contains('sgrid');let v,n;
  document.addEventListener('touchend',e=>{if(!g)return;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy,G=g;g=null;
   if(Math.abs(dx)>50&&Math.abs(dx)>1.6*Math.abs(dy)&&Date.now()-t0<800){BUX.swiped=Date.now();buxPage(G,dx<0?1:-1)}},{passive:true})}
 // ---------- 长按快捷菜单 ----------
-function buxUid(cell){const s=cell.getAttribute('onclick')||'';const m=/(?:showItem|depositUid|withdrawUid|qtyUI)\((\d+)/.exec(s);return m?+m[1]:null}
+function buxUid(cell){const s=cell.getAttribute('onclick')||'';const m=/(?:showItem|depositUid|withdrawUid|qtyUI|stTap)\((\d+)/.exec(s);return m?+m[1]:null}
 function buxQuick(uid){const f=findItem(uid);if(!f)return;const it=f.it,lk=!!it.lk,b=[];
  b.push(`<button class="btn gold" onclick="showItem(${uid})">${!it.k&&!f.slot&&typeof cmpTarget==='function'&&cmpTarget(it)?'详情 / 对比':'详情'}</button>`);
  if(typeof toggleLock==='function'&&!it.k)b.push(`<button class="btn" onclick="toggleLock(${uid});closeM();render()">${lk?'🔓 解锁':'🔒 锁定'}</button>`);

@@ -85,6 +85,15 @@ toStash=function(uid){depositUid(uid,'p')};fromStash=function(uid){const f=findI
 function groupCount(f){const P=pagesOf(f.where)[f.pg],k=stackKey(f.it);return f.it.k==='mat'?f.it.n:P.filter(x=>stackKey(x)===k).length}
 function qtyUI(uid){const f=findItem(uid);const n=groupCount(f);modal(`<div class="mtitle">取出 ${itemName(f.it)}</div><div class="gp"><div>共 ${n} 个</div><div class="btns c"><button class="btn" onclick="withdrawUid(${uid},1)">取 1</button><button class="btn gold" onclick="withdrawUid(${uid})">取全部</button></div>
  <div class="newch"><input id="qtyn" type="number" min="1" max="${n}" value="${Math.min(n,3)}"><button class="btn sm" onclick="withdrawUid(${uid},+$('#qtyn').value)">取出数量</button></div><div class="btns c"><button class="btn sm" onclick="stashToStash(${uid})">整组转到${f.where==='s'?'个人':'共享'}仓库</button><button class="btn" onclick="closeM()">关闭</button></div></div>`)}
+// 单击=详情（等待双击窗口 250ms）；双击=移动（仓库→背包 / 背包→当前仓库）
+const ST_TAP={uid:null,t:0,tm:null};
+function stTap(uid,dep){const now=Date.now();
+ if(ST_TAP.uid===uid&&now-ST_TAP.t<300){clearTimeout(ST_TAP.tm);ST_TAP.uid=null;ST_TAP.tm=null;stDouble(uid,dep);return}
+ clearTimeout(ST_TAP.tm);ST_TAP.uid=uid;ST_TAP.t=now;ST_TAP.tm=setTimeout(()=>{ST_TAP.uid=null;ST_TAP.tm=null;if(findItem(uid))showItem(uid,dep?'bag':undefined)},250)}
+function stDouble(uid,dep){const f=findItem(uid);if(!f)return;const nm=itemName(f.it);
+ if(dep){if(depositUid(uid,dep)&&!window.__NOUI)toast(`已存入${dep==='s'?'共享':'个人'}仓库：${nm}`);return}
+ if(!f.stash)return;if(!bagFits(f.it)){if(!window.__NOUI)toast('背包已满，无法取回');return}
+ if(withdrawUid(uid)&&!window.__NOUI)toast('已取回背包：'+nm)}
 // 物品详情：仓库内物品按钮
 const _st_show=showItem;showItem=function(uid){_st_show(uid);if(window.__NOUI)return;const f=findItem(uid);if(!f)return;const box=document.querySelector('#modal .btns.c');if(!box)return;
  if(f.stash){box.innerHTML=`<button class="btn gold" onclick="fromStash(${uid})">取回背包</button><button class="btn" onclick="stashToStash(${uid})">转到${f.where==='s'?'个人':'共享'}仓库</button><button class="btn" onclick="closeM()">关闭</button>`;return}
@@ -108,7 +117,7 @@ const _st_rb=renderBag;renderBag=function(){if(!S.pst)migrateChar(curChar()||{na
  P.querySelectorAll('.stabs.bagv').forEach(e=>e.remove());const gps=[...P.querySelectorAll('.gp')];const bagGp=gps.find(g=>/背包/.test(g.querySelector('h3')?.textContent||''))||gps[gps.length-1];
  const h3=bagGp.querySelector('h3');if(h3)h3.innerHTML=h3.innerHTML.replace(/背包 \d+\/40/,`背包 ${slotsUsed(S.bag)}/${BAG_SZ}`);
  const items=S.bag.filter(it=>BAGF==='all'||(BAGF==='eq'?!it.k:!!it.k));const inSt=STV!=='bag';
- const on=it=>inSt&&STMOVE?`depositUid(${it.uid},'${STV==='shared'?'s':'p'}')`:`showItem(${it.uid},'bag')`;
+ const on=it=>inSt?`stTap(${it.uid},'${STV==='shared'?'s':'p'}')`:`showItem(${it.uid},'bag')`;
  const bg=groups(items),bpn=Math.max(1,Math.ceil(bg.length/BAG_PG));BGP=Math.min(BGP,bpn-1);const grid=bagGp.querySelector('.grid');
  if(grid){grid.innerHTML=bg.slice(BGP*BAG_PG,(BGP+1)*BAG_PG).map(g=>cellG(g,on(g.it))).join('')||'<div class="dim">空</div>';if(bpn>1)grid.insertAdjacentHTML('afterend',pager('BGP',BGP,bpn))}
  const sb=bagGp.querySelector('.stabs.sm');if(sb)sb.insertAdjacentHTML('beforeend',`<button onclick="sortArr(S.bag);render()">整理</button>`);
@@ -117,9 +126,9 @@ const _st_rb=renderBag;renderBag=function(){if(!S.pst)migrateChar(curChar()||{na
  if(gps[0]&&gps[0]!==bagGp)gps[0].remove();
  const sh=STV==='shared',Pg=sh?ACCT.shared:S.pst,pi=sh?SHP:STP,page=Pg[pi],flt=STF.q!=='all'||STF.t!=='all'||STF.s,gs=flt?groups(Pg.flat()).filter(stMatch).slice(0,PAGE_SZ*2):groups(page);
  const V=sh?'SHP':'STP';const ptabs=flt?`<span class="dim">筛选结果 ${gs.length} 组（跨全部页，最多显示 ${PAGE_SZ*2}）</span>`:pager(V,pi,Pg.length,i=>slotsUsed(Pg[i]));
- const cells=gs.map(g=>cellG(g,STMOVE?(stackKey(g.it)&&g.n>1?`qtyUI(${g.it.uid})`:`withdrawUid(${g.it.uid})`):`showItem(${g.it.uid})`)).join('')+(flt?'':'<div class="cell void"></div>'.repeat(Math.max(0,PAGE_SZ-gs.length)));
- bagGp.insertAdjacentHTML('beforebegin',tabs+`<div class="gp stash2 ${sh?'shared':''}"><h3>${sh?'共享仓库 <span class="dim">（所有角色可存取）</span>':`个人仓库 <span class="dim">（${S.name}）</span>`}<span class="r"><button class="btn xs ${STMOVE?'on':''}" onclick="STMOVE^=1;render()">点选即移动</button></span></h3>
- ${stTools(sh)}<div class="stabs sm pg">${ptabs}</div><div class="grid sgrid">${cells}</div><div class="dim">${STMOVE?'点仓库物品→取回背包（堆叠可选数量）；点下方背包物品→整组存入本页（本页满则顺延）':'点物品查看详情'}</div></div>`)};
+ const cells=gs.map(g=>cellG(g,`stTap(${g.it.uid})`)).join('')+(flt?'':'<div class="cell void"></div>'.repeat(Math.max(0,PAGE_SZ-gs.length)));
+ bagGp.insertAdjacentHTML('beforebegin',tabs+`<div class="gp stash2 ${sh?'shared':''}"><h3>${sh?'共享仓库 <span class="dim">（所有角色可存取）</span>':`个人仓库 <span class="dim">（${S.name}）</span>`}</h3>
+ ${stTools(sh)}<div class="stabs sm pg">${ptabs}</div><div class="grid sgrid">${cells}</div><div class="dim">单击物品查看属性；双击仓库物品→整组取回背包；双击下方背包物品→整组存入本页（本页满则顺延）；长按更多操作</div></div>`)};
 
 // ---------- 多页 / 整理 / 筛选 / 搜索 ----------
 function pager(v,cur,n,cnt){const btn=i=>`<button class="${i===cur?'on':''}" onclick="${v}=${i};render()">${i+1}${cnt?`<small>·${cnt(i)}</small>`:''}</button>`;
