@@ -9,7 +9,7 @@ const RCY_Q=[[0,'破旧'],[1,'普通'],[2,'超强'],[3,'魔法'],[4,'稀有'],[6
 const RCY_C=[['wand','魔杖'],['dagger','匕首'],['sword','剑'],['axe','斧'],['mace','锤'],['staff','法杖'],['bow','弓'],['xbow','弩'],['polearm','长柄'],['spear','矛'],['jav','标枪'],['throw','投掷'],
  ['shield','盾'],['head','缩颅'],['helm','头盔'],['armor','铠甲'],['gloves','手套'],['boots','鞋'],['belt','腰带'],['ring','戒指'],['amulet','护符'],['charm','护身符'],['jewel','珠宝'],['gem','宝石'],['rune','符文']];
 function rcyDefault(){const s=S.sell||{};const c={};for(const[k]of RCY_C)c[k]=!['gem','rune','charm','jewel'].includes(k)?1:0;
- return{on:(s[0]||s[1])?1:0,q:{0:s[0]?1:0,1:s[1]?1:0,2:s[2]?1:0,3:0,4:0,5:0,6:0},c,runeMax:0,keepSock:1,keepElite:1,keepNew:1,keepSkill:1,mode:'gold'}}
+ return{on:(s[0]||s[1])?1:0,q:{0:s[0]?1:0,1:s[1]?1:0,2:s[2]?1:0,3:0,4:1,5:0,6:0},c,runeMax:0,keepSock:1,keepElite:1,keepNew:1,keepSkill:1,mode:'gold'}}
 function ensureLoot(){if(!S)return;if(!S.rcy)S.rcy=rcyDefault();if(!S.codex){S.codex={};const all=[...S.bag,...Object.values(S.eq),...(S.pst||[]).flat()];for(const it of all)if(it&&!it.k&&(it.q===5||it.q===6))S.codex[it.name]=1}}
 const _lt_load=load;load=function(){_lt_load();ensureLoot()};
 // ---------- 材料 ----------
@@ -45,7 +45,15 @@ function recycleNow(){ensureLoot();const was=S.rcy.on;S.rcy.on=1;const b0=STATS.
  for(const it of S.bag){if(shouldRecycle(it,false))doRecycle(it);else keep.push(it)}
  // doRecycle 可能新增精华材料到 S.bag，需要保留
  const mats=S.bag.filter(x=>x.k==='mat'&&!keep.includes(x));S.bag=keep.concat(mats);mergeMats(S.bag);S.rcy.on=was;calc();
- const n=STATS.rcy-b0;if(!window.__NOUI){toast(n?`回收 ${n} 件：+${STATS.rcyG-g0}金币 +${STATS.rcyE-e0}精华`:'没有符合回收规则的物品');render()}return n}
+ const n=STATS.rcy-b0;if(!window.__NOUI){const why=rcyKeepWhy(S.bag),wt=Object.entries(why).map(([k,v])=>`${k}${v}`).join('、');
+ toast((n?`回收 ${n} 件：+${STATS.rcyG-g0}金币 +${STATS.rcyE-e0}精华`:'没有符合回收规则的物品')+(wt?`\n保留 ${Object.values(why).reduce((a,b)=>a+b,0)} 件：${wt}`:''));
+ const te=document.getElementById('toast');if(te&&wt){te.style.whiteSpace='pre';te.style.textAlign='center';clearTimeout(te._t);te._t=setTimeout(()=>{te.classList.remove('on');te.style.whiteSpace='';te.style.textAlign=''},3200)}render()}return n}
+// 一键回收后统计保留原因（只统计装备；与 shouldRecycle 顺序一致）
+function rcyKeepWhy(bag){const r=S.rcy,o={},inc=k=>o[k]=(o[k]||0)+1;
+ for(const it of bag){if(!it||it.k)continue;const b=BASEM[it.b];if(!b)continue;
+  if(it.lk||(typeof isLk==='function'&&isLk(it)))inc('锁定');else if(it.gb)inc('赌博所得');else if(it.rw!=null)inc('符文之语');
+  else if(!r.q[it.q])inc(`${(RCY_Q.find(x=>x[0]===it.q)||[0,'?'])[1]}未勾选`);else if(!r.c[rcyCat(it)])inc('部位未勾选');
+  else if(r.keepSock&&it.sock&&it.q<=2)inc('凹槽底材');else if(r.keepElite&&b.tier>=2)inc('精英底材');else if(r.keepSkill&&hasNecroSkill(it))inc('本职业技能');else inc('其他规则')}return o}
 // ---------- 离线结算附加回收/存仓统计 ----------
 const _lt_off=offline;offline=function(){const a=STATS.rcy,g=STATS.rcyG,e=STATS.rcyE,s=STATS.ast;_lt_off();const n=STATS.rcy-a,m=STATS.ast-s;if(window.__NOUI||(!n&&!m))return;
  const box=document.querySelector('#modal .gp .grid');for(const d of document.querySelectorAll('#modal .gp>.dim'))if(n&&d.textContent.startsWith('自动出售'))d.remove();if(box)box.insertAdjacentHTML('beforebegin',`<div class="g">自动回收 ${n} 件：+${STATS.rcyG-g} 金币，+${STATS.rcyE-e} 残骸精华${m?`；自动存仓 ${m} 件`:''}</div>`)};

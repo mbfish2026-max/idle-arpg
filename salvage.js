@@ -13,7 +13,8 @@ function skDefault(){return{n:{weapon:0,armor:0,shield:0,helm:0,gloves:2,belt:2,
 function skNorm(){if(!S||!S.rcy)return;const d=skDefault();const s=S.rcy.sk&&typeof S.rcy.sk==='object'?S.rcy.sk:{};s.n=Object.assign({},d.n,s.n||{});for(const k in s.n)s.n[k]=Math.max(0,Math.min(SKMAX[k]||6,+s.n[k]||0));s.elite=s.elite?1:0;s.sup=s.sup?1:0;S.rcy.sk=s}
 // 默认自动回收（dv=2，一次性迁移，新旧角色都生效）：开启自动回收，破旧/普通/超强/魔法品质默认回收；
 // 带凹槽白/超强底材、精英底材、带亡灵技能、未收录暗金/套装、锁定物品仍受保护。迁移时顺带把背包里已有的符合规则的杂物回收一次。
-function rcyMigrate(){const r=S&&S.rcy;if(!r||r.dv>=2)return;r.dv=2;r.on=1;r.q=Object.assign({},r.q||{},{0:1,1:1,2:1,3:1});
+// dv=3（20261020a）：稀有品质默认也回收（一次性开启；之后玩家可在设置里取消勾选）
+function rcyMigrate(){const r=S&&S.rcy;if(!r)return;if(r.dv===2){r.dv=3;r.q=Object.assign({},r.q||{},{4:1});return}if(r.dv>=2)return;r.dv=3;r.on=1;r.q=Object.assign({},r.q||{},{0:1,1:1,2:1,3:1,4:1});
  if(!Array.isArray(S.bag))return;const keep=[];for(const it of S.bag){if(it&&!it.k&&!it.lk&&shouldRecycle(it,false))doRecycle(it);else keep.push(it)}S.bag=keep}
 {const f=ensureLoot;ensureLoot=function(){f.apply(this,arguments);skNorm();rcyMigrate()}}
 function skPart(b){if(!b)return null;if(SKCAT[b.cat])return SKCAT[b.cat];if(b.s==='gloves'||b.s==='belt'||b.s==='boots')return b.s;if(b.s==='weapon')return'weapon';if(b.s==='armor')return'armor';if(b.s==='shield')return'shield';if(b.s==='helm')return'helm';return null}
