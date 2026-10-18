@@ -19,13 +19,13 @@ function mcN(){return(typeof ST!=='undefined'&&ST&&ST.mcast)|0}
 // 召唤数量上限 +N
 {const f=SV;SV=function(id,L){const v=f(id,L);const n=mcN();if(!n||!v||typeof v.n!=='number')return v;const s=SKM[id];if(!s)return v;
  const sum=s.cls?((s.ty==='csum'||s.ty==='asum')&&!s.g):(s.kind==='summon');if(sum){v.n+=n;if(v.txt)v.txt+=`（召唤数量 +${n}）`}return v}}
-let MC_K=0;
+let MC_K=0;const MC_CK={nec:1.5,dru:0.75};function mcCk(){return MC_CK[S.cls||"nec"]||1}
 {const f=hitMon;hitMon=function(m,d,src,fxc){if(MC_K&&d&&src==='hero'){const o={};for(const e in d)o[e]=d[e]*MC_K;d=o}return f(m,d,src,fxc)}}
 function mcIsSummon(s){return s.cls?((s.ty==='csum'||s.ty==='asum')&&!s.g):s.kind==='summon'}
 function mcIsAttack(s){return s.cls?!MC_NO.has(s.ty)&&!s.g:s.kind==='attack'}
 {const f=acCast;acCast=function(id,ms){const r=f(id,ms);const n=mcN(),s=SKM[id];if(!n||!s||MC_K)return r;try{
  if(mcIsAttack(s)){const ofx=typeof fx==='function'?fx:null,ocf=typeof clsFx==='function'?clsFx:null;if(ofx)fx=()=>{};if(ocf)clsFx=()=>{};let done=0;
-  try{for(let i=1;i<=n;i++){const l=liveMon();if(!l.length)break;MC_K=MC_DECAY[i]||0.25;const mana=H.mana;
+  try{for(let i=1;i<=n;i++){const l=liveMon();if(!l.length)break;MC_K=(MC_DECAY[i]||0.25)*mcCk();const mana=H.mana;
    if(s.cls){const v=SV(id,slvl(id));CLS_TY[s.ty](s,v,l,target(l))}else f(id,l);H.mana=mana;done++}}finally{MC_K=0;if(ofx)fx=ofx;if(ocf)clsFx=ocf}
   if(done&&typeof floatHero==='function')floatHero('连发×'+(done+1),'#ffd76a')}
  else if(mcIsSummon(s)){for(let i=0;i<n;i++){if(!acFeasible(id,liveMon()))break;const mana=H.mana;MC_K=1;try{s.cls?CLS_TY[s.ty](s,SV(id,slvl(id)),liveMon(),null):f(id,liveMon())}finally{MC_K=0}H.mana=mana}}}catch(e){MC_K=0}return r}}
