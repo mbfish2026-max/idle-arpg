@@ -36,14 +36,14 @@ Object.assign(MODT,{skd_bs:'骨矛伤害 +{v}%',skd_bx:'骨魂伤害 +{v}%',skd_
  nb_u_rot:'毒伤结算时间缩短 30%',nb_u_src:'中毒的敌人受到你的伤害 +8%',nb_u_corpse:'附近没有尸体时，每 6 秒留下一具可引爆的骨骸'});
 // ---------- 数据：套装 ----------
 Object.assign(SETS,{
- nb_sum:{n:'万骨军团',nb:'sum',bonus:{2:{sumdmg:20,sumlife:20},4:{nb_skel:1,nb_skdr:15},6:{nb_boom:1,sumdmg:30}}},
+ nb_sum:{n:'万骨军团',nb:'sum',bonus:{2:{sumdmg:10,sumlife:20},4:{nb_skel:1,nb_skdr:15},6:{nb_boom:1,sumdmg:10}}},
  nb_bone:{n:'白骨棘冠',nb:'bone',bonus:{2:{skd_bs:40,nb_bsmana:30},4:{skd_bx:60,nb_boss:15},6:{nb_split:1,skd_bs:150}}},
  nb_plague:{n:'疫母之怀',nb:'plague',bonus:{2:{skd_pn:40},4:{skd_pe:60,nb_cekeep:30},6:{nb_plague:1,skd_pn:150}}}});
 const NB_SETITEMS=[
- S_('万骨·统御颅','nb_sum','heade4',72,64,{t0sk:1,sk_rm:1,sumdmg:15,fcr:20}),
+ S_('万骨·统御颅','nb_sum','heade4',72,64,{t0sk:1,sk_rm:1,sumdmg:5,fcr:20}),
  S_('万骨·骸冠','nb_sum','hlme3',72,64,{allsk:1,life:60,sumlife:15,allres:20}),
  S_('万骨·墓甲','nb_sum','arme2',72,64,{edef:150,vit:20,sumlife:20,dr:5}),
- S_('万骨·驭尸手','nb_sum','glve2',70,62,{sk_rm:1,sumdmg:10,fcr:10,pres:30}),
+ S_('万骨·驭尸手','nb_sum','glve2',70,62,{sk_rm:1,sumdmg:5,fcr:10,pres:30}),
  S_('万骨·亡索','nb_sum','blte2',70,62,{life:40,mregen:20,sumlife:15,fhr:20}),
  S_('万骨·冥途靴','nb_sum','bote3',70,62,{edef:80,ene:15,allres:15,mpk:3}),
  S_('棘冠·骨镞','nb_bone','wande3',75,66,{sk_bs:3,t1sk:2,fcr:25,ene:20}),
@@ -59,9 +59,9 @@ const NB_SETITEMS=[
  S_('疫母·瘟带','nb_plague','blte2',70,62,{sk_pd:2,life:40,mregen:20,pres:30}),
  S_('疫母·尸行靴','nb_plague','bote3',70,62,{edef:80,ene:15,allres:20,mpk:3})];
 const NB_UNIQUES=[
- Object.assign(U('白骨王座','wande3',80,72,{allsk:1,t0sk:1,sumdmg:25,fcr:20,nb_u_throne:1}),{nb:'sum'}),
+ Object.assign(U('白骨王座','wande3',80,72,{allsk:1,t0sk:1,sumdmg:10,fcr:20,nb_u_throne:1}),{nb:'sum'}),
  Object.assign(U('亡契','amu',75,67,{sk_rs:1,sumlife:25,allres:20,life:40,nb_skel:1}),{nb:'sum'}),
- Object.assign(U('冥卫之戒','rin',70,62,{sumdmg:20,ll:5,fcr:10,mregen:15,nb_u_ward:1}),{nb:'sum'}),
+ Object.assign(U('冥卫之戒','rin',70,62,{sumdmg:10,ll:5,fcr:10,mregen:15,nb_u_ward:1}),{nb:'sum'}),
  Object.assign(U('骨髓之环','rin',70,62,{sk_bs:2,t1sk:1,fcr:10,mana:40,nb_u_marrow:1}),{nb:'bone'}),
  Object.assign(U('骸语之眼','amu',75,67,{allsk:1,t1sk:2,ene:20,mregen:20,nb_u_eye:1}),{nb:'bone'}),
  Object.assign(U('腐心','dage2',75,67,{sk_pn:3,sk_pe:2,nb_pois:40,fcr:20,nb_u_rot:1}),{nb:'plague'}),
