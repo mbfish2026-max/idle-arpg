@@ -1,6 +1,6 @@
 'use strict';
 // ===================================================================================
-// dlog.js — 掉落提醒 + 掉落记录。包装 rollTC（在线击杀的新掉落；离线结算期间 OFFREP.busy 时跳过提醒但仍记录）。
+// dlog.js — 掉落提醒 + 掉落记录。包装 rollTC（在线击杀的新掉落；离线结算期间 busy 时跳过提醒但仍记录）。
 // 亮眼掉落：暗金/套装/符文之语/20号及以上符文/可做 3 孔以上符文之语的白色·精良空孔底材。
 // 提醒：战斗场景一道光柱 + 闪光（一次性 CSS 动画，结束即移除）+ 短 toast；音效沿用 audio.js 已有 rollTC 掉落音，不新增音频。
 // 记录：最近 50 条存 S.dlog=[[秒级时间,名称,q码,地图,uid]]，随云存档。入口：战斗统计弹窗底部「📜 掉落记录」。点条目若物品仍在则打开详情。
@@ -17,9 +17,11 @@ function beam(k){const fb=document.getElementById('fbattle');if(!fb||document.hi
  const d=document.createElement('div');d.className='dlbeam';d.style.setProperty('--c',COL[k]);d.innerHTML='<i></i><b></b>';fb.appendChild(d);
  setTimeout(()=>d.remove(),2100)}
 function push(it,k){if(!Array.isArray(S.dlog))S.dlog=[];S.dlog.unshift([Math.floor(Date.now()/1000),itemName(it),k,zn(),it.uid]);if(S.dlog.length>MAX)S.dlog.length=MAX}
+let busy=0;
+if(typeof offline==='function'){const _of=offline;offline=function(){busy=1;try{return _of.apply(this,arguments)}finally{busy=0}}}
 const f0=rollTC;
 function note(o){let best=null,bk='';const rk='busrw';for(const it of o||[]){const k=kind(it);if(!k)continue;push(it,k);if(!best||rk.indexOf(k)<rk.indexOf(bk)){best=it;bk=k}}
- if(best&&!(window.OFFREP&&OFFREP.busy)){beam(bk);toast(`✦ ${TAG[bk]}掉落：${itemName(best)}`)}}
+ if(best&&!busy){beam(bk);toast(`✦ ${TAG[bk]}掉落：${itemName(best)}`)}}
 rollTC=function(){const o=f0.apply(this,arguments);if(window.__NOUI||typeof S!=='object'||!S)return o;try{note(o)}catch(e){console.warn(e)}return o};
 function hm(t){const d=new Date(t*1000),p=n=>String(n).padStart(2,'0'),now=new Date();return(d.toDateString()===now.toDateString()?'':`${d.getMonth()+1}/${d.getDate()} `)+`${p(d.getHours())}:${p(d.getMinutes())}`}
 function show(){const L=Array.isArray(S.dlog)?S.dlog:[];
