@@ -1,0 +1,13 @@
+/* bagux：底部抽屉详情 / 大按钮 / 分类 / 容量 / 滑动 */
+#modal.sheet{align-items:flex-end}
+#modal.sheet .mb{max-height:88%;border-radius:14px 14px 0 0;background:linear-gradient(#1a130c,#0c0806);box-shadow:0 -6px 24px rgba(0,0,0,.8);padding-bottom:env(safe-area-inset-bottom);animation:buxup .18s ease-out}
+@keyframes buxup{from{transform:translateY(30%)}to{transform:none}}
+#modal.sheet .mb::before{content:'';display:block;width:42px;height:4px;border-radius:2px;background:#5a4630;margin:7px auto 0}
+#modal.sheet .ipanel{margin:8px 8px 0}
+#modal.sheet .ipanel>.btns.c:last-child,#modal.sheet .cmpw~.btns.c,#modal.sheet .buxbtns{position:sticky;bottom:0;z-index:2;display:flex;flex-wrap:wrap;gap:6px;margin:8px -8px 0;padding:8px;background:linear-gradient(rgba(12,8,6,.85),#0c0806 40%)}
+#modal.sheet .ipanel>.btns.c:last-child .btn,#modal.sheet .buxbtns .btn{flex:1 1 30%;min-height:44px;font-size:14px;margin:0}
+#modal.sheet .buxbtns .btn{flex-basis:45%}
+.buxcap{display:inline-block;padding:0 6px;border-radius:8px;background:rgba(0,0,0,.45);border:1px solid #5a4630;color:#e8d8a8;font-size:14px}
+.buxcap.hi{color:#ffb050;border-color:#a06020}.buxcap.full{color:#ff6050;border-color:#a02010}
+#panel .buxswipe{touch-action:pan-y}
+#panel .cell{-webkit-touch-callout:none}
