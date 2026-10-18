@@ -1,0 +1,17 @@
+.dsw{background:linear-gradient(#1e150d,#0c0805);border:1px solid #7a5c32;box-shadow:inset 0 0 18px #000,0 0 12px #000;padding:10px 10px 8px;border-radius:3px}
+#dsbtn{position:absolute;right:6px;bottom:6px;z-index:8;display:flex;flex-direction:column;align-items:center;gap:1px;width:50px;padding:4px 2px 3px;
+ background:linear-gradient(#2a1d12,#100a06);border:1px solid #8a6a3a;border-radius:3px;box-shadow:inset 0 0 6px #000,0 0 4px #000a;color:#e0c890;
+ font:11px/1.1 serif;letter-spacing:0;opacity:.88;-webkit-tap-highlight-color:transparent}
+#dsbtn i{font-style:normal;font-size:17px;filter:sepia(.6) saturate(.8)}#dsbtn:active{filter:brightness(1.3)}
+#arow,#skbar{padding-right:58px}
+.dsw h3{margin:0 0 4px;text-align:center;color:#e8c878;font-family:serif;letter-spacing:2px}
+.dst,.dsh{font-size:11px;color:#a89878;text-align:center;margin-bottom:6px}.dsh{margin:6px 0 0;color:#776a55}
+.dsl{max-height:58vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.dsr{display:flex;gap:6px;align-items:center;padding:5px 2px;border-bottom:1px solid #3a2c1c}
+.dsr .ski{flex:none;width:30px;height:30px;font-size:18px;display:flex;align-items:center;justify-content:center;font-style:normal}
+.ski.dsg{background:#1a120a;border:1px solid #5a4528;border-radius:3px}
+.dsm{flex:1;min-width:0}.dsn{display:flex;justify-content:space-between;gap:6px;font-size:13px}.dsn b{color:#e8d8b0;font-weight:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsn span{color:#ffd870}
+.dsb{position:relative;height:9px;background:#140d07;border:1px solid #3d2d1a;margin:3px 0 2px}.dsb i{display:block;height:100%;background:linear-gradient(90deg,#7a1e12,#c0502a)}
+.dsb em{position:absolute;right:3px;top:-2px;font-size:9px;font-style:normal;color:#eee;text-shadow:0 0 2px #000}
+.dsx{font-size:10px;color:#9a8a6a}.dse{padding:20px;text-align:center;color:#888}
+.dsf{display:flex;gap:8px;margin-top:8px}.dsf button{flex:1;padding:8px;background:linear-gradient(#3a2a18,#1a1008);border:1px solid #8a6a3a;color:#e0c890;font-family:serif}
