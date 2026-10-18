@@ -149,9 +149,10 @@ mercEquip=function(uid,slot){let f=findItem(uid);if(!f||f.slot)return false;cons
  if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield){S.bag.push(S.merc.eq.shield);delete S.merc.eq.shield}
  calc();log(`佣兵装备：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);if(!window.__NOUI){closeM();render()}return true};
 mercUnequip=function(k){if(!S.merc||!S.merc.eq[k])return false;if(bagFull()){toast('背包已满');return false}S.bag.push(S.merc.eq[k]);delete S.merc.eq[k];calc();if(!window.__NOUI){closeM();render()}return true};
-mercAutoEq=function(){if(!mercUp()||!S.autoEq||!S.merc.auto)return;for(const it of S.bag.slice()){if(it.k)continue;const b=BASEM[it.b];if(!b)continue;
+// 佣兵自动换装只看佣兵页自己的「自动换装」开关（S.merc.auto）；不再要求角色的 S.autoEq——角色自动换装在设置弹窗里关掉后，佣兵页按钮仍显示开启却不再换装
+mercAutoEq=function(){if(!mercUp()||!S.merc.auto||!Array.isArray(S.bag))return;for(const it of S.bag.slice()){if(!it||it.k)continue;const b=BASEM[it.b];if(!b)continue;
  const ks=b.s==='ring'?['ring1','ring2']:[b.s];if(it.lk)continue;for(const k of ks){if(!canMercEquip(it,k))continue;const c=S.merc.eq[k];if(c&&c.lk)continue;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield&&S.merc.eq.shield.lk)continue;
-  if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
+  if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield){S.bag.push(S.merc.eq.shield);delete S.merc.eq.shield}calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
 // items2.js 的命中特效(压碎/撕裂/偷取等)只统计了 3 格，扩展到全身
 if(typeof attackerMods==='function'){const _mx_am=attackerMods;attackerMods=function(src){if(src&&src.kind==='merc'&&S.merc&&S.merc.eq){const M={};for(const k of MERC_SLOTS){const it=S.merc.eq[k];if(!it)continue;const m=allMods(it);for(const x in m)if(typeof m[x]==='number')M[x]=(M[x]||0)+m[x]}return M}return _mx_am(src)}}
 
