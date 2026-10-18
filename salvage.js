@@ -28,7 +28,7 @@ function skRule(it){const r=S.rcy;if(!r||!r.on||!r.sk||!it||it.k||it.lk)return n
  const row=([k,n])=>`<div class="row skr"><span>${n}：${sk.n[k]?`凹槽 <b>&lt;${sk.n[k]}</b> 回收，≥${sk.n[k]} 保留`:'<span class="dim">关闭</span>'}</span><span><button class="btn xs" onclick="skSet('${k}',-1)">－</button><b class="skn">${sk.n[k]}</b><button class="btn xs" onclick="skSet('${k}',1)">＋</button></span></div>`;
  const h=`<div class="skrule"><h4>凹槽底材（灰/白、未镶嵌）</h4>${SKP.map(row).join('')}
   <div class="btns"><button class="btn xs ${sk.elite?'on':''}" onclick="S.rcy.sk.elite^=1;rcyUI()">只保留扩展/精英底材</button><button class="btn xs ${sk.sup?'on':''}" onclick="S.rcy.sk.sup^=1;rcyUI()">超强品质也适用</button></div>
-  <div class="dim">阈值 0=关闭（沿用上方规则）。开启的部位：凹槽数达标保留，不达标回收（不受上方品质/部位/“带凹槽底材”保护影响）。「只保留扩展/精英」开启时普通底材即使达标也回收。默认只适用破旧/普通品质；「超强品质也适用」开启后包含超强。上方「精英底材」保护开启时，精英底材不论凹槽数一律保留。锁定物品永不回收。</div></div>`;
+  <div class="dim">阈值 0=关闭（沿用上方规则）。开启的部位：凹槽数达标保留，不达标回收（不受上方品质/部位/“带凹槽底材”保护影响）。「只保留扩展/精英」开启时普通底材即使达标也回收。默认只适用破旧/普通品质；「超强品质也适用」开启后包含超强。上方「精英底材」保护开启时，破旧/普通/超强品质的精英底材不论凹槽数一律保留（魔法/稀有等精英装备不受此保护）。锁定物品永不回收。</div></div>`;
  if(hs)hs.insertAdjacentHTML('beforebegin',h);else box.insertAdjacentHTML('beforeend',h)}}
 function skSet(k,d){skNorm();S.rcy.sk.n[k]=Math.max(0,Math.min(SKMAX[k]||6,(S.rcy.sk.n[k]||0)+d));if(!window.__NOUI)rcyUI()}
 

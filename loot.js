@@ -31,7 +31,7 @@ function hasNecroSkill(it){const m=it.m||{};return Object.keys(m).some(k=>k.star
 function shouldRecycle(it,isNew){const r=S.rcy;if(!r||!r.on||it.k==='mat')return false;const c=rcyCat(it);if(!r.c[c])return false;
  if(it.k==='rune')return it.r+1<=(r.runeMax||0);if(it.k==='gem')return true;
  if(it.rw!=null||!r.q[it.q])return false;const b=BASEM[it.b];
- if(r.keepSock&&it.sock&&it.q<=2)return false;if(r.keepElite&&b.tier>=2)return false;if(r.keepNew&&isNew)return false;if(r.keepSkill&&hasNecroSkill(it))return false;return true}
+ if(r.keepSock&&it.sock&&it.q<=2)return false;if(r.keepElite&&b.tier>=2&&it.q<=2)return false;if(r.keepNew&&isNew)return false;if(r.keepSkill&&hasNecroSkill(it))return false;return true}
 function essOf(it){if(it.k==='gem')return it.lv+1;if(it.k==='rune')return it.r+1;return[1,1,2,3,6,15,12,5][it.q]||1}
 function doRecycle(it){const r=S.rcy;STATS.rcy++;if(r.mode==='ess'){const e=essOf(it);addMat('ess',e);STATS.rcyE+=e}else{const g=Math.min(35000,sellPrice(it));S.gold+=g;STATS.rcyG+=g}}
 addBag=function(it){if(it.k==='rune')S.found[it.r]=1;ensureLoot();if(it.k==='mat'){pushInto(S.bag,it);return true}
@@ -53,7 +53,7 @@ function rcyKeepWhy(bag){const r=S.rcy,o={},inc=k=>o[k]=(o[k]||0)+1;
  for(const it of bag){if(!it||it.k)continue;const b=BASEM[it.b];if(!b)continue;
   if(it.lk||(typeof isLk==='function'&&isLk(it)))inc('锁定');else if(it.gb)inc('赌博所得');else if(it.rw!=null)inc('符文之语');
   else if(!r.q[it.q])inc(`${(RCY_Q.find(x=>x[0]===it.q)||[0,'?'])[1]}未勾选`);else if(!r.c[rcyCat(it)])inc('部位未勾选');
-  else if(r.keepSock&&it.sock&&it.q<=2)inc('凹槽底材');else if(r.keepElite&&b.tier>=2)inc('精英底材');else if(r.keepSkill&&hasNecroSkill(it))inc('本职业技能');else inc('其他规则')}return o}
+  else if(r.keepSock&&it.sock&&it.q<=2)inc('凹槽底材');else if(r.keepElite&&b.tier>=2&&it.q<=2)inc('精英底材');else if(r.keepSkill&&hasNecroSkill(it))inc('本职业技能');else inc('其他规则')}return o}
 // ---------- 离线结算附加回收/存仓统计 ----------
 const _lt_off=offline;offline=function(){const a=STATS.rcy,g=STATS.rcyG,e=STATS.rcyE,s=STATS.ast;_lt_off();const n=STATS.rcy-a,m=STATS.ast-s;if(window.__NOUI||(!n&&!m))return;
  const box=document.querySelector('#modal .gp .grid');for(const d of document.querySelectorAll('#modal .gp>.dim'))if(n&&d.textContent.startsWith('自动出售'))d.remove();if(box)box.insertAdjacentHTML('beforebegin',`<div class="g">自动回收 ${n} 件：+${STATS.rcyG-g} 金币，+${STATS.rcyE-e} 残骸精华${m?`；自动存仓 ${m} 件`:''}</div>`)};
@@ -70,6 +70,7 @@ function rcyUI(){ensureLoot();const r=S.rcy,a=S.ast;const ck=(on,fn,t)=>`<button
  <h4>部位 / 类型</h4><div class="btns">${RCY_C.map(([k,n])=>ck(r.c[k],`S.rcy.c['${k}']^=1`,n)).join('')}</div>
  <div class="row"><span>符文：回收 <b>${r.runeMax||0}号</b> 及以下（0=不回收）</span><span><button class="btn xs" onclick="S.rcy.runeMax=Math.max(0,(S.rcy.runeMax||0)-1);rcyUI()">－</button><button class="btn xs" onclick="S.rcy.runeMax=Math.min(33,(S.rcy.runeMax||0)+1);rcyUI()">＋</button></span></div>
  <h4>保护（例外）</h4><div class="btns">${ck(r.keepSock,'S.rcy.keepSock^=1','带凹槽白/超强底材')}${ck(r.keepElite,'S.rcy.keepElite^=1','精英底材')}${ck(r.keepNew,'S.rcy.keepNew^=1','未收录图鉴的暗金/套装')}${ck(r.keepSkill,'S.rcy.keepSkill^=1','带本职业技能')}</div>
+ <div class="dim">「精英底材」保护只针对破旧/普通/超强品质的精英底材；魔法/稀有等其他品质的精英装备按品质勾选回收。</div>
  <h4>回收所得</h4><div class="btns">${ck(r.mode==='gold',"S.rcy.mode='gold'",'金币（按卖价）')}${ck(r.mode==='ess',"S.rcy.mode='ess'",'残骸精华')}</div>
  <div class="dim">残骸精华：炼金匣 ${ESS_REROLL} 个重铸魔法/稀有物品；商店「精华兑换」。当前 ${matCount('ess')} 个。</div>
  <hr><div class="row"><b>自动存仓</b>${ck(a.on,'S.ast.on^=1',a.on?'已开启':'已关闭')}</div>
