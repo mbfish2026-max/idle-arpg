@@ -26,7 +26,7 @@ function buxTryClose(){const m=document.getElementById('modal');if(!m||m.classLi
  document.addEventListener('click',e=>{if(!isBg(e.target))return;e.stopPropagation();if(BUX.downBg){BUX.downBg=0;buxTryClose()}},true);
  document.addEventListener('keydown',e=>{if(e.key==='Escape')buxTryClose()})})();
 // ---------- 背包分类 ----------
-const BUX_CAT={gem:it=>it.k==='gem',rune:it=>it.k==='rune',mat:it=>it.k==='mat'};
+const BUX_CAT={leg:it=>!it.k&&it.q===5&&it.rw==null,set:it=>!it.k&&it.q===6,gem:it=>it.k==='gem',rune:it=>it.k==='rune',mat:it=>it.k==='mat'};
 {const f=renderBag;renderBag=function(){const c=BUX_CAT[BAGF];if(c){const full=S.bag,sv=BAGF;S.bag=full.filter(c);BAGF='all';try{f.apply(this,arguments)}finally{S.bag=full;BAGF=sv}}else f.apply(this,arguments);
  if(window.__NOUI)return;const P=document.getElementById('panel');if(!P)return;
  const h3=[...P.querySelectorAll('.gp h3')].find(e=>/背包 \d+\//.test(e.textContent));
@@ -35,7 +35,11 @@ const BUX_CAT={gem:it=>it.k==='gem',rune:it=>it.k==='rune',mat:it=>it.k==='mat'}
  const sb=h3&&h3.closest('.gp').querySelector('.stabs.sm');
  if(sb){const mis=[...sb.querySelectorAll('button')].find(b=>b.textContent.trim()==='符文宝石');
   if(mis){const cnt=fn=>groups(S.bag.filter(fn)).length;
-   mis.outerHTML=[['gem','宝石'],['rune','符文'],['mat','材料']].map(([k,n])=>`<button class="${BAGF===k?'on':''}" onclick="BAGF='${k}';BGP=0;render()">${n} ${cnt(BUX_CAT[k])}</button>`).join('')}}
+   mis.outerHTML=[['leg','传奇'],['set','套装'],['gem','宝石'],['rune','符文'],['mat','材料']].map(([k,n])=>`<button class="${BAGF===k?'on':''}" onclick="BAGF='${k}';BGP=0;render()">${n} ${cnt(BUX_CAT[k])}</button>`).join('')}}
+ // 仓库：传奇/套装 快捷分类（=品质筛选 暗金/套装，跨全部页，带数量）
+ const sg=P.querySelector('.stash2');if(sg&&!sg.querySelector('.buxsc')){const Pg=STV==='shared'?ACCT.shared:S.pst,all=Pg.flat(),cnt=fn=>groups(all.filter(fn)).length;
+  const ch=[['all','全部',all.length?groups(all).length:0],['5','传奇',cnt(BUX_CAT.leg)],['6','套装',cnt(BUX_CAT.set)]];
+  const pg=sg.querySelector('.stabs.pg');if(pg)pg.insertAdjacentHTML('beforebegin',`<div class="stabs sm buxsc">${ch.map(([q,n,c])=>`<button class="${STF.q===q&&(q!=='all'||(STF.t==='all'&&!STF.s))?'on':''}" onclick="STF.q='${q}';render()">${n} ${c}</button>`).join('')}</div>`)}
  P.querySelectorAll('.grid').forEach(g=>g.classList.add('buxswipe'))}}
 // ---------- 网格左右滑动翻页 ----------
 function buxPage(grid,dir){const sg=grid.classList.contains('sgrid');let v,n;
