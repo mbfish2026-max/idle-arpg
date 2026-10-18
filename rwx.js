@@ -38,7 +38,13 @@ function rwxPanel(){const F=rwxF(),{L,own}=rwxList();
  rwxChips('c',[['all','全职业'],...RWX_CLS],F.c)+
  `<div class="rwxch"><span class="dim">排序</span>${[['lv','需求等级'],['n','符文数'],['p','可合成优先'],['name','名称']].map(([v,n])=>`<button class="${F.s===v?'on':''}" onclick="rwxSet('s','${v}')">${n}</button>`).join('')}</div>`;
  const rows=L.map(({w,i,p})=>`<div class="rw rwx" onclick="rwxShow(${i})"><b class="uq">${w.n}</b> ${p>=1?'<span class="rwxok">可合成</span>':p>0?`<span class="rwxpg">${Math.round(p*w.r.length)}/${w.r.length}</span>`:''}<span class="dim"> ${w.r.map(r=>`<span class="${own[r]?'g':''}">${RUNES[r][0]}</span>`).join('+')} · ${w.cats.map(c=>CATN[c]||c).join('/')} ${w.r.length}孔 · 需求${w.lv}</span>
- <div class="dim">${rwxClasses(w).map(c=>RWX_CLS.find(x=>x[0]===c)[1]).join('·')}</div></div>`).join('')||'<div class="dim">没有符合条件的符文之语</div>';return head+rows}
+ <div class="rwxs">${rwxSum(w)}</div><div class="dim rwxc">${rwxClasses(w).map(c=>RWX_CLS.find(x=>x[0]===c)[1]).join('·')}</div></div>`).join('')||'<div class="dim">没有符合条件的符文之语</div>';return head+rows}
+// 列表行内属性摘要（2-4 条关键属性，短标签）
+const RWX_SH=[['allsk','+{v}技能'],['t1sk','+{v}技能'],['fcr','施法+{v}%'],['ias','攻速+{v}%'],['edmg','伤害+{v}%'],['cb','压碎{v}%'],['ds','致命{v}%'],['ignoredef','无视防御'],['allres','抗性+{v}'],['ll','吸血{v}%'],['life','生命+{v}'],['lifepct','生命+{v}%'],['mana','法力+{v}'],['manapct','法力+{v}%'],['fhr','受击+{v}%'],['edef','防御+{v}%'],['def','防御+{v}'],['mf','寻宝+{v}%'],['gf','金币+{v}%'],['str','力量+{v}'],['dex','敏捷+{v}'],['vit','体力+{v}'],['ene','能量+{v}'],['mdr','魔伤减免{v}'],['block','格挡+{v}%'],['ow','撕裂{v}%'],['undead','对不死+{v}%'],['demon','对恶魔+{v}%'],['ml','偷法{v}%'],['coldmin','冰伤'],['firemin','火伤'],['lightmax','电伤'],['poisdmg','毒伤'],['freeze','冻结'],['indestr','不可破坏']];
+function rwxSum(w){const m=w.m,out=[];const fv=v=>Array.isArray(v)?v[0]+'-'+v[1]:v;
+ for(const k in m)if(/^sk_/.test(k)&&out.length<1)out.push((typeof modsTxt==='function'?modsTxt({[k]:m[k]}):k).replace(/\s+/g,''));
+ for(const[k,t]of RWX_SH){if(out.length>=4)break;if(m[k]!=null&&!(k==='t1sk'&&m.allsk))out.push(t.replace('{v}',fv(m[k])).replace('+-','-'))}
+ if(!out.length&&typeof modsTxt==='function')for(const k of Object.keys(m).slice(0,3))out.push(modsTxt({[k]:m[k]}));return out.join(' · ')}
 // ---------- 底材掉落提示 ----------
 const RWX_IL=[1,26,41];// maxSock 档位：ilvl≤25 / ≤40 / 其余
 function rwxNeedIl(b,n){if(!b.sock)return null;for(let i=0;i<3;i++)if(b.sock[i]>=n)return Math.max(b.q,RWX_IL[i]);return null}
