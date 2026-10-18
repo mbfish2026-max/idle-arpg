@@ -25,6 +25,6 @@
 @keyframes fxspin{from{transform:translateX(-50%) scaleY(.7) rotate(0)}to{transform:translateX(-50%) scaleY(.7) rotate(360deg)}}
 .fxarm{position:absolute;left:50%;top:42%;width:120%;aspect-ratio:1;background:center/contain no-repeat;pointer-events:none;z-index:3;opacity:.8;transform:translate(-50%,-50%)}/* 省电：去掉常驻旋转，改静态 */
 @keyframes fxarm{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-.mc.hit .pt img,.mc.hit .pt .glyph,.ac.hit .pt img{filter:brightness(2.6) saturate(.3)}
+.mc.hit .pt img,.mc.hit .pt .glyph{filter:brightness(2.6) saturate(.3)}.ac.hit .pt{box-shadow:inset 0 0 0 2px rgba(255,60,40,.75),inset 0 0 10px rgba(255,40,30,.45)}
 .fl.crit{color:#ffd23a;font-size:23px;font-weight:900;text-shadow:0 0 4px #000,0 0 8px #a60}
 @media (prefers-reduced-motion:reduce){.fxs,.fxcur,.fxarm{animation-duration:1ms!important}}

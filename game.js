@@ -232,7 +232,7 @@ function summonFromCorpse(){if(!CORPSE.length)return 0;const L=x=>slvl(x);
 function target(ms){const at=ms.find(m=>curseOf(m,'at'));if(at)return at;const b=ms.find(m=>m.boss);return b||ms[0]}
 function hitChance(ar,def,al,dl){const c=clamp(200*ar/(ar+Math.max(1,def))*al/(al+dl),5,95);return rnd()*100<c}
 // --- 主循环 ---
-function step(dt){GT+=dt;const ms=liveMon();
+function step(dt){GT+=dt;for(const a of ALLY)if(a.hitT>0)a.hitT=Math.max(0,a.hitT-dt);const ms=liveMon();
  H.mana=Math.min(ST.mana,H.mana+ST.mana/120*(1+ST.mregen/100)*dt);H.life=Math.min(ST.life,H.life+ST.regen*dt);
  if(H.life<ST.life*0.4&&S.pot.hp>0&&!H.potT){S.pot.hp--;H.potT=7;H.potHeal=ST.life*0.5/7}
  if(H.life<ST.life*0.2&&S.pot.rej>0){S.pot.rej--;H.life=Math.min(ST.life,H.life+ST.life*0.35);H.mana=Math.min(ST.mana,H.mana+ST.mana*0.35);floatHero('瞬回','#d0f')}

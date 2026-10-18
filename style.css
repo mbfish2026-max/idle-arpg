@@ -47,7 +47,7 @@ body{background:#000;color:var(--txt);font-family:"STKaiti","KaiTi","Songti SC",
 .mc .lv,.ac .lv{position:absolute;left:-2px;top:-2px;background:#000;color:#fff;font:bold 11px sans-serif;padding:1px 3px;border:1px solid #6b5a44;z-index:2}
 .mc.champ{border-color:#4a8aff;box-shadow:0 0 8px #3a7aff}.mc.uniq{border-color:#b05aff;box-shadow:0 0 8px #a040ff}
 .mc.boss{border-color:#f3c34a;box-shadow:0 0 12px #f0a020,inset 0 0 8px #f0a020}.mc.boss .nm{color:#ffd060}
-.mc.hit,.ac.hit{transform:translateX(2px);filter:brightness(1.6)}.mc.stun .pt{outline:2px solid #dcb;outline-offset:-4px}
+.mc.hit{transform:translateX(2px);filter:brightness(1.6)}.ac.hit{transform:translateX(1px)}.mc.stun .pt{outline:2px solid #dcb;outline-offset:-4px}
 .mc em,.ac em{position:absolute;right:0;top:0;font-style:normal;font-size:10px;padding:0 2px;z-index:2}
 .mc .cur{background:#5a1a7a;color:#f0d0ff}.mc .psn{top:14px;background:#1a5a1a;color:#bfb}.ac .tm{background:#000;color:#ccc}
 #arow{display:flex;gap:5px;overflow-x:auto;padding:4px 0 2px;min-height:100px;box-sizing:border-box;align-items:flex-end;scrollbar-width:none}
