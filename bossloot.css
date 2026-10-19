@@ -1,0 +1,5 @@
+.bldrop{font-size:11px;color:#8a7a5a;line-height:1.5;margin-top:1px}
+.bldrop i{font-style:normal;color:#776;margin-right:6px}.bldrop i.ok{color:#c8a060}
+.blfr{display:flex;align-items:center;gap:8px;white-space:nowrap;flex-wrap:nowrap;padding:6px 10px}
+.blfr small{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}
+.blown{font-size:12px;color:#aa9}
