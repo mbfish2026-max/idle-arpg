@@ -213,3 +213,4 @@
 - [x] 选流派后可手动加技能（build_manual.js）：流派面板单行「技能点：自动 / 手动」开关（S.autoSk）；手动模式选/切流派只返还技能点不自动重加；自动模式手动加的点不被覆盖；流派被动/套装/共鸣照常；?v=20261020s
 - [x] 仓库/背包「职业」筛选（clsfilter.js/css，包装 stMatch/renderBag）：个人/共享仓库并入品质/类型筛选行、背包格子上方一行；全部职业 + CLASSES 7 职业（适合=专属+通用）+「仅专属」分组；判定=专属底材/系别与单技能词缀/流派键/职业与流派套装/威能与核心威能；默认全部；tests/clsfilter_test.js；?v=20261020t、sw 缓存 t
 - [x] 角色页「加成汇总」可折叠模块（bonus.js/css，包装 renderHero）：技能加成（全部技能/系别/单技能/技能伤害，读 ST，点开看来源装备·镶嵌·护身符·套装档位·其他来源，非本职业标注不生效）、生效威能（核心◆、品阶、来源、共鸣 I/II、超上限）、套装件数与各档效果（含流派 6 件机制）、流派被动、符文之语；按装备签名缓存，折叠状态存 localStorage；tests/bonus_test.js；?v=20261020u、sw 缓存 u
+- [x] 暗渊三魂/血月素材 25 张已入 assets（boss/abyss_g1-3、abyss_s1-3；icon2/abyss/ 16 个；ui2/bloodmoon.webp 128 + bloodmoon_64.webp；id 自定，tools/art/gen_abyss.py，预览 art_preview/p_abyss_sheet.png），待系统开发接入（美术）
