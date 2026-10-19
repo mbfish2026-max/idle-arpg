@@ -1,0 +1,6 @@
+.rfh{text-align:center;margin:2px 0 6px}
+.rf .rfl{display:block;width:100%;margin:4px 0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf .rfc{margin:4px 0;white-space:nowrap;font-size:13px}
+.rfo{display:flex;gap:8px;align-items:center;border:1px solid #5a4630;border-radius:4px;padding:8px;margin:6px 0;cursor:pointer;white-space:nowrap}
+.rfo small{color:#998;flex:none}.rfo b{flex:1;color:#8cf;overflow:hidden;text-overflow:ellipsis}.rfo.keep b{color:#ddd}
+.rfb{flex-wrap:nowrap}.rftag{font-size:12px;color:#c9b}.rftag b{color:#8cf}
