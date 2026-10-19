@@ -79,7 +79,10 @@ clsRegister();
 {const f=clsEst;clsEst=function(s,ms){if(s.ty!=='arw')return f(s,ms);const v=SV(s.id,slvl(s.id)),n=ms.length,tn=Math.min(n,v.n||1);
  let e=(clsWAvg()*(1+(v.pct||0)/100)+(v.flat||0))*clsMk()*(1+(ST.bcrit||0)/100)*(v.hits||1)*tn*(1+(ST.apier||0)/200);const ed=v.dmg?clsAvgD(v.dmg)*elMul(s.el):0;
  e+=ed*tn;if(v.sp)e+=ed*v.sp/100*Math.min(n-tn,v.sn||3);if(v.cn)e+=v.cn*clsAvgD(v.cd)*elMul('light');
- if(v.bd)e+=v.bd*(v.bdur||4)*elMul('fire')*Math.min(n,tn+(v.sn||0));if(v.pd)e+=v.pd*(v.pdur||3)*Math.min(n,v.pn||1);return e}}
+ // 持续伤害只按「尚未中毒/灼烧（剩余≤1秒）」的目标估值：否则毒素估值恒高，疫病之矛等会一直压过连珠箭等箭矢技能（重复施放只会刷新毒素）
+ // 每个目标的持续伤害不超过其剩余生命（溢出的毒素不算收益）
+ const dot=(arr,k,tot)=>arr.reduce((t,m)=>t+(m[k]&&m[k].left>1?0:Math.min(tot,Math.max(0,m.hp))),0);
+ if(v.bd)e+=dot(ms.slice(0,tn+(v.sn||0)),'burn',v.bd*(v.bdur||4)*elMul('fire'));if(v.pd)e+=dot(ms.slice(0,v.pn||1),'pois',v.pd*(v.pdur||3));return e}}
 {const f=acFeasible;acFeasible=function(id,ms){const s=SKM[id];if(!s||s.cls!=='ama')return f(id,ms);if(!castable(id))return 0;
  if(s.ty==='asum'){if(!ms.length)return 0;return amaPets(id).length<SV(id,slvl(id)).n}
  if(s.ty==='debuff'&&s.g&&clsGroupPick(s.g)!==id)return 0;

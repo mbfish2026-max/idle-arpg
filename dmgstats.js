@@ -19,7 +19,7 @@ const _h=hitMon;hitMon=function(m,d,src,fxc){if(!m||m.hp<=0||!d)return _h(m,d,sr
  try{const v=Math.min(r||0,Math.max(0,hp0));const pz=d.pois&&m.pois&&m.pois.src===src;if(pz)m.pois._k=k;if(v>0||pz)add(k,v,1)}catch(e){}
  return r};
 const _c=acCast;acCast=function(id,ms){const p=CAST;CAST=id;try{return _c(id,ms)}finally{CAST=p;
- try{for(const m of MON)if(m.burn&&!m.burn._k)m.burn._k=id;for(const a of ALLY)if(!a._dk&&a.kind!=='merc'){a._dk=a.sub||SUMK[a.kind]||id}}catch(e){}}};
+ try{for(const m of MON){if(m.burn&&!m.burn._k)m.burn._k=id;if(m.pois&&!m.pois._k&&m.pois.left>0)m.pois._k=id}for(const a of ALLY)if(!a._dk&&a.kind!=='merc'){a._dk=a.sub||SUMK[a.kind]||id}}catch(e){}}};
 const _a=heroAct;heroAct=function(){INHERO=1;try{return _a.apply(this,arguments)}finally{INHERO=0}};
 const _s=step;step=function(dt){try{const d=st();if(d&&MON.length){d.s+=dt;
   for(const m of MON){const p=m.pois;if(p&&p.left>0&&m.hp>0)add(p._k||'_pois',Math.min(m.hp,p.dps*Math.min(p.left,dt)),0)}}}catch(e){}
@@ -27,7 +27,7 @@ const _s=step;step=function(dt){try{const d=st();if(d&&MON.length){d.s+=dt;
 // —— 界面 ——
 function nf(n){n=Math.round(n);return n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'K':String(n)}
 function dur(sec){sec=Math.max(0,Math.floor(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?`${h}小时${m}分`:m?`${m}分${s}秒`:`${s}秒`}
-const FIX={_atk:['普通攻击','⚔'],_merc:['佣兵','🛡'],_xboom:['怪物爆炸（词缀）','💥'],_pois:['毒素（来源未知）','☠'],_sum:['召唤物','💀'],_misc:['其他（反伤/光环等）','✧']};
+const FIX={_atk:['普通攻击','⚔'],_merc:['佣兵','🛡'],_xboom:['怪物爆炸（词缀）','💥'],_pois:['毒素（其他来源）','☠'],_sum:['召唤物','💀'],_misc:['其他（反伤/光环等）','✧']};
 function rowHead(k){if(FIX[k]){let n=FIX[k][0];if(k==='_merc'&&S.merc&&typeof MERCS!=='undefined'&&MERCS[S.merc.t])n='佣兵·'+MERCS[S.merc.t].n;return[n,`<i class="ski dsg">${FIX[k][1]}</i>`]}
  const s=typeof SKM!=='undefined'&&SKM[k];if(!s)return[k,'<i class="ski dsg">✦</i>'];let ic='';try{ic=skIcon(s)}catch(e){ic=`<i class="ski dsg">${s.ic||'✦'}</i>`}return[s.n,ic]}
 function body(){const d=st();const L=Object.entries(d.r).filter(e=>e[1][0]>0).sort((a,b)=>b[1][0]-a[1][0]);const tot=L.reduce((a,e)=>a+e[1][0],0);
