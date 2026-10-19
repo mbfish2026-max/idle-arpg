@@ -8,8 +8,10 @@
  if(typeof nbPick!=='function'||typeof nbPanel!=='function')return;
  let hold=0;
  {const f=autoTick;autoTick=function(...a){if(!hold)return f.apply(this,a);const k=S.autoSk;S.autoSk=0;try{return f.apply(this,a)}finally{S.autoSk=k}}}
- {const f=nbPick;nbPick=function(b){const man=!S.autoSk;hold=man?1:0;let r;try{r=f.apply(this,arguments)}finally{hold=0}
+ {const f=nbPick;nbPick=function(b){const man=!S.autoSk;hold=man?1:0;const oc=window.confirm;if(typeof oc==='function')window.confirm=function(t){return oc.call(window,bmTxt(String(t),man))};let r;try{r=f.apply(this,arguments)}finally{hold=0;window.confirm=oc}
   if(man){S.autoSk=0;if(S.kp>0){log(`<b style="color:#ffd76a">手动加点模式：已返还技能点，当前可用 ${S.kp} 点，请在技能页手动分配</b>`);save();if(!window.__NOUI)render()}}return r}}
+ // 确认框文案按模式显示（原文写死「自动重新加点」）
+ window.bmTxt=function(t,man){return man?t.replace(/技能点全部返还并按(流派|新)计划自动重新加点/,'技能点全部返还（当前为手动加点：不会自动加点，请在技能页自行分配）'):t.replace(/技能点全部返还并按(流派|新)计划自动重新加点/,'技能点全部返还并按$1计划自动重新加点（当前为自动加点，可在流派面板切换为手动）')};
  window.bmSet=function(v){S.autoSk=v?1:0;if(v&&typeof autoTick==='function')autoTick();calc();save();render()};
  {const f=nbPanel;nbPanel=function(...a){const h=f.apply(this,a);try{const on=!!S.autoSk;
   const row=`<div class="bmrow"><span>技能点</span><button class="btn xs ${on?'on':''}" onclick="bmSet(1)">自动</button><button class="btn xs ${on?'':'on'}" onclick="bmSet(0)">手动</button><span class="dim">${on?'按流派计划自动加点，手动加的点保留':'可用 '+S.kp+' 点，点技能「+」自由加'}</span></div>`;
