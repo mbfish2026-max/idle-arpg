@@ -1,4 +1,5 @@
 # 暗渊三魂/血月素材 22 张：GenerateImage 黑底 3×2 网格 → assets/boss/abyss_*.webp、assets/icon2/abyss/*.webp、assets/ui2/bloodmoon*.webp
+# 首领立绘改用单张高清图（1280×720）：按主体水平中心取中央正方形 → 软 alpha、底部淡出 → 512×512
 # id 自定（系统开发暂无对应 id）。方法同 gen_pw_lt_icons.py：格内检测物体、软 alpha、webp q80
 import os,sys
 sys.path.insert(0,os.path.dirname(__file__))
@@ -34,12 +35,21 @@ def save(o,path):o.save(path,'WEBP',quality=80,method=6);print(path,o.size,os.pa
 def circle(o):  # 圆形外强制透明
     N=o.width;m=Image.new('L',(N*4,N*4),0);ImageDraw.Draw(m).ellipse((0,0,N*4-1,N*4-1),fill=255);m=m.resize((N,N),Image.LANCZOS)
     a=np.minimum(np.asarray(o.getchannel('A')),np.asarray(m));o=o.copy();o.putalpha(Image.fromarray(a));return o
+BOSS_HD={'abyss_g1':'ba8c24c5','abyss_g2':'4af641b7','abyss_g3':'3ec1cf93','abyss_s1':'9fc84e39','abyss_s2':'7b2e502a','abyss_s3':'910464c8'}
+def boss(id_,N=512):
+    im=load(BOSS_HD[id_]);W,H=im.size;x0,y0,x1,y1=bbox(im)
+    cx=min(max((x0+x1)//2,H//2),W-H//2);c=im.crop((cx-H//2,0,cx+H//2,H))  # 中央正方形
+    a=np.asarray(c).astype(float).max(2);al=np.clip((a-8)/40,0,1)
+    fill=nd.binary_fill_holes(nd.binary_closing(a>22,iterations=4));fill=nd.binary_erosion(fill,iterations=2)
+    al=np.maximum(al,np.asarray(Image.fromarray((fill*255).astype('uint8')).filter(ImageFilter.GaussianBlur(1.5)))/255)
+    ramp=np.clip((H-np.arange(H))/(H*0.12),0,1)[:,None];al=al*ramp  # 底部 12% 自然淡出
+    r=c.convert('RGBA');r.putalpha(Image.fromarray((al*255).astype('uint8')));return r.resize((N,N),Image.LANCZOS)
 OUT=[]
 for h,items in GRID:
     im=load(h);W,H=im.size
     for k,(d,id_,zh) in enumerate(items):
         cx,cy=k%3,k//3;c=im.crop((round(cx*W/3),round(cy*H/2),round((cx+1)*W/3),round((cy+1)*H/2)))
-        if d==B:o=fit(c,256,4);save(o,d+id_+'.webp');OUT.append((d+id_+'.webp',zh))
+        if d==B:save(boss(id_),d+id_+'.webp');OUT.append((d+id_+'.webp',zh))
         elif d==U:
             for n,suf in((128,''),(64,'_64')):
                 o=circle(fit(c,n,2 if n==64 else 4));save(o,d+id_+suf+'.webp');OUT.append((d+id_+suf+'.webp',zh+f' {n}px'))
@@ -50,9 +60,9 @@ fp=[p for p in('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc','/usr/sh
 font=ImageFont.truetype(fp[0],14) if fp else ImageFont.load_default()
 CW,CH,cols=280,320,6;rows=(len(OUT)+cols-1)//cols;sh=Image.new('RGB',(CW*cols,CH*rows),(40,40,40))
 for i,(p,zh) in enumerate(OUT):
-    x,y=(i%cols)*CW,(i//cols)*CH;t=Image.new('RGB',(256,256))
+    x,y=(i%cols)*CW,(i//cols)*CH;t=Image.new('RGB',(256,256))  # 512 立绘缩到 256 预览
     for yy in range(0,256,16):
         for xx in range(0,256,16):ImageDraw.Draw(t).rectangle((xx,yy,xx+15,yy+15),fill=(200,200,200) if (xx+yy)//16%2 else (150,150,150))
-    o=Image.open(p).convert('RGBA');t.paste(o,((256-o.width)//2,(256-o.height)//2),o);sh.paste(t,(x+12,y+6))
+    o=Image.open(p).convert('RGBA');o=o.resize((256,256),Image.LANCZOS) if o.width>256 else o;t.paste(o,((256-o.width)//2,(256-o.height)//2),o);sh.paste(t,(x+12,y+6))
     d=ImageDraw.Draw(sh);d.text((x+12,y+266),zh,fill=(255,230,160),font=font);d.text((x+12,y+288),p.replace('assets/',''),fill=(200,200,200),font=font)
 os.makedirs('art_preview',exist_ok=True);sh.save('art_preview/p_abyss_sheet.png');print(len(OUT),'files')
