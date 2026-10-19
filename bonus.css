@@ -1,0 +1,23 @@
+/* bonus.css — 角色页「加成汇总」 */
+.bonusx .bxh{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;-webkit-user-select:none}
+.bonusx .bxh small{font-size:12px;font-weight:normal}
+.bxsec{margin-top:6px}
+.bxsec h4{margin:6px 0 2px;font-size:13px;color:#d9c08a;white-space:nowrap}
+.bxsec h4 small{font-size:11px;font-weight:normal;margin-left:6px}
+.bxsub{font-size:11px;color:#9a8a6a;margin:4px 0 1px}
+.bxr{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #2a2a2a}
+.bxr>span{min-width:0;flex:1;overflow:hidden}
+.bxr>span small{display:block;font-size:11px;line-height:1.35;white-space:normal}
+.bxr>b{flex:none;white-space:nowrap}
+.bxr>b small{font-weight:normal;font-size:10px}
+.bxr .bxw{flex:none;white-space:nowrap;max-width:40%;overflow:hidden;text-overflow:ellipsis}
+.bxsk{cursor:pointer}.bxsk:active{background:rgba(255,215,140,.06)}
+.bxsk.off{opacity:.55}
+.bxsk>span{white-space:nowrap;text-overflow:ellipsis}
+.bxcore{color:#ffb050}.bxst{color:#fc6}
+.bxres{font-size:12px;margin:2px 0 4px;line-height:1.5}.bxres .g{color:#7f7}
+.bxset{margin-bottom:4px}
+.bxtier{display:flex;gap:6px;font-size:11px;color:#777;line-height:1.45}
+.bxtier i{font-style:normal;flex:none;white-space:nowrap}
+.bxtier.on{color:#9e9}
+.bxsrc .bxr span small{display:block}
