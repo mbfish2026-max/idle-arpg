@@ -24,8 +24,9 @@ ok(G("(()=>{const it=genItem(85,{q:5});it.anc=1;it.name='x';const U=blPool('quee
 G(`S.frun=undefined`);ok(G("blFR().on")===0,'旧存档速刷默认关');
 ok(G("blBonus(0)")===50&&G("blBonus(29)")===50&&G("blBonus(30)")===47.5&&G("blBonus(49)")===0,'每日前 30 次 +50%，之后递减到 0');
 G(`S.frun.d=1;S.frun.n=40`);ok(G("blFR().n")===0,'跨日重置');
-const z=G(`(()=>{goAct(0,0,1);const zi=ACTS[0].zones.findIndex(z=>z.boss==='raven');S.unl=99;S.zone=zi;S.cleared[zi]=1;S.auto=1;blFR().on=1;S.wave=5;zoneClear();return JSON.stringify([S.zone===zi,S.wave,ACTS[0].zones[zi].w])})()`);
+const z=G(`(()=>{goAct(0,0,1);const zi=ACTS[0].zones.findIndex(z=>z.boss==='raven');S.unl=99;S.zone=zi;ACTS[0].zones.forEach((q,i)=>S.cleared[i]=1);S.auto=1;blFR().on=1;S.wave=5;zoneClear();return JSON.stringify([S.zone===zi,S.wave,ACTS[0].zones[zi].w])})()`);
 const zz=JSON.parse(z);ok(zz[0]&&zz[1]===zz[2]-1,'速刷：留在原区域并直进首领波');
+const zp=G(`(()=>{goAct(0,0,1);const zi=ACTS[0].zones.findIndex(z=>z.boss==='raven');S.cleared={};for(let i=0;i<=zi;i++)S.cleared[i]=1;S.unl=zi+1;S.zone=zi;S.auto=1;blFR().on=1;S.wave=5;zoneClear();return S.zone!==zi})()`);ok(zp,'速刷：自动推进且本章未肃清完时不劫持（防撤退后卡死）');
 const z2=JSON.parse(G(`(()=>{blFR().on=0;const zi=S.zone;S.wave=5;zoneClear();return JSON.stringify([S.zone!==zi])})()`));ok(z2[0],'关闭时照常前往下一区');
 // MF 加成只在速刷首领击杀时
 G(`S.diff=0;calc();blFR().on=1;blFR().n=0;var _mf=[];var _o=genItem;genItem=function(){_mf.push(ST.mf);return _o.apply(this,arguments)};`);

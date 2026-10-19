@@ -8,7 +8,7 @@ const BM={XP:1.5,MF:50,LV:2,CAP:40,P:{boss:0.08,uniq:0.03,champ:0.015,n:0.002},
 function bmHour(t){return Math.floor((t||Date.now())/3600e3)}
 function bmCands(d){const o=[];ACTS.forEach((A,a)=>{const cl=a===S.act&&d===S.diff?S.cleared:(S.CL&&S.CL[pkey(a,d)])||{};A.zones.forEach((z,i)=>{if(cl[i])o.push([a,i])})});return o}
 function bmCur(){if(typeof S!=='object'||!S)return null;const h=bmHour(),d=S.diff;if(S.bm&&S.bm.h===h&&S.bm.d===d&&S.bm.a!=null)return S.bm;
- const c=bmCands(d);if(!c.length)return null;let x=(h*2654435761+d*97)>>>0;x^=x>>>13;const [a,i]=c[x%c.length];S.bm={h,d,a,i};return S.bm}
+ const c=bmCands(d);if(!c.length)return null;let x=(h*2654435761+d*97)>>>0;x=(x^(x>>>13))>>>0;const [a,i]=c[x%c.length];S.bm={h,d,a,i};return S.bm}
 function bmHere(){if(typeof EGM!=='undefined'&&EGM)return false;const b=bmCur();return!!(b&&b.a===S.act&&b.d===S.diff&&b.i===S.zone)}
 function bmLeft(){return 60-Math.floor((Date.now()%3600e3)/60e3)}
 {const f=mkMon;mkMon=function(key,lv,flag){let L=lv;const here=bmHere();if(here)L=Math.max(lv,Math.min(99,(S.lvl||1)+BM.LV));const m=f.call(this,key,L,flag);if(here&&m){m.exp*=BM.XP;m.bm=1}return m}}

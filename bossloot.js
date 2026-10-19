@@ -27,7 +27,7 @@ function blZoneBoss(z){return!!(z&&(z.boss||(z.bosses&&z.bosses.length)))}
 {const f=rollTC;rollTC=function(m){const k=blKeyOf(m);if(!k)return f.apply(this,arguments);const pc=BL.cur;BL.cur=k;let mf=null;
  try{const fr=S&&blFR();if(fr&&fr.on&&!EGM&&m.boss){const b=blBonus(fr.n);fr.n++;if(b&&ST){mf=ST.mf;ST.mf=mf+b}}return f.apply(this,arguments)}finally{BL.cur=pc;if(mf!=null)ST.mf=mf}}}
 {const f=zoneClear;zoneClear=function(){const z=zoneData(),zi=S.zone,a=S.act,d=S.diff,was=!!S.cleared[zi];f.apply(this,arguments);
- try{const fr=blFR();if(fr.on&&was&&blZoneBoss(z)&&!EGM&&S.act===a&&S.diff===d){if(S.zone!==zi){S.zone=zi;log(`⚡ 速刷：重进 <b>${z.n}</b>`)}S.wave=Math.max(0,z.w-1);MON=[];spawnT=Math.max(spawnT||0,BL.RE)}}catch(e){console.warn(e)}}}
+ try{const fr=blFR();if(fr.on&&was&&blZoneBoss(z)&&!EGM&&S.act===a&&S.diff===d&&!(S.auto&&ACTS[a].zones.some((q,i)=>!q.side&&!S.cleared[i]))){if(S.zone!==zi){S.zone=zi;log(`⚡ 速刷：重进 <b>${z.n}</b>`)}S.wave=Math.max(0,z.w-1);MON=[];spawnT=Math.max(spawnT||0,BL.RE)}}catch(e){console.warn(e)}}}
 function blToggle(){const fr=blFR();fr.on=fr.on?0:1;save&&save();render()}
 // ---------- 地图页：速刷开关 + 每个首领区域「可掉落」 ----------
 function blDropLine(bs,ml){const L=blBuild(),seen=new Set(),it=[];for(const k of bs)for(const n of L[k]||[])if(!seen.has(n)){seen.add(n);const U=UNIQUES.find(u=>u.n===n);it.push(`<i class="${U&&U.lv<=ml?'ok':''}">${n}</i>`)}
