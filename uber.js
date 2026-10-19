@@ -9,11 +9,11 @@ const UB={n:'暗渊',limit:180,maxDie:3,L:30,dayCap:6,crys:3,
  SOUL:{abyss_s1:{n:'血噬·厄罗',t:'憎恨之魂',mech:'寒魂新星：每 8 秒全屏冰伤，冰抗不足 75 冻结 1 秒'},
   abyss_s2:{n:'焚世·巴戈',t:'毁灭之魂',mech:'残影：生命 50% 时召出分身（伤害 50%），分身存活时本体减伤 50%'},
   abyss_s3:{n:'噩魇·缪渊',t:'恐惧之魂',mech:'魇牢·赤芒：每 12 秒禁锢英雄 2 秒，随后一道高伤赤芒'}},
- // 终极物品（区间追求满值）；allst=四项属性同值；tree=随机职业系别 +3
- ITEMS:{torch:{n:'渊火之炬',ic:'torch',b:'cha_l',w:60,u1:1,m:{tree:2,allst:[5,10],allres:[10,20]}},
+ // 终极物品（区间追求满值）；allst=四项属性同值；tree=随机职业系别 +1
+ ITEMS:{torch:{n:'渊火之炬',ic:'torch',b:'cha_l',w:60,u1:1,m:{tree:1,allst:[2,5],allres:[10,20]}},
   shard:{n:'灭魂碎片',ic:'shard',b:'cha_s',w:25,u1:1,m:{allst:[5,10],allres:[10,20],ub_xp:[5,10]}},
-  crown:{n:'命运之冠',ic:'myth_crown',s:'helm',w:7,myth:1,sock:2,m:{allsk:1,drp:[10,15],allres:[20,30]}},
-  armor:{n:'永夜战甲',ic:'myth_armor',s:'armor',w:5,myth:1,m:{allsk:1,lifepct:[15,25],nb_e_dr:[8,12],nofreeze:1}},
+  crown:{n:'命运之冠',ic:'myth_crown',s:'helm',w:7,myth:1,sock:2,m:{drp:[10,15],allres:[20,30]}},
+  armor:{n:'永夜战甲',ic:'myth_armor',s:'armor',w:5,myth:1,m:{lifepct:[15,25],nb_e_dr:[8,12],nofreeze:1}},
   ring:{n:'群星之戒',ic:'myth_ring',b:'rin',w:3,myth:1,m:{nb_boss:[20,30],allres:[10,15],mf:[30,50]}}},
  CLS:['nec','ama','sor','pal','bar','dru'],lock:0,nova:0,cage:0,cageHit:0};
 if(typeof MODT!=='undefined'&&!MODT.ub_xp)MODT.ub_xp='经验 +{v}%';

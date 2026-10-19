@@ -41,7 +41,7 @@ G(`egUb().o={horn:1,eye:1,brain:1};ubAbyss();nextWave();EGM.t=181;step(0.01)`);o
 const w=JSON.parse(G("(()=>{const c={};for(let i=0;i<20000;i++){const k=ubPickItem();c[k]=(c[k]||0)+1}return JSON.stringify(c)})()"));const my=(w.crown+w.armor+w.ring)/20000;ok(Math.abs(my-0.15)<0.015,'神话合计 15% → '+my.toFixed(3));
 ok(G("['crown','armor','ring'].every(k=>ubMake(k,{anc:0}).myth===1)")&&!G("ubMake('torch').myth"),'神话 it.myth=1');
 ok(G("tgTier(ubMake('ring'))")==='mythic','神话 = 紫色天光 mythic');
-ok(G("(()=>{const t=ubMake('torch',{max:1,cls:'nec',tree:1});return t.m.t1sk===2&&t.m.str===10&&t.m.allres===20&&ancQual(t)===1&&/完美/.test(ancTag(t))})()"),'满值火炬 = 完美');
+ok(G("(()=>{const t=ubMake('torch',{max:1,cls:'nec',tree:1});return t.m.t1sk===1&&t.m.str===5&&t.m.allres===20&&ancQual(t)===1&&/完美/.test(ancTag(t))})()"),'满值火炬 = 完美');
 const t2=G("(()=>{S.bag=[ubMake('torch',{max:1,cls:'nec',tree:0}),ubMake('torch',{max:1,cls:'nec',tree:0})];calc();const a=ST.t0sk;S.bag=[S.bag[0]];calc();return a===ST.t0sk})()");ok(t2,'火炬每角色限 1');
 ok(G("(()=>{S.bag=[ubMake('shard',{max:1})];calc();return ubXp()})()")===10,'碎片经验 +10%');
 ok(G("ubMake('crown',{anc:1}).anc")===1,'命运之冠可上古');

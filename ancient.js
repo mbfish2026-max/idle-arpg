@@ -21,11 +21,13 @@ function ancApply(it,lv){if(!it||it.k||(it.q!==5&&it.q!==6)||it.anc)return it;co
  for(const k in r){const[lo,hi]=r[k];it.m[k]=lv===2?hi:R(lo,hi)}try{ancExtra(it,lv)}catch(e){console.warn(e)}return it}
 // 额外词缀：上古 +1、至臻 +2；从该部位合法词缀池抽（排除技能等级/凹槽/与已有属性重复），区间同样上移，至臻取满；记录在 it.ax={k:[lo,hi]}
 const ANC_XSKIP=/^(allsk|sk_|skd_|tc_|t\d?sk|nb_|sockp)/;
+// 额外词缀平衡：数值 ×XK；强输出词条不进额外池（神话狂暴 8 轮最大倍率 ≤1.8，见 qa/s1020）
+const ANC_X={K:0.5,BAN:/^(undead|ar|edmg|maxdmg|mindmg|ias|cb|ds|ow|demon)$/};
 function ancShift(lo,hi){const nl=Math.max(Math.round(lo*1.2),Math.round(hi*0.6)),nh=Math.max(nl,Math.round(hi*1.2));return[nl,nh]}
 function ancExtra(it,lv){const b=BASEM[it.b];if(!b||typeof PREFIX==='undefined')return;const n=lv===2?2:1;it.ax=it.ax||{};const used=new Set();
- const ok=a=>a&&a.m&&Object.keys(a.m).every(k=>!ANC_XSKIP.test(k)&&!(k in it.m)&&Array.isArray(a.m[k])&&a.m[k][0]>=0);
+ const ok=a=>a&&a.m&&Object.keys(a.m).every(k=>!ANC_XSKIP.test(k)&&!ANC_X.BAN.test(k)&&!(k in it.m)&&Array.isArray(a.m[k])&&a.m[k][0]>=0);
  for(let i=0,got=0;i<40&&got<n;i++){const a=rollAff(rnd()<0.5?PREFIX:SUFFIX,b,99,used);if(!ok(a))continue;
-  for(const k in a.m){const[lo,hi]=ancShift(a.m[k][0],a.m[k][1]);it.m[k]=lv===2?hi:R(lo,hi);it.ax[k]=[lo,hi]}got++}}
+  for(const k in a.m){let[lo,hi]=ancShift(a.m[k][0],a.m[k][1]);lo=Math.max(1,Math.round(lo*ANC_X.K));hi=Math.max(lo,Math.round(hi*ANC_X.K));it.m[k]=lv===2?hi:R(lo,hi);it.ax[k]=[lo,hi]}got++}}
 
 function ancChance(){if(typeof S!=='object'||!S)return[0,0];const mj=typeof EGM!=='undefined'&&EGM&&EGM.k==='mj';
  if(mj){const L=EGM.L||0;return[Math.min(ANC.P_MAX,ANC.P_MJ0+ANC.P_MJL*L),L>=ANC.TOP_L?ANC.P_TOP:0]}
