@@ -1,0 +1,9 @@
+.ubi{display:inline-block;width:22px;height:22px;background-size:contain;background-repeat:no-repeat;background-position:center;vertical-align:middle;margin-right:2px}.ubi.off{filter:grayscale(1) brightness(.5)}
+.ubkeys{display:flex;gap:10px;align-items:center;white-space:nowrap;margin:4px 0;font-size:13px}
+.ubcores{display:flex;gap:8px;justify-content:center;margin:8px 0}.ubc{flex:1;text-align:center;border:1px solid #3a2a20;border-radius:4px;padding:4px 0;opacity:.6}.ubc.on{opacity:1;border-color:#a07ad0}
+.ubc .ubi{width:40px;height:40px;display:block;margin:0 auto 2px}.ubc small{font-size:11px}
+.ubbtn{flex-wrap:nowrap;white-space:nowrap}
+.ubsr{display:flex;gap:8px;align-items:center;margin:4px 0}.ubsr img{width:44px;height:44px;border-radius:4px;flex:none;object-fit:cover}.ubsr .dim{font-size:11px}
+.ubtab .row span{white-space:nowrap}.ubmy{color:#b05cff}.ubul{color:#e8b84a}.ubex{color:#c9f;border:1px solid #74c;border-radius:3px;padding:0 4px;font-size:11px}
+.ubtag{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px}
+.cell.myth{box-shadow:inset 0 0 0 2px #b05cff,0 0 5px #b05cff88}
