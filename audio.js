@@ -221,7 +221,46 @@ const SK={
  mmet:(D,t)=>{P.whoosh(D,t,1,3000,200,0.5);P.boom(D,t+0.45,1.3);P.fire(D,t+0.5,1,0.7)},    // 陨石术
  mnova:(D,t)=>{P.ice(D,t,1.3);noise(D,{t,dur:0.6,vol:0.1,f:3000,f2:8000,q:1,a:0.05,wet:0.6})}, // 霜冻新星
  mcl:(D,t)=>{P.zap(D,t,1.2,6);tone(D,{f:60,t,dur:0.3,type:'sawtooth',vol:0.06,a:0.001,d:0.2,sus:0.3,r:0.1,cut:400})}, // 连锁闪电
- mfa:(D,t)=>{P.ice(D,t,1);P.rise(D,t,0.6,mid(72),mid(84),'sine',0.5)}                      // 寒冰护甲
+ mfa:(D,t)=>{P.ice(D,t,1);P.rise(D,t,0.6,mid(72),mid(84),'sine',0.5)},                      // 寒冰护甲
+ // ---- 法师新技能（sfx_<id>，classes2.js 按技能 sfx 字段查表） ----
+ sfx_mice:(D,t)=>{P.whoosh(D,t,0.6,2500,5000,0.15);P.ice(D,t+0.1,0.9);tone(D,{f:mid(96),t:t+0.12,dur:0.3,type:'sine',vol:0.06,a:0.001,d:0.28,sus:0.05,r:0.2,wet:0.6})}, // 冰晶箭：冰晶破空+叮
+ sfx_mspike:(D,t)=>{P.whoosh(D,t,0.6,1800,600,0.15);P.crack(D,t+0.12,1.1,4200);P.ice(D,t+0.14,0.8)},     // 冰锥：冰块碎裂咔嚓
+ sfx_mshiv:(D,t)=>{for(let i=0;i<4;i++)P.crack(D,t+i*0.05,0.5,5000-i*400);noise(D,{t,dur:0.6,vol:0.06,f:3000,f2:1200,q:2,a:0.1})}, // 碎霜甲：碎冰覆体+冷风
+ sfx_mglac:(D,t)=>{P.thud(D,t,0.8,90);for(let i=0;i<4;i++)P.crack(D,t+0.05+i*0.06,0.7,2500+i*500);P.ice(D,t+0.25,1)}, // 冰川尖刺：冰棱破土
+ sfx_mchill:(D,t)=>{P.thud(D,t,0.9,70);P.crack(D,t+0.05,0.8,1200);P.ice(D,t+0.1,0.8);tone(D,{f:mid(48),t,dur:0.8,type:'triangle',vol:0.07,a:0.1,d:0.4,sus:0.5,r:0.5,wet:0.8})}, // 凛冬甲：厚冰合拢低沉冰裂
+ sfx_mbliz:(D,t)=>{noise(D,{t,dur:1.4,vol:0.14,f:600,f2:2400,q:0.8,a:0.4,wet:0.6});for(let i=0;i<5;i++)P.crack(D,t+0.3+i*0.18,0.4,4000+Math.random()*2000)}, // 暴雪：寒风呼啸+冰雹
+ sfx_morb:(D,t)=>{P.rise(D,t,0.8,mid(84),mid(96),'sine',0.35);P.boom(D,t+0.35,0.7);P.ice(D,t+0.38,1.4)}, // 凛冬宝珠：宝珠聚能后迸裂
+ sfx_minf:(D,t)=>{P.fire(D,t,1.2,0.45);noise(D,{t,dur:0.45,vol:0.08,type:'lowpass',f:500,a:0.05})},     // 烈焰喷射：低沉喷火
+ sfx_mblaze:(D,t)=>{P.thud(D,t,0.5,110);P.fire(D,t,1,0.6);for(let i=0;i<4;i++)noise(D,{t:t+0.2+i*0.09,dur:0.03,vol:0.06,f:3000,q:4})}, // 焰行：轰燃+余火噼啪
+ sfx_mfball:(D,t)=>{P.whoosh(D,t,0.8,300,1200,0.22);P.boom(D,t+0.2,0.7);P.fire(D,t+0.22,0.8,0.4)},       // 爆炎球：呼啸后中等爆炸
+ sfx_menc:(D,t)=>{P.fire(D,t,0.6,0.3);P.rise(D,t,0.8,mid(55),mid(67),'triangle',0.5)},                  // 炎附：点燃「呼」+上扬
+ sfx_mfwall:(D,t)=>{P.fire(D,t,1.4,0.9);P.thud(D,t,0.6,80);for(let i=0;i<5;i++)noise(D,{t:t+0.3+i*0.1,dur:0.03,vol:0.06,f:2500,q:4})}, // 火墙术
+ sfx_mhyd:(D,t)=>{P.hiss(D,t,0.9,0.5);P.roar(D,t+0.05,0.5,75,0.5);P.fire(D,t+0.3,0.8,0.35)},            // 九首炎蛇：蛇嘶+低吼+喷火
+ sfx_mcb:(D,t)=>{for(let i=0;i<3;i++){P.zap(D,t+i*0.08,0.35,2);tone(D,{f:900+i*200,glide:1600,t:t+i*0.08,dur:0.06,type:'square',vol:0.03,a:0.001,d:0.05,sus:0.2,r:0.02,cut:4000})}}, // 电荷弹：细小电火花
+ sfx_mtk:(D,t)=>{tone(D,{f:220,glide:90,t,dur:0.35,type:'sine',vol:0.12,a:0.05,d:0.2,sus:0.4,r:0.1});P.thud(D,t+0.25,0.8,120)}, // 念力冲击：嗡—砰
+ sfx_mstatic:(D,t)=>{tone(D,{f:100,t,dur:0.6,type:'sawtooth',vol:0.06,a:0.1,d:0.3,sus:0.6,r:0.2,cut:600,q:6});P.zap(D,t+0.1,0.6,4);P.thud(D,t+0.05,0.5,70)}, // 静电场
+ sfx_mnov:(D,t)=>{P.zap(D,t,0.9,5);P.boom(D,t+0.02,0.6);noise(D,{t,dur:0.5,vol:0.08,type:'highpass',f:3000,f2:8000,a:0.01,wet:0.6})}, // 雷霆新星：雷鸣环
+ sfx_mlit:(D,t)=>{tone(D,{f:3000,glide:900,t,dur:0.35,type:'sawtooth',vol:0.05,a:0.002,d:0.3,sus:0.4,r:0.05,cut:6000});noise(D,{t,dur:0.35,vol:0.1,type:'highpass',f:5000,a:0.002})}, // 穿云电矛：滋——
+ sfx_mtel:(D,t)=>{tone(D,{f:1500,glide:200,t,dur:0.15,type:'sine',vol:0.07,a:0.002,d:0.12,sus:0.3,r:0.03});tone(D,{f:300,glide:1400,t:t+0.18,dur:0.12,type:'sine',vol:0.07,a:0.002,d:0.1,sus:0.3,r:0.05,wet:0.6})}, // 相位闪移：嗖—啵
+ sfx_mesh:(D,t)=>{P.rise(D,t,0.8,110,440,'sawtooth',0.6);tone(D,{f:mid(69),t:t+0.3,dur:0.6,type:'triangle',vol:0.05,a:0.05,d:0.3,sus:0.6,r:0.4,det:8,wet:0.8});P.zap(D,t+0.1,0.3,2)}, // 奥能护盾：电流嗡鸣升起
+ sfx_mtstorm:(D,t)=>{noise(D,{t,dur:1,vol:0.12,type:'lowpass',f:300,f2:120,a:0.3,wet:0.7});P.zap(D,t+0.5,0.9,3);P.thud(D,t+0.5,0.6,60)}, // 雷暴：闷雷+落雷
+ sfx_xs_tide:(D,t)=>{noise(D,{t,dur:1.2,vol:0.18,f:200,f2:1800,q:0.7,a:0.3,wet:0.7});P.boom(D,t+0.3,0.8);P.ice(D,t+0.4,1.4)}, // 寂灭冰潮
+ // ---- 野蛮人新技能 ----
+ sfx_bleap:(D,t)=>{P.whoosh(D,t,0.8,300,1500,0.3);P.thud(D,t+0.32,1.4,80);noise(D,{t:t+0.32,dur:0.3,vol:0.08,type:'lowpass',f:600})}, // 跃击：起跳风+落地重踏
+ sfx_bdsw:(D,t)=>{P.slash(D,t,0.9,3200);P.clang(D,t+0.02,0.4,900);P.slash(D,t+0.13,0.9,2600);P.clang(D,t+0.15,0.4,750)}, // 双重挥击
+ sfx_b2thr:(D,t)=>{for(let i=0;i<5;i++)noise(D,{t:t+i*0.06,dur:0.05,vol:0.09,f:1200+i*150,q:3});P.thud(D,t+0.32,0.6,140)}, // 双重投掷：旋转嗖嗖
+ sfx_bstun:(D,t)=>{P.thud(D,t,1.3,100);P.clang(D,t,0.5,600);tone(D,{f:mid(76),t:t+0.08,dur:0.7,type:'sine',vol:0.06,a:0.01,d:0.6,sus:0.3,r:0.3,det:30,wet:0.6})}, // 震晕：重击+嗡余响
+ sfx_bla:(D,t)=>{P.whoosh(D,t,0.8,400,2000,0.25);P.slash(D,t+0.26,1.1,2400);P.thud(D,t+0.28,1.3,85)},   // 跃斩
+ sfx_bconc:(D,t)=>{P.rise(D,t,0.7,70,140,'sawtooth',0.3);P.slash(D,t+0.3,1,3600);P.clang(D,t+0.32,0.6,1100)}, // 专注：蓄力+精准一击
+ sfx_bfrz:(D,t)=>{for(let i=0;i<3;i++){P.slash(D,t+i*0.09,0.8,2800+i*300);P.clang(D,t+i*0.09,0.3,800)}},    // 狂乱：急促连斩
+ sfx_bbers:(D,t)=>{P.roar(D,t,0.7,140,0.35);tone(D,{f:mid(52),t:t+0.25,dur:0.5,type:'sawtooth',vol:0.06,a:0.01,d:0.3,sus:0.5,r:0.3,cut:1600,det:15,wet:0.6});P.thud(D,t+0.3,1.3,90)}, // 狂暴：嘶吼+魔法嗡鸣重击
+ sfx_btaunt:(D,t)=>{P.roar(D,t,0.8,170,0.3);P.roar(D,t+0.35,0.6,190,0.2)},                             // 挑衅：短促嘲吼
+ sfx_bbcry:(D,t)=>{P.roar(D,t,1.2,105,0.8);noise(D,{t:t+0.1,dur:0.7,vol:0.06,f:300,f2:1200,q:2,a:0.1})}, // 战斗吶喊
+ sfx_bbo:(D,t)=>{for(const iv of[0,7,12])tone(D,{f:mid(46+iv),t,dur:1.1,type:'sawtooth',vol:0.06,a:0.12,d:0.3,sus:0.8,r:0.5,cut:1500,det:iv?5:-5,wet:0.6})}, // 战斗号令：号角长鸣
+ sfx_bbcmd:(D,t)=>{for(let i=0;i<3;i++)P.thud(D,t+i*0.16,1,95);for(const iv of[0,4,7])tone(D,{f:mid(50+iv),t:t+0.5,dur:0.8,type:'sawtooth',vol:0.05,a:0.06,d:0.3,sus:0.7,r:0.4,cut:1700,wet:0.6})}, // 战斗指挥：战鼓三连+号角
+ sfx_bgrim:(D,t)=>{P.thud(D,t,1.2,70);P.crack(D,t,0.5,900);P.dark(D,t+0.15,0.8,40,[0,1])},              // 恐惧图腾：图腾落地+低语
+ sfx_bwcry:(D,t)=>{P.roar(D,t,1.4,95,0.7);P.boom(D,t+0.25,1)},                                           // 战争怒吼：怒吼+冲击波
+ sfx_xb_quake:(D,t)=>{P.roar(D,t,1.2,80,0.6);P.boom(D,t+0.2,1.3);noise(D,{t:t+0.3,dur:0.8,vol:0.1,type:'lowpass',f:400,f2:60})}, // 裂地震吼
 };
 // 缺省回退：按技能元素/类型
 const KIND_FB={summon:'rs',golem:'cg',attack:'bs',buff:'ba',cbuff:'bshout',corpse:'ce',wall:'bw',cc:'bp',curse:'ad',melee:'bbash',warcry:'bhowl',spell:'mfb',passive:null};
@@ -290,7 +329,7 @@ function playLootTier(tier){const n=typeof tier==='string'?LOOT_NAMES[tier.toLow
  const now=performance.now();if(now-lootLast<LOOT_DUR[lootLastTier]*1000*0.6&&n<=lootLastTier&&!(n===lootLastTier&&now-lootLast>250))return false;
  if(n===lootLastTier&&now-lootLast<250)return false;
  lootLast=now;lootLastTier=n;try{LOOT[n](sfxBus,ctx.currentTime+0.01)}catch(e){}return true}
-window.AUDIO_SK={table:SK,recipe:skillRecipe,play:playSkill};
+window.AUDIO_SK={table:SK,recipe:skillRecipe,play:playSkill,bus:()=>sfxBus,now:()=>ctx?ctx.currentTime:0};
 // rollTC 返回本次击杀掉落的装备列表（gold 已直接加到 S.gold）
 let goldPrev=null;
 wrap('rollTC',function(drops){let best=null,rank=-1;const rk=it=>it.rw!=null?9:it.q===5?8:it.q===6?7:it.k==='rune'?6:it.q===4||it.q===7?5:it.q===3?3:it.k?2:1;
