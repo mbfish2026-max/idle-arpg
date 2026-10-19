@@ -1,5 +1,5 @@
 // audio.js — 音频系统（Web Audio 程序化合成，零外部资源）
-// 背景音乐：五章各一首 + 城镇 + 首领战，按小节前瞻调度，无缝循环、换曲交叉淡入淡出。
+// 背景音乐：五章各一首 + 城镇 + 首领战 + 终极首领「暗渊」，按小节前瞻调度，无缝循环、换曲交叉淡入淡出。
 // 音效：普攻 / 技能 / 掉落(按品质，暗金/套装/符文之语特殊) / 升级 / UI 点击。
 // 接入方式：沿用项目惯例包装全局函数(fx / rollTC / gainXp / goZone / goAct / townPortal / renderHero)，不改 game.js。
 // 设置保存在存档 S.audio 中，随 save() 写入云端存档（cloud.js）。
@@ -46,8 +46,23 @@ const TRACKS={
  a2:{root:43,sc:AEOL,bpm:78,prog:[0,6,5,6],arp:[0,2,4,6,4,2,0,2],perc:0.7,bell:0.2,choir:0.4,lead:[0,null,2,null,4,null,3,2,0,null,null,6,0,null,null,null],ldiv:2,lt:'square',pad:0.05},
  a3:{root:40,sc:LOCR,bpm:60,prog:[0,1,4,0],arp:[0,4,7,null,4,1,null,4],perc:0.3,bell:0.6,choir:0.8,lead:[7,null,null,8,7,null,4,null,null,null,1,null,0,null,null,null],ldiv:2,lt:'sine',pad:0.08},
  a4:{root:42,sc:HARM,bpm:70,prog:[0,3,6,4],arp:[0,2,4,7,9,7,4,2],perc:0.5,bell:0.7,choir:0.6,lead:[4,null,6,7,null,6,4,null,3,null,2,null,1,null,null,null],ldiv:2,lt:'triangle',pad:0.07},
- boss:{root:38,sc:HARM,bpm:132,prog:[0,0,1,6],arp:[0,7,0,6,0,4,0,3],perc:1,bell:0.3,choir:0.7,lead:[7,null,6,7,8,null,7,null,4,null,6,null,7,null,null,null],ldiv:4,lt:'sawtooth',pad:0.06}
+ boss:{root:38,sc:HARM,bpm:132,prog:[0,0,1,6],arp:[0,7,0,6,0,4,0,3],perc:1,bell:0.3,choir:0.7,lead:[7,null,6,7,8,null,7,null,4,null,6,null,7,null,null,null],ldiv:4,lt:'sawtooth',pad:0.06},
+ // 终极首领「暗渊」：洛克里亚调式、半速重拍、铜管重音、双踩、三全音丧钟，16 小节一循环（后 8 小节加强）
+ uber:{root:37,sc:LOCR,bpm:96,prog:[0,0,1,0,4,4,1,6],arp:[0,null,1,0,null,4,1,null],perc:1,bell:0,choir:1,lead:[0,null,null,1,0,null,null,null,4,null,3,1,0,null,null,null],ldiv:2,lt:'sawtooth',pad:0.07,ex:uberLayer}
 };
+function uberLayer(T,t,b,dest,beat){const ECO=!!window.PWR_ECO,ch=T.prog[b%T.prog.length],r=deg(T,ch,-2),hi=(b%16)>=8;
+ // 铜管重音：第 1 拍与第 2 拍后半，五度叠置的低音锯齿
+ for(const at of[0,beat*1.5,hi?beat*3:-1]){if(at<0)continue;for(const iv of[0,7,12])tone(dest,{f:mtof(r+12+iv),t:t+at,dur:beat*0.7,type:'sawtooth',vol:0.05,a:0.02,d:0.2,sus:0.5,r:0.25,cut:hi?1400:900,q:3,det:iv?4:-4,wet:0.4})}
+ // 次低音 sub
+ tone(dest,{f:mtof(r),t,dur:beat*4,type:'sine',vol:0.14,a:0.05,d:0.5,sus:0.8,r:0.4});
+ // 双踩：后 8 小节 16 分音符
+ if(hi)for(let i=0;i<16;i++)if(i%4!==2)tone(dest,{f:75,glide:40,t:t+i*beat/4,dur:0.12,type:'sine',vol:0.12,a:0.002,d:0.1,sus:0.01,r:0.04});
+ // 三全音丧钟：每 2 小节
+ if(!ECO&&b%2===0)for(const m of[1,2.4,4.1])tone(dest,{f:mtof(T.root+6+12)*m,t:t+beat*2,dur:3,type:'sine',vol:0.05/m,a:0.002,d:2.8,sus:0.01,r:0.6,wet:0.9});
+ // 不协和人声簇（小二度）
+ if(!ECO&&b%4===0)for(const iv of[0,1,13])tone(dest,{f:mtof(T.root+12+iv),t,dur:beat*8,type:'triangle',vol:0.025,a:beat*2,d:0.5,sus:0.9,r:2,det:iv*3,wet:1});
+ // 过门：第 16 小节定音鼓滚奏
+ if(b%16===15)for(let i=0;i<12;i++)tone(dest,{f:mtof(r+12),glide:mtof(r+10),t:t+beat*2+i*beat/6,dur:0.15,type:'sine',vol:0.05+i*0.012,a:0.002,d:0.12,sus:0.05,r:0.05})}
 function deg(T,i,oct=0){const L=T.sc.length,o=Math.floor(i/L),k=((i%L)+L)%L;return T.root+T.sc[k]+12*(o+oct)}
 
 let cur=null,want=null,nextBar=0,bar=0,trackGain=null,timer=null;
@@ -67,7 +82,8 @@ function playBar(T,t,b,dest){const beat=60/T.bpm,bl=beat*4,ch=T.prog[b%T.prog.le
  // 打击：战鼓 + 碎拍
  if(T.perc){for(let i=0;i<4;i++){const tt=t+i*beat;if(i===0||i===2||(T.perc>0.8))tone(dest,{f:110,glide:38,t:tt,dur:0.35,type:'sine',vol:0.25*T.perc,a:0.002,d:0.3,sus:0.01,r:0.1});
   if(T.perc>0.5&&(i===1||i===3))noise(dest,{t:tt,dur:0.18,vol:0.05*T.perc,f:1800,q:0.8,wet:0.3});
-  if(T.perc>0.9)noise(dest,{t:tt+beat/2,dur:0.05,vol:0.03,type:'highpass',f:6000})}}}
+  if(T.perc>0.9)noise(dest,{t:tt+beat/2,dur:0.05,vol:0.03,type:'highpass',f:6000})}}
+ if(T.ex)try{T.ex(T,t,b,dest,beat)}catch(e){}}
 function sched(){if(!ctx||!cur||ctx.state!=='running')return;const T=TRACKS[cur];while(nextBar<ctx.currentTime+1.2){playBar(T,nextBar,bar,trackGain);nextBar+=240/T.bpm;bar++}}
 function switchTo(k){if(!ctx||!TRACKS[k]||k===cur)return;const t=ctx.currentTime;
  if(trackGain){const old=trackGain;old.gain.cancelScheduledValues(t);old.gain.setValueAtTime(old.gain.value,t);old.gain.linearRampToValueAtTime(0.0001,t+2);setTimeout(()=>{try{old.disconnect()}catch(e){}},6000)}
@@ -76,7 +92,11 @@ function switchTo(k){if(!ctx||!TRACKS[k]||k===cur)return;const t=ctx.currentTime
 
 // ---------- 场景判定：章节 / 城镇 / 首领战 ----------
 let townUntil=0;
-function scene(){try{if(typeof MON!=='undefined'&&MON.some(m=>m.boss&&m.hp>0))return'boss';
+let uberForce=0;
+// 终极首领标识：目前代码中尚无（系统开发未提交）。预留：怪物 m.uber / m.ult / BOSSES[key].uber 或全局 UBER_ACTIVE 任一为真即切「暗渊」曲
+const isUber=m=>m&&m.hp>0&&(m.uber||m.ult||(typeof BOSSES!=='undefined'&&BOSSES[m.key]&&BOSSES[m.key].uber));
+function scene(){try{if(uberForce||window.UBER_ACTIVE||(typeof MON!=='undefined'&&MON.some(isUber)))return'uber';
+ if(typeof MON!=='undefined'&&MON.some(m=>m.boss&&m.hp>0))return'boss';
  if(Date.now()<townUntil||(typeof TAB!=='undefined'&&TAB==='shop'))return'town';
  const a=typeof S==='object'&&S?S.act|0:0;return'a'+Math.max(0,Math.min(4,a))}catch(e){return'a0'}}
 function tick(){if(!ctx||hidden)return;const s=scene();if(s!==cur)switchTo(s);sched()}
@@ -238,6 +258,38 @@ if(typeof clsMelee==='function'){wrap('clsMelee',function(r,args){if(!r||!ST||!S
 const blockSfx=()=>voice('block','b',0.3,(t,D)=>{P.clang(D,t,1,700);P.thud(D,t,0.5,200)});
 wrap('floatHero',null,function(txt){if(txt==='格挡')blockSfx()});
 wrap('floatNum',null,function(id,v){if(v==='格挡')blockSfx()});
+// ================= 出货分级音效「天光」：5 档逐级更震撼 =================
+// 1 稀有 · 2 暗金/套装 · 3 高符文 · 4 上古/至臻 · 5 神话。不受战斗页限制，受音效音量/静音/后台暂停控制。
+const LOOT_NAMES={rare:1,unique:2,set:2,hirune:3,rune:3,ancient:4,primal:4,perfect:4,mythic:5,myth:5};
+const LOOT=[null,
+ (D,t)=>{// 稀有：金色双音叮
+  [0,7].forEach((s,i)=>tone(D,{f:mtof(81+s),t:t+i*0.07,dur:0.5,type:'triangle',vol:0.09,a:0.002,d:0.45,sus:0.08,r:0.4,wet:0.5}))},
+ (D,t)=>{// 暗金/套装：低沉坠地 + 上行钟组
+  P.thud(D,t,0.9,80);[0,4,7,12,16].forEach((s,i)=>{for(const m of[1,2.76])tone(D,{f:mtof(69+s)*m,t:t+0.06+i*0.07,dur:1,type:'sine',vol:0.08/m,a:0.002,d:0.9,sus:0.05,r:0.7,wet:0.8})})},
+ (D,t)=>{// 高符文：重石坠地「咚」+ 石面共振 + 符文低鸣，余韵 2 秒
+  tone(D,{f:62,glide:34,t,dur:0.9,type:'sine',vol:0.42,a:0.002,d:0.8,sus:0.05,r:0.3});noise(D,{t,dur:0.5,vol:0.25,type:'lowpass',f:1200,f2:90,a:0.002});
+  for(const m of[1,1.83,2.71,3.6])tone(D,{f:196*m,t:t+0.02,dur:1.6,type:'sine',vol:0.06/m,a:0.002,d:1.5,sus:0.03,r:0.6,wet:0.7});
+  for(const d of[-6,6])tone(D,{f:mtof(43),t:t+0.15,dur:1.8,type:'sawtooth',vol:0.05,a:0.3,d:0.6,sus:0.6,r:0.8,cut:500,det:d,wet:0.8});
+  [0,7,12].forEach((s,i)=>tone(D,{f:mtof(67+s),t:t+0.3+i*0.12,dur:1.2,type:'triangle',vol:0.06,a:0.01,d:1,sus:0.1,r:0.8,wet:0.9}))},
+ (D,t)=>{// 上古/至臻：双重坠地 + 金属钟群 + 高空流光 + 和声膨胀
+  P.boom(D,t,1.1);tone(D,{f:50,glide:30,t:t+0.18,dur:0.8,type:'sine',vol:0.35,a:0.002,d:0.7,sus:0.05,r:0.3});
+  [0,3,7,10,12,15,19,24].forEach((s,i)=>{for(const m of[1,2.4,3.9])tone(D,{f:mtof(62+s)*m,t:t+0.25+i*0.06,dur:1.6,type:'sine',vol:0.07/m,a:0.002,d:1.5,sus:0.04,r:0.9,wet:0.9})});
+  for(const iv of[0,7,12,15])tone(D,{f:mtof(50+iv),t:t+0.3,dur:2,type:'sawtooth',vol:0.035,a:0.6,d:0.5,sus:0.7,r:1.2,cut:1400,det:iv%2?7:-7,wet:1});
+  noise(D,{t:t+0.3,dur:2,vol:0.06,type:'highpass',f:6000,f2:9000,a:0.4,wet:0.9})},
+ (D,t)=>{// 神话：大地震颤 → 三连坠地 → 管风琴般的暗金和声 + 合唱 + 丧钟，约 4 秒
+  noise(D,{t,dur:0.9,vol:0.2,type:'lowpass',f:200,f2:60,a:0.4});tone(D,{f:40,t,dur:1,type:'sine',vol:0.25,a:0.5,d:0.3,sus:0.8,r:0.3});
+  [0,0.22,0.44].forEach((d,i)=>{tone(D,{f:70-i*10,glide:28,t:t+0.9+d,dur:0.9,type:'sine',vol:0.45,a:0.002,d:0.8,sus:0.05,r:0.3});noise(D,{t:t+0.9+d,dur:0.6,vol:0.2,type:'lowpass',f:1500,f2:80})});
+  const T0=t+1.5;for(const iv of[0,7,12,15,19,24])for(const dt of[-5,5])tone(D,{f:mtof(38+iv),t:T0,dur:2.6,type:'sawtooth',vol:0.03,a:0.25,d:0.6,sus:0.75,r:1.6,cut:2200,det:dt,wet:1});
+  for(const iv of[12,19,24,27])tone(D,{f:mtof(50+iv),t:T0+0.2,dur:2.4,type:'triangle',vol:0.035,a:0.6,d:0.4,sus:0.9,r:1.6,det:iv%2?4:-4,wet:1});
+  for(let k=0;k<3;k++)for(const m of[1,2.76,5.4])tone(D,{f:mtof(50)*m,t:T0+k*0.9,dur:2.5,type:'sine',vol:0.08/m,a:0.002,d:2.4,sus:0.01,r:0.6,wet:0.9});
+  noise(D,{t:T0,dur:2.8,vol:0.07,type:'highpass',f:5000,f2:10000,a:0.5,wet:1})}];
+const LOOT_DUR=[0,0.6,1.3,2.2,2.8,4.4];let lootLast=0,lootLastTier=0;
+function playLootTier(tier){const n=typeof tier==='string'?LOOT_NAMES[tier.toLowerCase()]:tier|0;if(!(n>=1&&n<=5))return false;
+ if(!ctx||!unlocked||hidden||ctx.state!=='running'||cfg().sm)return false;
+ // 限流：同时多件出货只播最高档；较低档在高档余韵内被吞掉；同档 250ms 内只播一次
+ const now=performance.now();if(now-lootLast<LOOT_DUR[lootLastTier]*1000*0.6&&n<=lootLastTier&&!(n===lootLastTier&&now-lootLast>250))return false;
+ if(n===lootLastTier&&now-lootLast<250)return false;
+ lootLast=now;lootLastTier=n;try{LOOT[n](sfxBus,ctx.currentTime+0.01)}catch(e){}return true}
 window.AUDIO_SK={table:SK,recipe:skillRecipe,play:playSkill};
 // rollTC 返回本次击杀掉落的装备列表（gold 已直接加到 S.gold）
 let goldPrev=null;
@@ -266,6 +318,9 @@ window.AUDIO={
   clearTimeout(saveT);saveT=setTimeout(()=>{try{save()}catch(e){}},400);if(k==='sv')sfxT('click',null,80)},
  toggle(k){const c=cfg();c[k]=c[k]?0:1;applyVol();try{save()}catch(e){}},
  pause(b){userPause=b?1:0;hidden=document.hidden||!!userPause;if(!ctx)return;if(hidden)ctx.suspend();else if(unlocked)ctx.resume().then(()=>{nextBar=Math.max(nextBar,ctx.currentTime+0.05);tick()})},
- play:(n,a)=>sfx(n,a), music:k=>switchTo(k), tracks:Object.keys(TRACKS), get scene(){return cur}
+ play:(n,a)=>sfx(n,a), music:k=>switchTo(k),
+ playLootTier, lootTiers:['rare','unique','hirune','ancient','mythic'],
+ uberMusic(on){uberForce=on?1:0;if(ctx&&unlocked)tick()},/* 播放/停止终极首领曲（停止后按场景自动回落） */
+ tracks:Object.keys(TRACKS), get scene(){return cur}
 };
 })();
