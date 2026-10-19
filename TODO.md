@@ -211,3 +211,4 @@
 - [x] 17 个新威能独立图标 + 16 个轻型底材专属图标（美术）：GenerateImage 5 张黑底网格图集 → tools/art/gen_pw_lt_icons.py（同 gen_nec_icons.py：格内检测物体、成对保留、软 alpha、4px 边距、居中 128×128 webp q80；冠/袍图集行高不均按列内空白行切分）→ assets/icon2/pw/<lp id>.webp、assets/icon2/light/<base id>.webp；art_icons3.js：ICON2[lt*] 16 条 + 带 it.lp 的物品图标优先显示威能图标（包装 icon2Url + 最外层 itemIcon）；熔炼匣槽位/图鉴行无图标位，未加 DOM；?v=20261020r
 - [ ] 旧威能品阶目前只显示星级，数值不随品阶放大（仅 17 个新威能吃品阶倍率）
 - [x] 选流派后可手动加技能（build_manual.js）：流派面板单行「技能点：自动 / 手动」开关（S.autoSk）；手动模式选/切流派只返还技能点不自动重加；自动模式手动加的点不被覆盖；流派被动/套装/共鸣照常；?v=20261020s
+- [x] 仓库/背包「职业」筛选（clsfilter.js/css，包装 stMatch/renderBag）：个人/共享仓库并入品质/类型筛选行、背包格子上方一行；全部职业 + CLASSES 7 职业（适合=专属+通用）+「仅专属」分组；判定=专属底材/系别与单技能词缀/流派键/职业与流派套装/威能与核心威能；默认全部；tests/clsfilter_test.js；?v=20261020t、sw 缓存 t
