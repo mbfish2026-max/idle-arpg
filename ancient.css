@@ -1,0 +1,6 @@
+.cell.anc1{box-shadow:inset 0 0 0 2px #e8b84a,0 0 4px #e8b84a88}
+.cell.anc2{box-shadow:inset 0 0 0 2px #ff4a3a,0 0 5px #ff4a3a99}
+.anctag{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px}
+.ancq.anc1{color:#e8b84a}.ancq.anc2{color:#ff4a3a}
+.ancp{color:#bbb}
+.ancpf{color:#111;background:linear-gradient(90deg,#e8b84a,#ffe08a);padding:0 6px;border-radius:3px}

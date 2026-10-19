@@ -214,3 +214,4 @@
 - [x] 仓库/背包「职业」筛选（clsfilter.js/css，包装 stMatch/renderBag）：个人/共享仓库并入品质/类型筛选行、背包格子上方一行；全部职业 + CLASSES 7 职业（适合=专属+通用）+「仅专属」分组；判定=专属底材/系别与单技能词缀/流派键/职业与流派套装/威能与核心威能；默认全部；tests/clsfilter_test.js；?v=20261020t、sw 缓存 t
 - [x] 角色页「加成汇总」可折叠模块（bonus.js/css，包装 renderHero）：技能加成（全部技能/系别/单技能/技能伤害，读 ST，点开看来源装备·镶嵌·护身符·套装档位·其他来源，非本职业标注不生效）、生效威能（核心◆、品阶、来源、共鸣 I/II、超上限）、套装件数与各档效果（含流派 6 件机制）、流派被动、符文之语；按装备签名缓存，折叠状态存 localStorage；tests/bonus_test.js；?v=20261020u、sw 缓存 u
 - [x] 暗渊三魂/血月素材 25 张已入 assets（boss/abyss_g1-3、abyss_s1-3；icon2/abyss/ 16 个；ui2/bloodmoon.webp 128 + bloodmoon_64.webp；id 自定，tools/art/gen_abyss.py，预览 art_preview/p_abyss_sheet.png），待系统开发接入（美术）
+- [x] 刷宝第一批①上古/至臻品质+「属性品质 X%/完美」（ancient.js/css，包装 genItem/itemName/cell/power/shouldRecycle/rcyUI/showItem）：地狱 5%、秘境 5%+0.1%/层封顶 12% 的暗金/套装变「上古·」（金框，区间上移 20%、下限=原上限 60%；技能等级键不上移只取上限），秘境 30 层+ 其中 2% 为「至臻·」（红框，全满）；详情显示属性品质%，满值「完美」；回收保护「保留上古」默认开；it.anc=1/2，旧存档无字段不受影响；tests/ancient_test.js；?v=20261020v、sw 缓存 v
