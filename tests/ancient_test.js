@@ -1,5 +1,5 @@
 // 上古/至臻单元测试：node tests/ancient_test.js
-// 校验 bonus.js：区间上移、概率、至臻全满/完美、回收保护、旧存档兼容
+// 校验 ancient.js：区间上移、概率、至臻全满/完美、回收保护、旧存档兼容
 const fs=require('fs'),vm=require('vm'),path=require('path');const root=path.join(__dirname,'..');
 const stub=()=>new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>'' :k==='readyState'?'loading':stub(),apply:()=>stub(),construct:()=>stub(),set:()=>true});
 const store={};const ctx={console:{log(){},warn(){},error:console.error},Math,Date,JSON,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},clearTimeout(){},requestAnimationFrame:()=>0,
@@ -23,7 +23,7 @@ G(`EGM={k:'mj',L:200}`);ok(G("ancChance()[0]")===0.12&&G("ancChance()[1]")===0.0
 const st=JSON.parse(G(`(()=>{let n=0,a=0,t=0;for(let i=0;i<4000;i++){const it=genItem(85,{q:5});if(it.q!==5)continue;n++;if(it.anc)a++;if(it.anc===2)t++}return JSON.stringify({n,a,t})})()`));
 ok(st.a/st.n>0.08&&st.a/st.n<0.16,'实测上古率 '+(st.a/st.n).toFixed(3));ok(st.t/st.a<0.07,'实测至臻占比 '+(st.t/st.a).toFixed(3));
 // 至臻全满 + 完美
-const z=JSON.parse(G(`(()=>{const u=UNIQUES[${U}];const it=genItem(85,{q:5});it.q=5;it.name=u.n;it.b=u.b;it.m={};for(const k in u.m)it.m[k]=Array.isArray(u.m[k])?u.m[k][0]:u.m[k];delete it.anc;ancApply(it,2);
+const z=JSON.parse(G(`(()=>{const u=UNIQUES[${U}];const it=makeBase(BASEM[u.b],85);it.q=5;it.name=u.n;it.m={};for(const k in u.m)it.m[k]=Array.isArray(u.m[k])?u.m[k][0]:u.m[k];delete it.anc;ancApply(it,2);
  return JSON.stringify({q:ancQual(it),nm:itemName(it),tag:ancTag(it),p:power(it)})})()`));
 ok(z.q===1&&/完美/.test(z.tag)&&/^至臻·/.test(z.nm),'至臻全满=完美 '+z.nm);
 const lo=JSON.parse(G(`(()=>{const u=UNIQUES[${U}];const it={b:u.b,q:5,name:u.n,m:{}};for(const k in u.m)it.m[k]=Array.isArray(u.m[k])?u.m[k][0]:u.m[k];return JSON.stringify({q:ancQual(it),tag:ancTag(it)})})()`));

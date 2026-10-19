@@ -31,8 +31,7 @@ function ancChance(){if(typeof S!=='object'||!S)return[0,0];const mj=typeof EGM!
 {const f=power;power=function(it){const p=f(it);return it&&it.anc&&p!==Infinity?p+(it.anc===2?120:40):p}}
 // 回收保护（默认开）
 {const f=shouldRecycle;shouldRecycle=function(it,isNew){if(it&&it.anc&&S.rcy&&S.rcy.keepAnc!==0)return false;return f(it,isNew)}}
-{const f=rcyUI;rcyUI=function(){f.apply(this,arguments);try{const h=[...document.querySelectorAll('#modal .rcy h4')].find(x=>x.textContent.indexOf('保护')>=0);
- const row=h&&h.nextElementSibling;if(row){const on=S.rcy.keepAnc!==0;row.insertAdjacentHTML('beforeend',`<button class="btn xs ${on?'on':''}" onclick="S.rcy.keepAnc=S.rcy.keepAnc===0?1:0;rcyUI()">保留上古</button>`)}}catch(e){console.warn(e)}}}
+// 「保留上古」开关并入天光（tianguang.js）的「至少保留」行
 // 详情：属性品质 / 完美
 function ancTag(it){const q=ancQual(it);if(q==null&&!it.anc)return'';const pf=q!=null&&q>=0.9999;
  return`<div class="sec anctag">${it.anc?`<b class="ancq anc${it.anc}">${ANC.N[it.anc]}品质</b>`:''}${q!=null?`<span class="ancp">属性品质 ${Math.round(q*100)}%</span>`:''}${pf?'<b class="ancpf">完美</b>':''}</div>`}

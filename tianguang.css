@@ -1,0 +1,11 @@
+#fbattle .tgbeam{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+#fbattle .tgbeam i{position:absolute;left:50%;top:-10%;width:44px;height:120%;margin-left:-22px;background:linear-gradient(90deg,transparent,var(--c) 38%,#fff 50%,var(--c) 62%,transparent);opacity:0;filter:blur(2px);animation:tgb 1.6s ease-out forwards}
+#fbattle .tgbeam b{position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,var(--c),transparent 60%);opacity:0;animation:tgf .8s ease-out forwards}
+#fbattle .tgbeam.tg_primal i,#fbattle .tgbeam.tg_mythic i{width:64px;margin-left:-32px}
+@keyframes tgb{0%{opacity:0;transform:scaleX(.2)}15%{opacity:.95;transform:scaleX(1)}70%{opacity:.6}100%{opacity:0;transform:scaleX(.6)}}
+@keyframes tgf{0%{opacity:0}20%{opacity:.45}100%{opacity:0}}
+#tgban{position:fixed;left:8px;right:8px;top:calc(6px + env(safe-area-inset-top));z-index:9999;pointer-events:none;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ font-size:13px;font-weight:bold;color:var(--c);background:#0d0907e6;border:1px solid var(--c);border-radius:4px;padding:4px 8px;box-shadow:0 0 8px var(--c);animation:tgban 2.5s ease-out forwards}
+@keyframes tgban{0%{opacity:0;transform:translateY(-8px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+#modal .tgkeep{flex-wrap:nowrap;white-space:nowrap;gap:4px}#modal .tgkeep span{display:flex;gap:3px;flex-wrap:nowrap}
+#modal .tgkeep .btn.xs{padding-left:5px;padding-right:5px}
