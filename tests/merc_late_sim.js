@@ -22,7 +22,7 @@ function run(L,diff,tml){const store={};let sd=(Number(process.env.SEED||7)+L)>>
  // 装备：每部位 3 件 ilvl=等级-5 的魔法/稀有（各半）；佣兵另给 3 件可用类型武器（MERCJS=旧 merc.js 路径可跑改前对照）
  const SL=['weapon','shield','helm','armor','gloves','belt','boots','amulet','ring','ring'];
  for(const s of SL)for(let k=0;k<3;k++){const it=genItem(${L}-5,{slot:s,q:rnd()<0.5?3:4});S.bag.push(it)}
- const wc=MERCS['${MT}'].wcats;const wb=BASES.filter(b=>b.s==='weapon'&&wc.includes(b.cat)&&b.q<=${L});for(let k=0;k<3;k++)S.bag.push(genItem(${L}-5,{base:pick(wb),q:rnd()<0.5?3:4}));
+ const wc=MERCS['${MT}'].wcats||MERC_WCATS['${MT}'];const wb=BASES.filter(b=>b.s==='weapon'&&wc.includes(b.cat)&&b.q<=${L});for(let k=0;k<3;k++)S.bag.push(genItem(${L}-5,{base:pick(wb),q:rnd()<0.5?3:4}));
  for(let i=0;i<3;i++){autoTick();mercAutoEq&&mercAutoEq()}
  S.bag=[];calc();H.life=ST.life;H.mana=ST.mana;MON=[];spawnT=0.5;
  window.SIMD={m:0,o:0,md:0,hd:0,bm:0,bo:0,tt:0,nk:0};

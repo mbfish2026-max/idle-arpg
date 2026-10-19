@@ -47,7 +47,7 @@ const MERC_VARS={
 MERC_VARS.guard[2]=MERC_VARS.guard[0];
 function mercVars(t,d){const V=MERC_VARS[t];return V.all||V[d]||V[0]}
 function mercVarDef(t,v){const V=MERC_VARS[t];for(const k in V)if(V[k][v])return V[k][v];return null}
-for(const t in MERC_WCATS)if(typeof MERCS!=='undefined'&&MERCS[t]){MERCS[t].wcats=MERC_WCATS[t];for(const d of [0,1,2])for(const v in mercVars(t,d))MERCS[t].vars[v]=mercVars(t,d)[v].n}
+for(const t in MERC_WCATS)if(typeof MERCS!=='undefined'&&MERCS[t]){MERCS[t].wcats=null;for(const d of [0,1,2])for(const v in mercVars(t,d))MERCS[t].vars[v]=mercVars(t,d)[v].n}
 
 // ---------- 数据 / 迁移 ----------
 const mercUp=()=>!!(typeof S!=='undefined'&&S&&S.merc&&S.merc.t&&!S.merc.off&&MERCS[S.merc.t]);
@@ -62,7 +62,7 @@ function mercNorm(){if(typeof S==='undefined'||!S)return;const m=S.merc;if(m&&m.
  if(!mercVarDef(m.t,m.v)||!mercVars(m.t,m.hd)[m.v]){const vs=mercVars(m.t,m.hd);m.v=vs[m.v]?m.v:(vs[MERCS[m.t].vd]?MERCS[m.t].vd:Object.keys(vs)[0])}
  m._v=MERC_V;for(const k of MERC_SLOTS){const it=m.eq[k];if(it&&!mercFits(it,k,m.t)){S.bag.push(it);delete m.eq[k];log&&log(`佣兵无法使用 ${itemName(it)}（类型限制），已放回背包`)}}
  for(const k in m.eq)if(!MERC_SLOTS.includes(k))delete m.eq[k]}
-function mercFits(it,k,t,eq){if(!it||it.k)return false;const b=BASEM[it.b];if(!b||b.s!==mslotBase(k))return false;if(k==='weapon')return(MERC_WCATS[t]||[]).includes(b.cat)&&!(b.th&&!MERC_WCATS[t].includes('sword')&&false);
+function mercFits(it,k,t,eq){if(!it||it.k)return false;const b=BASEM[it.b];if(!b||b.s!==mslotBase(k))return false;if(k==='weapon')return true;// 佣兵不限武器类型（弓/杖/魔杖/标枪/职业专属均可）
  if(k==='shield'){if(!MERC_SHIELD[t]||b.cat!=='shield')return false;const w=(eq||(S.merc&&S.merc.eq)||{}).weapon;return!(w&&BASEM[w.b]&&BASEM[w.b].th)}return true}
 function mercSlotFor(it,pref){const b=BASEM[it.b];if(b.s!=='ring')return b.s;if(pref==='ring1'||pref==='ring2')return pref;const e=S.merc.eq;return!e.ring1?'ring1':!e.ring2?'ring2':(power(e.ring1)<=power(e.ring2)?'ring1':'ring2')}
 const _mx_load=load;load=function(){_mx_load();mercNorm()};
@@ -142,7 +142,7 @@ const _mx_gx=gainXp;gainXp=function(x){_mx_gx(x);if(mercUp())mercGainXp(x)};// �
 
 // ---------- 装备 ----------
 canMercEquip=function(it,k){if(!mercUp()||!it||it.k)return false;const b=BASEM[it.b];if(!b)return false;k=k||mercSlotFor(it);if(!MERC_SLOTS.includes(k)||!mercFits(it,k,S.merc.t))return false;const r=itemReq(it),ms=mercStats();return ms.L>=r.lv&&ms.str>=r.str&&ms.dex>=r.dex};
-function mercWhyNot(it,k){if(!mercFits(it,k||mercSlotFor(it),S.merc.t))return BASEM[it.b].s==='shield'?'双手武器/类型不能持盾':'类型不符';const r=itemReq(it),ms=mercStats();const w=[];if(ms.L<r.lv)w.push('需等级'+r.lv);if(ms.str<r.str)w.push('需力量'+r.str);if(ms.dex<r.dex)w.push('需敏捷'+r.dex);return w.join(' ')}
+function mercWhyNot(it,k){if(!mercFits(it,k||mercSlotFor(it),S.merc.t))return BASEM[it.b].s==='shield'?(MERC_SHIELD[S.merc.t]?'双手武器时不能持盾':'该佣兵不能持盾'):'部位不符';const r=itemReq(it),ms=mercStats();const w=[];if(ms.L<r.lv)w.push('需等级'+r.lv);if(ms.str<r.str)w.push('需力量'+r.str);if(ms.dex<r.dex)w.push('需敏捷'+r.dex);return w.join(' ')}
 mercEquip=function(uid,slot){let f=findItem(uid);if(!f||f.slot)return false;const k=mercSlotFor(f.it,slot||MX.slot);if(!canMercEquip(f.it,k))return false;const cur=S.merc.eq[k];
  const obj=f.it;if(f.stash){if(typeof withdrawUid!=='function'||withdrawUid(uid,1)===false)return false}
  const bi=S.bag.indexOf(obj);if(bi<0)return false;const it=S.bag.splice(bi,1)[0];if(cur)S.bag.push(cur);S.merc.eq[k]=it;
@@ -150,9 +150,10 @@ mercEquip=function(uid,slot){let f=findItem(uid);if(!f||f.slot)return false;cons
  calc();log(`佣兵装备：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);if(!window.__NOUI){closeM();render()}return true};
 mercUnequip=function(k){if(!S.merc||!S.merc.eq[k])return false;if(bagFull()){toast('背包已满');return false}S.bag.push(S.merc.eq[k]);delete S.merc.eq[k];calc();if(!window.__NOUI){closeM();render()}return true};
 // 佣兵自动换装只看佣兵页自己的「自动换装」开关（S.merc.auto）；不再要求角色的 S.autoEq——角色自动换装在设置弹窗里关掉后，佣兵页按钮仍显示开启却不再换装
+function mercWScore(it){const eq=Object.assign({},S.merc.eq,{weapon:it});if(BASEM[it.b].th&&eq.shield)delete eq.shield;const ms=mercStats(eq),e=ms.edmg||{};return((ms.dmg[0]+ms.dmg[1])/2+(e.fire||0)+(e.cold||0)+(e.light||0)+(e.pois||0))/ms.atk*(1+(ms.cb||0)/200)}
 mercAutoEq=function(){if(!mercUp()||!S.merc.auto||!Array.isArray(S.bag))return;for(const it of S.bag.slice()){if(!it||it.k)continue;const b=BASEM[it.b];if(!b)continue;
  const ks=b.s==='ring'?['ring1','ring2']:[b.s];if(it.lk)continue;for(const k of ks){if(!canMercEquip(it,k))continue;const c=S.merc.eq[k];if(c&&c.lk)continue;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield&&S.merc.eq.shield.lk)continue;
-  if(!c||power(it)>power(c)){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield){S.bag.push(S.merc.eq.shield);delete S.merc.eq.shield}calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
+  if(!c||(k==='weapon'?mercWScore(it)>mercWScore(c):power(it)>power(c))){S.bag.splice(S.bag.indexOf(it),1);if(c)S.bag.push(c);S.merc.eq[k]=it;if(k==='weapon'&&BASEM[it.b].th&&S.merc.eq.shield){S.bag.push(S.merc.eq.shield);delete S.merc.eq.shield}calc();log(`佣兵换装：<span style="color:${itemColor(it)}">${itemName(it)}</span>`);break}}}};
 // items2.js 的命中特效(压碎/撕裂/偷取等)只统计了 3 格，扩展到全身
 if(typeof attackerMods==='function'){const _mx_am=attackerMods;attackerMods=function(src){if(src&&src.kind==='merc'&&S.merc&&S.merc.eq){const M={};for(const k of MERC_SLOTS){const it=S.merc.eq[k];if(!it)continue;const m=allMods(it);for(const x in m)if(typeof m[x]==='number')M[x]=(M[x]||0)+m[x]}return M}return _mx_am(src)}}
 
@@ -205,8 +206,8 @@ function renderMercPage(){mercNorm();const P=$('#panel');const m=S.merc;let h='<
  if(mercUp()){const ms=mercStats(),T=MERCS[m.t],V=mercVarDef(m.t,m.v),need0=mercXpNeed(m.lvl),need1=mercXpNeed(m.lvl+1);const pct=m.lvl>=S.lvl?100:Math.max(0,Math.min(100,(m.xp-need0)/Math.max(1,need1-need0)*100));
   h+=`<div class="gp mhead">${mercPortrait(m.t,m.v,1)}<div class="minfo"><div class="mname">${m.nm}${m.dead?' <span class="bad">阵亡</span>':''}</div><div class="dim">${T.n} · ${T.kind}</div><div class="mver"><b class="diff d${m.hd}">${DIFFS[m.hd].n}</b> ${V.n}</div>
    <div class="mlv">Lv.<b>${m.lvl}</b> <small class="dim">（与角色等级同步）</small></div></div></div>`;
-  h+=`<div class="gp"><h3>装备</h3><div class="mdoll">${MERC_SLOTS.map(k=>{const it=m.eq[k];return`<div class="mslot ms_${k} ${k==='shield'&&!MERC_SHIELD[m.t]?'lock':''}" onclick="mercSlotUI('${k}')"><small>${SLOTN[k]}${k==='shield'&&!MERC_SHIELD[m.t]?'·不可用':''}${k==='weapon'?'·'+MERC_WCATS[m.t].map(c=>CATN?CATN[c]:c).join('/'):''}</small>${it?cell(it,''):`<div class="cell empty"><small>空</small></div>`}</div>`}).join('')}</div>
-   ${Object.keys(ms.sets).length?`<div class="dim">套装：${Object.entries(ms.sets).map(([s,n])=>SETS[s].n+' '+n+'件').join('、')}</div>`:''}<div class="dim">点格子：从背包/仓库穿戴、卸下、对比属性。武器限制按原版：${T.n}只能使用${MERC_WCATS[m.t].map(c=>CATN[c]).join('/')}${MERC_SHIELD[m.t]?'，可持盾(双手武器时不可)':'，不能持盾'}。</div></div>`;
+  h+=`<div class="gp"><h3>装备</h3><div class="mdoll">${MERC_SLOTS.map(k=>{const it=m.eq[k];return`<div class="mslot ms_${k} ${k==='shield'&&!MERC_SHIELD[m.t]?'lock':''}" onclick="mercSlotUI('${k}')"><small>${SLOTN[k]}${k==='shield'&&!MERC_SHIELD[m.t]?'·不可用':''}${k==='weapon'?'·任意':''}</small>${it?cell(it,''):`<div class="cell empty"><small>空</small></div>`}</div>`}).join('')}</div>
+   ${Object.keys(ms.sets).length?`<div class="dim">套装：${Object.entries(ms.sets).map(([s,n])=>SETS[s].n+' '+n+'件').join('、')}</div>`:''}<div class="dim">点格子：从背包/仓库穿戴、卸下、对比属性。${T.n}可使用任意类型武器${MERC_SHIELD[m.t]?'，可持盾(双手武器时不可)':'，不能持盾'}。</div></div>`;
   h+=`<div class="gp"><h3>属性</h3><div class="mstats">${mercStatsHTML(ms)}</div></div>`;
   h+=`<div class="gp mbonus"><h3>装备加成 <small class="dim">（对比不穿装备）</small></h3><div class="mstats">${mercEqHTML(ms)}</div></div>`;
   h+=`<div class="gp mgrow"><h3>等级成长</h3><div class="mstats">${mercGrowHTML(ms)}</div><div class="dim">30 级后生命/防御/抗性随等级成长；伤害吃主属性（${ms.mk==='dex'?'敏捷':'力量'}超出初始值每 ${(MERC_MAIN[m.t]||[0,5])[1]} 点 +1%，同角色规则），技能等级超过 7 后每级 +${MERC_SKX}% 伤害；50 级起每 20 级多攻击 1 个目标；防御换算物理减伤 = 防御/(防御+120×等级)，上限 40%。</div></div>`;
