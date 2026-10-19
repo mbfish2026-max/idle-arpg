@@ -22,14 +22,17 @@ def bbox(c,thr=28,dil=8,minarea=300):
         ys,xs=np.nonzero(sub);bs.append((sub.sum(),(s[1].start+xs.min(),s[0].start+ys.min(),s[1].start+xs.max()+1,s[0].start+ys.max()+1)))
     big=max(x[0] for x in bs);bs=[b for a,b in bs if a>=big*0.08]
     return min(b[0] for b in bs),min(b[1] for b in bs),max(b[2] for b in bs),max(b[3] for b in bs)
-def soft(c):
+def soft(c,fill_holes=True):
     a=np.asarray(c).astype(float);mx=a.max(2);s=np.clip((mx-8)/40,0,1)
+    if not fill_holes:  # 只按亮度生成 alpha（环形物体圈内保持透明）
+        r=c.convert('RGBA');r.putalpha(Image.fromarray((s*255).astype('uint8')));return r
     fill=nd.binary_fill_holes(nd.binary_closing(mx>22,iterations=4));fill=nd.binary_erosion(fill,iterations=2)
     f=np.asarray(Image.fromarray((fill*255).astype('uint8')).filter(ImageFilter.GaussianBlur(1.2)))/255;s=np.maximum(s,f)
     r=c.convert('RGBA');r.putalpha(Image.fromarray((s*255).astype('uint8')));return r
+NOFILL={'ltc1'}  # 环冠：圈内须透明，不做连通填充
 def emit(c,path):
     x0,y0,x1,y1=bbox(c);p=4
-    r=soft(c.crop((max(0,x0-p),max(0,y0-p),min(c.width,x1+p),min(c.height,y1+p))))
+    r=soft(fill_holes=os.path.basename(path)[:-5] not in NOFILL,c=c.crop((max(0,x0-p),max(0,y0-p),min(c.width,x1+p),min(c.height,y1+p))))
     S=124;sc=S/max(r.size);r=r.resize((max(1,round(r.width*sc)),max(1,round(r.height*sc))),Image.LANCZOS)
     o=Image.new('RGBA',(128,128),(0,0,0,0));o.paste(r,((128-r.width)//2,(128-r.height)//2),r)
     o.save(path,'WEBP',quality=80,method=6);print(path,(x1-x0,y1-y0),os.path.getsize(path))
