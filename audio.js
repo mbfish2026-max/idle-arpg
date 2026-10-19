@@ -323,18 +323,27 @@ const LOOT=[null,
   for(let k=0;k<3;k++)for(const m of[1,2.76,5.4])tone(D,{f:mtof(50)*m,t:T0+k*0.9,dur:2.5,type:'sine',vol:0.08/m,a:0.002,d:2.4,sus:0.01,r:0.6,wet:0.9});
   noise(D,{t:T0,dur:2.8,vol:0.07,type:'highpass',f:5000,f2:10000,a:0.5,wet:1})}];
 const LOOT_DUR=[0,0.6,1.3,2.2,2.8,4.4];let lootLast=0,lootLastTier=0;
-function playLootTier(tier){const n=typeof tier==='string'?LOOT_NAMES[tier.toLowerCase()]:tier|0;if(!(n>=1&&n<=5))return false;
+function playLootTier(tier){lootCallT=performance.now();const n=typeof tier==='string'?LOOT_NAMES[tier.toLowerCase()]:tier|0;if(!(n>=1&&n<=5))return false;
  if(!ctx||!unlocked||hidden||ctx.state!=='running'||cfg().sm)return false;
  // 限流：同时多件出货只播最高档；较低档在高档余韵内被吞掉；同档 250ms 内只播一次
  const now=performance.now();if(now-lootLast<LOOT_DUR[lootLastTier]*1000*0.6&&n<=lootLastTier&&!(n===lootLastTier&&now-lootLast>250))return false;
  if(n===lootLastTier&&now-lootLast<250)return false;
  lootLast=now;lootLastTier=n;try{LOOT[n](sfxBus,ctx.currentTime+0.01)}catch(e){}return true}
-window.AUDIO_SK={table:SK,recipe:skillRecipe,play:playSkill,bus:()=>sfxBus,now:()=>ctx?ctx.currentTime:0};
+window.AUDIO_SK={lootLog:()=>LOOTLOG,table:SK,recipe:skillRecipe,play:playSkill,bus:()=>sfxBus,now:()=>ctx?ctx.currentTime:0};
 // rollTC 返回本次击杀掉落的装备列表（gold 已直接加到 S.gold）
 let goldPrev=null;
-wrap('rollTC',function(drops){let best=null,rank=-1;const rk=it=>it.rw!=null?9:it.q===5?8:it.q===6?7:it.k==='rune'?6:it.q===4||it.q===7?5:it.q===3?3:it.k?2:1;
- for(const it of drops||[]){const r=rk(it);if(r>rank){rank=r;best=it}}
- if(best)sfxT(rank>=7?'drop_hi':'drop_'+rank,best,rank>=7?0:120)},null);
+// 掉落去重（天光 tianguang.js 包在 rollTC 外层，会在本钩子之后同步调用 AUDIO.playLootTier）：
+// 同一次掉落只播一个声音。本钩子延后 40ms 结算：期间若已有 playLootTier 调用 → 不播旧 drop 音；
+// 否则最高品质为暗金及以上（暗金/套装/符文之语/高符文≥20号/上古/至臻/神话）→ 自己补播对应分档音效，旧 drop 音永不播；
+// 其余（稀有/魔法/符文/宝石/普通）播旧 drop 音。离线结算/无 UI 时静默。
+function lootTierOf(it){if(!it)return 0;if(it.k==='rune')return it.r+1>=20?3:0;if(it.k)return 0;if(it.myth)return 5;if(it.anc)return 4;if(it.rw!=null||it.q===5||it.q===6)return 2;return 0}
+let lootCallT=-1e9;
+wrap('rollTC',function(drops){if(window.__NOUI||(typeof TG!=='undefined'&&TG.busy))return;let best=null,rank=-1,tier=0;const rk=it=>it.rw!=null?9:it.q===5?8:it.q===6?7:it.k==='rune'?6:it.q===4||it.q===7?5:it.q===3?3:it.k?2:1;
+ for(const it of drops||[]){const r=rk(it);if(r>rank){rank=r;best=it}tier=Math.max(tier,lootTierOf(it))}
+ if(!best)return;const t0=performance.now();
+ setTimeout(()=>{if(lootCallT>=t0-5)return;// 天光已为本次掉落发声
+  LOOTLOG.push(tier?'tier'+tier:'drop'+rank);if(LOOTLOG.length>20)LOOTLOG.shift();if(tier)playLootTier(tier);else sfxT('drop_'+rank,best,120)},40)},null);
+const LOOTLOG=[];
 // sfxT 名称前缀映射到 drop
 const _sfx=sfx;sfx=function(n,a){if(n.startsWith('drop'))return _sfx('drop',a);return _sfx(n,a)};
 let lvPrev=null;
