@@ -4,3 +4,4 @@
 .ancq.anc1{color:#e8b84a}.ancq.anc2{color:#ff4a3a}
 .ancp{color:#bbb}
 .ancpf{color:#111;background:linear-gradient(90deg,#e8b84a,#ffe08a);padding:0 6px;border-radius:3px}
+.ancx{color:#ffcf3a!important}.ancx::after{content:' ✦';font-size:10px}
