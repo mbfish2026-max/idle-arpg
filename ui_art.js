@@ -18,3 +18,17 @@ function uaSkb(){try{document.querySelectorAll('#skbar .skb>small').forEach(s=>{
  if(s.dataset.uat===t)return;s.dataset.uat=t;s.classList.remove('uahide','uatag');
  if(t==='智能'){s.classList.add('uahide');b.title='自动施法：智能'}else if(t==='关'){b.title='自动施法：关'}else{s.classList.add('uatag');b.title='自动施法：'+t}})}catch(e){console.warn('uaSkb',e)}}
 {let q=0,lt=0;const go=()=>{q=0;lt=performance.now();uaSkb()};if(typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(q)return;q=1;const w=Math.max(0,120-(performance.now()-lt));setTimeout(()=>requestAnimationFrame(go),w)}).observe(document.body,{childList:true,subtree:true})};uaSkb()}
+// 首领战：卡片放大在 art.css；这里只做出场一次性震屏 + 暗角叠层 + 名字横幅（节流 MutationObserver，无常驻动画）
+{const SEEN=new Set();let q=0,lt=0,vig=null,ban=null;
+ const ov=()=>{const fb=document.getElementById('fbattle');if(!fb)return null;
+  if(!vig||!vig.isConnected){vig=document.createElement('div');vig.id='uabVig';fb.insertBefore(vig,fb.firstChild)}
+  if(!ban||!ban.isConnected){ban=document.createElement('div');ban.id='uabBan';fb.appendChild(ban);
+   ban.addEventListener('animationend',()=>{ban.classList.remove('on')})}return fb};
+ const once=(el,c,ms)=>{el.classList.remove(c);void el.offsetWidth;el.classList.add(c);const f=()=>{el.classList.remove(c);el.removeEventListener('animationend',f)};el.addEventListener('animationend',f);setTimeout(f,ms)};
+ const chk=()=>{q=0;lt=performance.now();try{const g=document.getElementById('mgrid');if(!g||!ov())return;
+  const bs=g.querySelectorAll('.mc.boss');vig.classList.toggle('on',bs.length>0);let nw=null;
+  bs.forEach(b=>{if(!SEEN.has(b.id)){SEEN.add(b.id);nw=nw||b}});if(SEEN.size>200)SEEN.clear();
+  if(nw){once(g,'uab-shake',500);const nm=(nw.querySelector('.nm')||{}).textContent||'';const ab=!!nw.querySelector('img[src*="assets/boss/abyss_"]');
+   ban.innerHTML=`<small>${ab?'终 极 首 领':'首 领 降 临'}</small>`;ban.appendChild(document.createTextNode(nm));ban.classList.remove('on');void ban.offsetWidth;ban.classList.add('on')}
+ }catch(e){console.warn('uaBoss',e)}};
+ const g=document.getElementById('mgrid');if(g&&typeof MutationObserver!=='undefined')new MutationObserver(()=>{if(q)return;q=1;setTimeout(()=>requestAnimationFrame(chk),Math.max(0,150-(performance.now()-lt)))}).observe(g,{childList:true});chk()}

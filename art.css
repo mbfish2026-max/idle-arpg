@@ -73,3 +73,20 @@ hr{border:0;height:16px;margin:6px 0;background:url(assets/ui2/divider.webp) cen
 /* 技能栏：默认「智能」隐藏；其他模式右上角小角标 */
 #skbar .skb>small.uahide{display:none}
 #skbar .skb>small.uatag{left:auto;right:-3px;top:-3px;bottom:auto;font-size:8px;line-height:10px;padding:0 2px;border-radius:3px;background:rgba(0,0,0,.7);border:1px solid rgba(255,220,140,.4)}
+/* ===== 首领战放大 + 出场震屏/暗角/横幅（美术；配合 ui_art.js uaBoss，不改 game.js / 容器 z-index）===== */
+#mgrid .mc.boss{grid-column:1/-1;justify-self:center;width:42%;border-width:14px;border-image-width:16px}/* 普通怪≈88px → 首领≈158px(1.8×) */
+#mgrid .mc.boss .pt{height:auto;aspect-ratio:1/1}
+#mgrid .mc.boss .pt img.art{width:100%;height:100%;object-fit:contain;image-rendering:auto}/* 256/512 源图均按容器缩放，512 时更清晰 */
+#mgrid .mc.boss .nm{font-size:13px}#mgrid .mc.boss .bar{height:9px}
+#mgrid .mc.boss:has(img[src*="assets/boss/abyss_"]){width:48%}/* 终极首领取 2× 上限 ≈176px */
+#mgrid:has(.mc.boss~.mc.boss) .mc.boss{grid-column:span 2;width:80%}/* 多首领同屏（议会/先祖）：两列一只，避免撑高挡技能栏 */
+#mgrid:has(.mc.boss~.mc.boss) .mc.boss .pt{aspect-ratio:auto;height:96px}
+#mgrid.uab-shake{animation:uabShake .4s linear 1;animation-iteration-count:1}
+@keyframes uabShake{0%,100%{transform:none}15%{transform:translate(-5px,2px)}30%{transform:translate(5px,-2px)}45%{transform:translate(-4px,-1px)}60%{transform:translate(3px,2px)}80%{transform:translate(-2px,0)}}
+#uabVig{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(ellipse 75% 65% at 50% 42%,transparent 45%,rgba(40,0,0,.45) 75%,rgba(0,0,0,.8) 100%)}
+#uabVig.on{opacity:1}
+#uabBan{position:absolute;left:8%;right:8%;top:92px;z-index:6;pointer-events:none;text-align:center;border:0;border-image:url(assets/ui2/title_9s.webp) 24 80 fill / 12px 36px stretch;padding:10px 36px;min-height:44px;box-sizing:border-box;
+ font:bold 17px serif;letter-spacing:2px;color:#ffd060;text-shadow:0 1px 2px #000,0 0 6px #000;opacity:0;visibility:hidden}
+#uabBan small{display:block;font-size:10px;letter-spacing:4px;color:#e8c890;font-weight:normal}
+#uabBan.on{visibility:visible;animation:uabBan 2.4s ease-out 1 forwards;animation-iteration-count:1}
+@keyframes uabBan{0%{opacity:0;transform:scale(1.15)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
