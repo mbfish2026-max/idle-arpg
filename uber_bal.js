@@ -2,7 +2,8 @@
 // 依据 ub_abyss 终局配装测试：召唤死灵/召唤德鲁伊/锤子圣骑/拳圣骑/风德/战吼野蛮人/电法 暗渊 0–20% 胜率，首领战输出不足（三魂剩 90–100% 血）。
 // 系数作用于英雄与召唤物（协同）对首领造成的全部伤害；佣兵不吃。流派判定用当前流派 nbOn()。
 function ubbBoss(m){return !!(m&&(m.boss||m.egMjBoss||m.ubS||m.ubG))}
-var UBB={sum:3.5,dru_sum:5,dru_wind:1.7,pal_ham:7,pal_fist:9,bar_cry:2};
+// 20261021h：summon_keep.js 进场保留/召回召唤物后，召唤系下调（sum 3.5→3.3、dru_sum 5→4.5）；电法 sor_light ×1.25（原 15–40% → 6 件套 ≥40%）。
+var UBB={sum:3.3,dru_sum:4.5,dru_wind:1.7,pal_ham:7,pal_fist:9,bar_cry:2,sor_light:1.25};
 // 未成套补偿：已选流派但套装件数 n<6 时，对首领伤害再 ×(1+UBN.per×(6−n))，让随机掉落/无套装角色也有机会。
 var UBN={per:0.25};
 function ubbSetK(b){try{const B=NB.builds[b];if(!B||!B.set||typeof nbSetN!=='function')return 1;return 1+UBN.per*Math.max(0,6-nbSetN(B.set))}catch(e){return 1}}
@@ -11,7 +12,7 @@ function ubbSetK(b){try{const B=NB.builds[b];if(!B||!B.set||typeof nbSetN!=='fun
 // ①替死：英雄将阵亡时，牺牲一只召唤物替死，英雄回复 UBS.heal 生命，冷却 UBS.cd 秒；
 // ②首领机制伤害（暗渊新星/赤芒）×(1 − min(UBS.cap, UBS.per×存活召唤物数))；
 // ③白骨统帅首领战无尸体：首领在场时每 UBS.bone 秒凝出一具骸骨（尸体）。
-var UBS={heal:1,cd:1,per:0.12,cap:0.5,bone:2.5,b:{sum:1,dru_sum:1}};
+var UBS={heal:0.9,cd:1,per:0.11,cap:0.45,bone:3,b:{sum:1,dru_sum:1}};
 function ubbOn(){return typeof nbOn==='function'&&!!UBS.b[nbOn()]&&MON.some(m=>ubbBoss(m)&&m.hp>0)}
 function ubbPets(){return ALLY.filter(a=>a.hp>0&&a.kind!=='merc')}
 {let next=0;const f=die;die=function(...a){try{if(ubbOn()&&GT>=next){const L=ubbPets();if(L.length){const p=L.sort((x,y)=>y.hp-x.hp)[0];p.hp=0;H.life=Math.round(ST.life*UBS.heal);next=GT+UBS.cd;floatHero('替死','#9f9');return}}}catch(e){}return f.apply(this,a)}}
