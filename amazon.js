@@ -20,7 +20,7 @@ Object.assign(CLS_TYK,{arw:'melee',asum:'csum'});Object.assign(CLS_PRI,{arw:7,as
 CLS_SINGLE.add('arw');CLS_MELEE.add('arw');
 if(!AC_KINDS.includes('csum'))AC_KINDS.push('csum');
 const amaPets=id=>ALLY.filter(a=>a.kind==='apet'&&a.sub===id&&a.hp>0);
-CLS_TY.arw=function(s,v,ms,tg){const L=clsOthers(ms,tg).slice(0,v.n||1);
+CLS_TY.arw=function(s,v,ms,tg){if(v.home)return amaHoming(s,v,ms,tg);const L=clsOthers(ms,tg).slice(0,v.n||1);
  if(ST.apier){const rest=ms.filter(m=>!L.includes(m));let x=0;for(const m of L.slice())if(rest[x]&&rnd()*100<ST.apier)L.push(rest[x++])}// 透矢：箭矢穿透到下一个敌人
  const hit=[];for(const m of L){let d=0;for(let i=0;i<(v.hits||1);i++)d+=clsMelee(m,v.pct,v.flat,v);if(d||v.sure)hit.push(m)}
  if(v.dmg)for(const m of hit)clsHit(m,s.el,clsRR(v.dmg));
@@ -42,7 +42,7 @@ clsDef('ama',[
  {id:'aexp',t:0,n:'爆燃矢',r:12,col:2,pre:['afire','amul'],ty:'arw',el:'fire',ic:'💥',fx:'boom',mana:L=>3+0.25*(L-1),syn:[['afire','aimm'],12],v:(L,sy,k)=>{const d=CLS_DR(5,9,4,6,L,sy*k);return{dmg:d,sp:100,sn:3,txt:`命中后爆炸：武器伤害并附加 ${clsDtx(d,'fire')}，爆炸波及周围 3 个敌人`}}},
  {id:'aice',t:0,n:'凝冰矢',r:18,col:0,pre:['acold'],ty:'arw',el:'cold',ic:'🧊',fx:'ring',mana:L=>3+0.25*(L-1),syn:[['acold','afrz'],10],v:(L,sy,k)=>{const d=CLS_DR(6,10,4,6,L,sy*k),s=Math.min(2,+(1+0.1*(L-1)).toFixed(1));return{dmg:d,stun:s,txt:`冰晶之箭：武器伤害并附加 ${clsDtx(d,'cold')}，冻结 ${s} 秒`}}},
  {id:'aguide',t:0,n:'寻踪矢',r:18,col:1,pre:['acold','amul'],ty:'arw',ic:'🎯',fx:'stab',mana:L=>Math.max(2,5-0.2*(L-1)),syn:[['amag','acold'],8],v:(L,sy)=>{const p=Math.round((50+12*(L-1))*sy);return{pct:p,sure:1,txt:`自动追踪、必定命中：${clsMtx(p)}`}}},
- {id:'astraf',t:0,n:'疾风连射',r:24,col:1,pre:['aguide'],ty:'arw',ic:'🌪',fx:'stab',mana:L=>4+0.2*(L-1),syn:[['amul'],6],v:(L,sy)=>{const n=Math.min(10,4+Math.floor(L/3)),p=Math.round((10+6*(L-1))*sy);return{n,pct:p,txt:`快速连射 ${n} 个敌人：${clsMtx(p)}`}}},
+ {id:'astraf',t:0,n:'疾风连射',r:24,col:1,pre:['aguide'],ty:'arw',ic:'🌪',fx:'stab',mana:L=>4+0.2*(L-1),syn:[['amul'],6],v:(L,sy)=>{const n=5,p=Math.round((10+6*(L-1))*sy);return{n,pct:p,home:1,txt:`自动追踪：快速连射 ${n} 支箭，每支必定命中（仅 1 个敌人时全部射向它，多个敌人时轮流分摊）：${clsMtx(p)}`}}},
  {id:'aimm',t:0,n:'燎原矢',r:24,col:2,pre:['aexp'],ty:'arw',el:'fire',ic:'☄',fx:'boom',mana:L=>5+0.3*(L-1),syn:[['afire','aexp'],10],v:(L,sy,k)=>{const d=CLS_DR(10,18,6,10,L,sy*k),b=Math.round((5+4*(L-1))*sy*k);return{dmg:d,sp:100,sn:4,bd:b,bdur:4,txt:`烈焰之箭：武器伤害并附加 ${clsDtx(d,'fire')}，爆炸波及 4 个敌人，地面燃烧每秒 ${b}（4 秒）`}}},
  {id:'afrz',t:0,n:'冰封矢',r:30,col:0,pre:['aice'],ty:'arw',el:'cold',ic:'🌨',fx:'ring',mana:L=>6+0.3*(L-1),syn:[['acold','aice'],7],v:(L,sy,k)=>{const d=CLS_DR(8,12,4,6,L,sy*k);return{dmg:d,sp:100,sn:4,stun:1.5,txt:`寒冰爆裂之箭：武器伤害并附加 ${clsDtx(d,'cold')}，波及 4 个敌人，冻结 1.5 秒`}}},
  // 标枪与长矛
@@ -76,7 +76,12 @@ clsRegister();
 {const f=clsSV;clsSV=function(id,L){const s=SKM[id];if(s&&s.cls==='ama')return s.v(Math.max(1,L),syn(id),s.ty==='asum'?clsBalK(CLS_BAL.amas):clsDk('ama'));return f(id,L)}}
 // ---------- 施放判定 ----------
 // 远程武器攻击估值：武器部分 × 近战系数 × 重击，加元素附加/溅射/连锁/灼烧/毒素
-{const f=clsEst;clsEst=function(s,ms){if(s.ty!=='arw')return f(s,ms);const v=SV(s.id,slvl(s.id)),n=ms.length,tn=Math.min(n,v.n||1);
+// 自动追踪（疾风连射）：n 支箭全部命中——轮流分配给范围内的敌人，目标死亡则改追下一个存活敌人；只有 1 个敌人时 n 支全打它
+function amaHoming(s,v,ms,tg){const all=clsOthers(ms,tg).filter(m=>m&&m.hp>0);if(!all.length)return[];const T=all.slice(0,v.n||1),hit=[];let j=0;
+ for(let i=0;i<(v.n||1);i++){let m=null;for(let k=0;k<T.length;k++){const c=T[(j+k)%T.length];if(c.hp>0){m=c;j=(j+k+1)%T.length;break}}
+  if(!m){m=all.find(x=>x.hp>0);if(!m)break}clsMelee(m,v.pct,v.flat,Object.assign({},v,{sure:1}));if(!hit.includes(m))hit.push(m)}
+ return hit}
+{const f=clsEst;clsEst=function(s,ms){if(s.ty!=='arw')return f(s,ms);const v=SV(s.id,slvl(s.id)),n=ms.length,tn=v.home&&n?(v.n||1):Math.min(n,v.n||1);
  let e=(clsWAvg()*(1+(v.pct||0)/100)+(v.flat||0))*clsMk()*(1+(ST.bcrit||0)/100)*(v.hits||1)*tn*(1+(ST.apier||0)/200);const ed=v.dmg?clsAvgD(v.dmg)*elMul(s.el):0;
  e+=ed*tn;if(v.sp)e+=ed*v.sp/100*Math.min(n-tn,v.sn||3);if(v.cn)e+=v.cn*clsAvgD(v.cd)*elMul('light');
  // 持续伤害只按「尚未中毒/灼烧（剩余≤1秒）」的目标估值：否则毒素估值恒高，疫病之矛等会一直压过连珠箭等箭矢技能（重复施放只会刷新毒素）
