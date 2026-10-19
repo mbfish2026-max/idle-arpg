@@ -40,7 +40,7 @@ function resFor(T,d,isBoss){const b=Object.assign({},T.res||{});if(!d)return b;c
  if(o&&!isBoss)Object.assign(r,o);else if(o)for(const k in o)r[k]=Math.min(90,o[k]);return r}
 const _mkMon=mkMon;mkMon=function(key,lv,flag){const m=_mkMon(key,lv,flag),T=MONS[key]||BOSSES[key],D=DIFFS[S.diff]||DIFFS[0];
  Object.assign(m.res,resFor(T,S.diff,!!BOSSES[key]));
- const hg=lv>25?1/(1+HSOFT*(lv-25)):1,dg=lv>25?1/(1+DSOFT*(lv-25)):1;m.max=m.hp=Math.round(m.max*D.hp*hg);const bfm=BOSSES[key]&&S.bf?Math.max(0.5,Math.pow(0.8,S.bf[bfKey(key)]||0)):1;m.dmg=m.dmg.map(x=>x*D.dmg*dg*bfm);m.exp=m.exp*expCurve(lv)*D.exp;m.sk=(T.sk||[]).slice();m.skT=2.5+rnd()*3;m.demon=T.demon;
+ const hg=lv>25?1/(1+HSOFT*(lv-25)):1,dg=lv>25?1/(1+DSOFT*(lv-25)):1;m.max=m.hp=Math.round(m.max*D.hp*hg);const bfm=BOSSES[key]&&S.bf?Math.max(0.5,Math.pow(0.8,S.bf[bfKey(key)]||0)):1;m.dmg=m.dmg.map(x=>x*D.dmg*dg*bfm);m.exp=m.exp*expCurve(lv)*D.exp*((typeof CLS_XPK!=="undefined"&&S&&CLS_XPK[S.cls])||1);m.sk=(T.sk||[]).slice();m.skT=2.5+rnd()*3;m.demon=T.demon;
  if(flag==='uniq'){const ks=Object.keys(ELITE_AFF).filter(k=>!(k==='mb'&&false));const n=Math.min(3,D.naff||1);const aff=[];
   while(aff.length<n){const k=pick(ks);if(!aff.includes(k))aff.push(k)}for(const k of aff)ELITE_AFF[k].f(m);m.aff=aff.map(k=>ELITE_AFF[k].n);m.n=pick(UNIQ_T)+'·'+T.n}
  if(flag==='champ'){const v=pick(CHAMP_V);v.f(m);m.n=v.n+'·'+T.n}
