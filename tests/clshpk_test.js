@@ -1,4 +1,4 @@
-// 法师主线怪物血量系数 CLS_HPK 单元测试：node tests/clshpk_test.js
+// 主线职业系数 CLS_HPK（法师血量）/CLS_XPK（德鲁伊/亚马逊经验）单元测试：node tests/clshpk_test.js
 // 校验：主线区域 sor ×1.4、其他职业 ×1；任何终局模式（EGM 非空：秘境/虚隙/魂狱/暗渊）与奶牛关不生效
 const fs=require('fs'),vm=require('vm'),path=require('path');const root=path.join(__dirname,'..');
 const stub=()=>new Proxy(function(){},{get:(t,k)=>k===Symbol.toPrimitive?()=>'' :k==='readyState'?'loading':stub(),apply:()=>stub(),construct:()=>stub(),set:()=>true});
@@ -16,4 +16,11 @@ ok(G("S.cls='bar';clsHpK()")===1,'主线非法师职业系数 1');
 for(const k of ['mj','rift','ubp','uber']){const b=HP('bar',`{k:'${k}',L:25,T:10}`),s=HP('sor',`{k:'${k}',L:25,T:10}`);ok(s===b,`终局 ${k}: sor ${s} 应等于 bar ${b}`)}
 G(`S.cls='sor';EGM={k:'mj',L:25}`);ok(G("clsHpK()")===1,'秘境中 clsHpK()=1');G(`EGM=null`);ok(G("clsHpK()")===1.4,'离开终局恢复 1.4');
 ok(HP('sor','null',1)===HP('bar','null',1),'奶牛关不生效');
+G('S.zone=1');
+const XP=(cls,eg,cow)=>G(`(()=>{S.cls=${JSON.stringify(cls)};EGM=${eg};const z0=S.zone;if(${cow?1:0})S.zone='cow';const r=Math.random;let s=7;Math.random=()=>((s=s*16807%2147483647)/2147483647);const m=mkMon(Object.keys(MONS)[3],70);Math.random=r;const x=m.exp;EGM=null;S.zone=z0;return x})()`);
+for(const [c,k] of [['dru',0.7],['ama',0.9]]){const b=XP('bar','null'),x=XP(c,'null');ok(Math.abs(x/b-k)<1e-9,`主线 ${c}/bar 经验比 ${(x/b).toFixed(3)} 应为 ${k}`);
+ for(const e of ['mj','rift','ubp','uber']){const eb=XP('bar',`{k:'${e}',L:25,T:10}`),ex=XP(c,`{k:'${e}',L:25,T:10}`);ok(ex===eb,`终局 ${e}: ${c} 经验 ${ex} 应等于 bar ${eb}`)}
+ ok(XP(c,'null',1)===XP('bar','null',1),`奶牛关 ${c} 经验不打折`);
+ G(`S.cls='${c}';EGM={k:'mj',L:25}`);ok(G("clsXpK()")===1,`秘境中 ${c} clsXpK()=1`);G(`EGM=null`);ok(G("clsXpK()")===k,`主线 ${c} clsXpK()=${k}`)}
+ok(G("S.cls='sor';clsXpK()")===1&&G("S.cls='dru';clsHpK()")===1,'系数互不串用');
 console.log(`clshpk_test: ${pass} 通过, ${fail} 失败`);process.exit(fail?1:0);

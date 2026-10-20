@@ -27,8 +27,10 @@ function expCurve(lv){return lv<=12?1:lv<=20?1-0.75*(lv-12)/8:lv<=45?0.25+0.25*(
 // 职业通关节奏：主线怪物经验系数（偏快职业减缓升级，不改战斗数值；目标全程 60–80h，见 qa/s1020）
 const CLS_XPK={dru:0.7,ama:0.9};
 const CLS_HPK={sor:1.4};
-// 仅主线区域：任何终局模式（EGM：秘境/虚隙/魂狱/暗渊/隐秘等）与奶牛关不生效
-function clsHpK(){if(typeof EGM!=="undefined"&&EGM)return 1;if(typeof inCow==="function"&&inCow())return 1;return(S&&CLS_HPK[S.cls])||1}
+// 仅主线区域：任何终局模式（EGM：秘境/虚隙/魂狱/暗渊/隐秘等）与奶牛关不生效（CLS_XPK/CLS_HPK 共用）
+function clsMain(){if(typeof EGM!=="undefined"&&EGM)return false;if(typeof inCow==="function"&&inCow())return false;return true}
+function clsHpK(){return clsMain()&&S&&CLS_HPK[S.cls]||1}
+function clsXpK(){return clsMain()&&S&&CLS_XPK[S.cls]||1}
 
 // ---------- 第一章怪物：补充噩梦/地狱抗性 ----------
 // resN/resH 未写时：噩梦 = 普通非零抗性 +15，地狱 = +30（≥100 即免疫）
