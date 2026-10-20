@@ -31,3 +31,11 @@
 .rfst .rfh2{margin:0}.rfst .rfcards{margin:0}.rfst .rfres{margin:0}
 .rfcard.keep{grid-column:1/-1;min-height:64px;border:1px solid #777;background:linear-gradient(160deg,#1c1c1c,#0c0c0c)}
 .rfcard.keep b{color:#ccc}.rfcard.keep small{color:#888}
+/* v3 左右布局 */
+.rf3 .rfm{display:flex;gap:8px;align-items:stretch}.rf3 .rfbox{flex:0 0 96px;padding:8px 4px}.rf3 .rfic .ii{width:48px!important;height:48px!important;font-size:30px}
+.rf3 .rflist{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}.rfsec{font-size:11px;color:#a98;border-bottom:1px solid #3a2c1c;padding-bottom:2px}
+.rfo{padding:6px 8px;border:1px solid #6a5236;border-radius:5px;background:linear-gradient(160deg,#241a10,#0f0a06);cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.rfo b{color:#8cf;font-size:13px}.rfo small{color:#998;font-size:11px}.rfo.full{border:2px solid #ffcf3a;box-shadow:0 0 8px #ffcf3a88}.rfo.full b{color:#ffe59a}.rfo.none{cursor:default;font-size:12px}
+.rfo.fade{animation:rffade .4s ease-out 1 both}.rfo.gone{opacity:.25;transition:opacity .3s}.rfcur.rfnew{animation:rffade .5s ease-out 1 both}
+@keyframes rffade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.rf3 .rfbtns .rfgo{flex:1}
