@@ -1,6 +1,33 @@
-.rfh{text-align:center;margin:2px 0 6px}
-.rf .rfl{display:block;width:100%;margin:4px 0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rf .rfc{margin:4px 0;white-space:nowrap;font-size:13px}
-.rfo{display:flex;gap:8px;align-items:center;border:1px solid #5a4630;border-radius:4px;padding:8px;margin:6px 0;cursor:pointer;white-space:nowrap}
-.rfo small{color:#998;flex:none}.rfo b{flex:1;color:#8cf;overflow:hidden;text-overflow:ellipsis}.rfo.keep b{color:#ddd}
-.rfb{flex-wrap:nowrap}.rftag{font-size:12px;color:#c9b}.rftag b{color:#8cf}
+.rfshop .rftabs{margin:6px 0}.rfshop .shc{position:relative}.rfn{display:block;text-align:center;font-size:11px;color:#998}.rfn.pend{color:#ffcf3a}.rfempty{margin:10px 0}
+.rfm{display:flex;gap:10px;align-items:stretch}
+.rfbox{flex:0 0 118px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border:1px solid var(--c);border-radius:6px;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--c) 28%,transparent),#0d0907 70%);box-shadow:0 0 12px color-mix(in srgb,var(--c) 55%,transparent),inset 0 0 10px #000;text-align:center}
+.rfbox b{font-size:13px;line-height:1.3}.rfic .ii{width:64px!important;height:64px!important;font-size:40px}
+.rfbox.forge{animation:rfforge 1s ease-out 1}
+@keyframes rfforge{0%{box-shadow:0 0 12px var(--c)}40%{box-shadow:0 0 34px #ff9a3a,inset 0 0 26px #ff6a1a}100%{box-shadow:0 0 12px var(--c)}}
+.rflist{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rfl{position:relative;padding:7px 8px;border:1px solid #4a3a28;border-radius:4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;background:#171009}
+.rfl.lk{border-color:#ffcf3a;color:#ffe59a;background:linear-gradient(90deg,#3a2a0e,#171009);box-shadow:0 0 8px #ffcf3a66}.rfl.off{opacity:.45}.rfl i{font-style:normal;font-size:11px}
+.rfl.charge{animation:rfcharge 1s ease-in 1}
+.rfl .rfspark{position:absolute;inset:-40%;pointer-events:none;background:conic-gradient(from 0deg,transparent 0 20%,#ffb84a 25%,transparent 32% 52%,#fff2b0 56%,transparent 62% 80%,#ff7a2a 86%,transparent 92%);mix-blend-mode:screen;opacity:0;animation:rfspin 1s linear 1}
+@keyframes rfcharge{0%{transform:none}70%{transform:scale(1.03);color:#fff;box-shadow:0 0 22px #ff9a3a}100%{transform:none}}
+@keyframes rfspin{0%{opacity:0;transform:rotate(0)}20%{opacity:.9}80%{opacity:.7}100%{opacity:0;transform:rotate(540deg)}}
+.rfcost{text-align:center;font-size:12px;color:#998;margin:8px 0 2px}.rfcost.bad{color:#f66}
+.rfbtns{flex-wrap:nowrap;white-space:nowrap}
+.rfgo{display:flex;flex-direction:column;align-items:center;min-width:170px;padding:6px 14px}.rfgo b{font-size:18px;letter-spacing:4px}.rfgo small{font-size:11px;opacity:.9}
+.rfh2{display:flex;justify-content:center;margin-bottom:6px}.rfh2 .rfbox{flex:0 0 auto;min-width:150px;flex-direction:row;padding:6px 10px}.rfh2 .rfic .ii{width:40px!important;height:40px!important}
+.rfcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;perspective:600px}
+.rfcard{min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:8px 6px;border:1px solid #6a5236;border-radius:6px;background:linear-gradient(160deg,#241a10,#0f0a06);cursor:pointer}
+.rfcard b{color:#8cf;font-size:13px}.rfcard small{color:#998;font-size:11px}.rfcard.keep b{color:#ddd}
+.rfcard.full{border:2px solid #ffcf3a;box-shadow:0 0 10px #ffcf3a88}.rfcard.full b{color:#ffe59a}
+.rfcard.flip{animation:rfflip .45s ease-out 1 both}
+@keyframes rfflip{0%{transform:rotateY(90deg);opacity:0}100%{transform:none;opacity:1}}
+.rfres{text-align:center;margin:10px 0;font-size:14px}.rfres b{color:#8cf}.rfres.full b{color:#ffe59a}
+.rftag{font-size:12px;color:#c9b}.rftag b{color:#8cf}
+/* v2.1 翻牌/完成：不透明全屏遮罩 + 竖排 */
+#modal:has(.rfst){background:#0a0705}
+#modal:has(.rfst) .mb{background:transparent;box-shadow:none;border:0}
+.rfst{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:8px 12px;box-sizing:border-box;width:100%}
+.rfst .mtitle{position:relative;margin:0;transform:none;text-align:center}
+.rfst .rfh2{margin:0}.rfst .rfcards{margin:0}.rfst .rfres{margin:0}
+.rfcard.keep{grid-column:1/-1;min-height:64px;border:1px solid #777;background:linear-gradient(160deg,#1c1c1c,#0c0c0c)}
+.rfcard.keep b{color:#ccc}.rfcard.keep small{color:#888}
