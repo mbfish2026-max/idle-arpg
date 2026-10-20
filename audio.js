@@ -329,6 +329,26 @@ function playLootTier(tier){lootCallT=performance.now();const n=typeof tier==='s
  const now=performance.now();if(now-lootLast<LOOT_DUR[lootLastTier]*1000*0.6&&n<=lootLastTier&&!(n===lootLastTier&&now-lootLast>250))return false;
  if(n===lootLastTier&&now-lootLast<250)return false;
  lootLast=now;lootLastTier=n;try{LOOT[n](sfxBus,ctx.currentTime+0.01)}catch(e){}return true}
+// ================= 淬锋精铸（重铸界面）音效 =================
+// AUDIO.reforge(kind)：charge 蓄力(~1s 熔炉+符文嗡鸣) / reveal 翻牌(连续 3 次不吞，音高递升) / pick 选定 / perfect 满值华丽。
+// 跟随音效音量/静音与后台暂停，不限战斗页；未知 kind 返回 false。
+let rfLast={},rfRevealN=0,rfRevealT=0;
+const RF={
+ charge(D,t){noise(D,{t,dur:1.1,vol:0.14,type:'lowpass',f:250,f2:1400,a:0.7,wet:0.4});// 熔炉鼓风
+  for(const d of[-8,8])tone(D,{f:mtof(38),glide:mtof(45),t,dur:1,type:'sawtooth',vol:0.05,a:0.6,d:0.2,sus:0.9,r:0.25,cut:700,q:5,det:d,wet:0.5});// 符文嗡鸣上升
+  tone(D,{f:mtof(62),glide:mtof(69),t:t+0.2,dur:0.85,type:'triangle',vol:0.04,a:0.5,d:0.2,sus:0.8,r:0.3,det:12,wet:0.8});
+  for(let i=0;i<6;i++)noise(D,{t:t+0.3+i*0.11+Math.random()*0.04,dur:0.03,vol:0.05,f:3000+Math.random()*2000,q:5})},// 火星噼啪
+ reveal(D,t,k){const up=k*2;noise(D,{t,dur:0.12,vol:0.12,f:2500+k*400,f2:900,q:1.5});// 翻牌风声
+  P.thud(D,t+0.06,0.5,160+k*20);[0,7].forEach((s,i)=>tone(D,{f:mtof(72+up+s),t:t+0.08+i*0.05,dur:0.35,type:'sine',vol:0.06,a:0.002,d:0.3,sus:0.1,r:0.25,wet:0.6}))},
+ pick(D,t){P.clang(D,t,0.8,620);tone(D,{f:mtof(55),t,dur:0.5,type:'triangle',vol:0.09,a:0.005,d:0.4,sus:0.2,r:0.3,wet:0.5});tone(D,{f:mtof(67),t:t+0.08,dur:0.4,type:'sine',vol:0.06,a:0.003,d:0.35,sus:0.1,r:0.3,wet:0.6})},
+ perfect(D,t){P.boom(D,t,0.8);[0,4,7,12,16,19,24].forEach((s,i)=>{for(const m of[1,2.76])tone(D,{f:mtof(67+s)*m,t:t+0.1+i*0.07,dur:1.3,type:'sine',vol:0.08/m,a:0.002,d:1.2,sus:0.05,r:0.8,wet:0.9})});
+  for(const iv of[0,7,12,16])tone(D,{f:mtof(48+iv),t:t+0.2,dur:1.6,type:'sawtooth',vol:0.03,a:0.4,d:0.4,sus:0.7,r:1,cut:1800,det:iv%2?6:-6,wet:1});
+  noise(D,{t:t+0.15,dur:1.6,vol:0.06,type:'highpass',f:6000,f2:10000,a:0.3,wet:0.9})}};
+const RF_GAP={charge:600,reveal:60,pick:120,perfect:800};
+function reforge(kind){const f=RF[kind];if(!f)return false;if(!ctx||!unlocked||hidden||ctx.state!=='running'||cfg().sm)return false;
+ const now=performance.now();if(now-(rfLast[kind]||0)<RF_GAP[kind])return false;rfLast[kind]=now;
+ let k=0;if(kind==='reveal'){rfRevealN=now-rfRevealT<1500?(rfRevealN+1)%3:0;rfRevealT=now;k=rfRevealN}
+ try{f(sfxBus,ctx.currentTime+0.01,k)}catch(e){return false}return true}
 window.AUDIO_SK={lootLog:()=>LOOTLOG,table:SK,recipe:skillRecipe,play:playSkill,bus:()=>sfxBus,now:()=>ctx?ctx.currentTime:0};
 // rollTC 返回本次击杀掉落的装备列表（gold 已直接加到 S.gold）
 let goldPrev=null;
@@ -367,6 +387,7 @@ window.AUDIO={
  toggle(k){const c=cfg();c[k]=c[k]?0:1;applyVol();try{save()}catch(e){}},
  pause(b){userPause=b?1:0;hidden=document.hidden||!!userPause;if(!ctx)return;if(hidden)ctx.suspend();else if(unlocked)ctx.resume().then(()=>{nextBar=Math.max(nextBar,ctx.currentTime+0.05);tick()})},
  play:(n,a)=>sfx(n,a), music:k=>switchTo(k),
+ reforge, reforgeKinds:Object.keys(RF),
  playLootTier, lootTiers:['rare','unique','hirune','ancient','mythic'],
  uberMusic(on){uberForce=on?1:0;if(ctx&&unlocked)tick()},/* 播放/停止终极首领曲（停止后按场景自动回落） */
  tracks:Object.keys(TRACKS), get scene(){return cur}
