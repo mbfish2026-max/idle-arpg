@@ -5,7 +5,10 @@
 // 候选：该底材合法单键词缀、不与其他属性重复；魔法/稀有按原 alvl 规则；上古排除技能等级、区间上移；至臻取满。
 // 花费：第 n 次 金币 5000×n²（第 10 次 50 万）+ 残骸精华 5×n。存档 it.rf={k,n,off}。
 // 特效全部为一次性 CSS 动画（无常驻循环）；音效 AUDIO.reforge(charge/reveal/pick/perfect)，不存在时退回 AUDIO.playLootTier。
-const RF={MAX:10,gold:n=>5000*(n+1)*(n+1),ess:n=>5*(n+1),tab:'eq',busy:0};
+// v4 美术素材：全部预加载成功才启用 .rfart，任一失败退回现有样式
+const RF_ART=['bg','equip_frame','panel_old','panel_new','btn','btn_down','spark'];
+const RF={art:0,MAX:10,gold:n=>5000*(n+1)*(n+1),ess:n=>5*(n+1),tab:'eq',busy:0};
+(function(){if(typeof Image==='undefined'||window.__NOUI)return;let n=0,bad=0;RF_ART.forEach(k=>{const im=new Image();im.onload=()=>{if(++n===RF_ART.length&&!bad){RF.art=1;const m=document.querySelector('#modal .rf3');if(m)m.classList.add('rfart')}};im.onerror=()=>{bad=1};im.src='assets/ui2/reforge/'+k+'.webp'})})();
 function rfKind(it){if(!it||it.k||it.rw!=null)return null;if(it.anc&&it.ax&&Object.keys(it.ax).length)return'anc';if(it.q===3||it.q===4)return'rare';return null}
 function rfLines(it){const k=rfKind(it);if(!k)return[];if(k==='anc')return Object.keys(it.ax).filter(x=>x in it.m);return Object.keys(it.m).filter(x=>x!=='sockp'&&typeof it.m[x]==='number')}
 function rfTxt(k,v){return(MODT[k]||k+' {v}').replace('{v}',v).replace('+-','-')}
@@ -43,7 +46,7 @@ function rfMain(uid,anim){const f=findItem(uid),it=f&&f.it;if(!it||!rfKind(it))r
  if(!R0.k)right=`<div class="dim">点一条词缀锁定：</div>${L.map(k=>`<div class="rfl" data-k="${k}" onclick="rfLock(${uid},'${k}')">${rfTxt(k,it.m[k])}</div>`).join('')}`;
  else{const off=R0.off||[];right=`<div class="rfsec">原词条</div><div class="rfl lk rfcur ${anim===2?'rfnew':''}" data-k="${R0.k}">${rfTxt(R0.k,it.m[R0.k])} <i>🔒</i></div>
  <div class="rfsec">新词条 ${off.length?'<span class="dim">点一条替换</span>':''}</div>${off.length?off.map((o,i)=>{const full=o[1]>=o[3];return`<div class="rfo ${full?'full':''} ${anim===1?'fade':''}" style="animation-delay:${anim===1?i*0.15:0}s" onclick="rfPick(${uid},${i})"><b>${rfTxt(o[0],o[1])}</b><small>${o[2]}-${o[3]}${full?' · 满值':''}</small></div>`}).join(''):'<div class="rfo none dim">点重铸生成 3 条新词条</div>'}`}
- modal(`<div class="rfst rf3">`+rfHead(it)+`<div class="rfm">${rfFrame(it)}<div class="rflist">${right}</div></div>
+ modal(`<div class="rfst rf3 ${RF.art?'rfart':''}">`+rfHead(it)+`<div class="rfm">${rfFrame(it)}<div class="rflist">${right}</div></div>
  <div class="rfcost ${rfCanPay(n)?'':'bad'}">持有 ${fmt(S.gold)}◈ · 精华 ${matCount('ess')}${R0.off?' · 再次重铸将作废当前新词条':''}</div><div class="btns c rfbtns">${btn}<button class="btn" onclick="closeM()">关闭</button></div></div>`);
  if(anim===1&&!window.__NOUI)(R0.off||[]).forEach((o,i)=>setTimeout(()=>rfSnd(o[1]>=o[3]?'perfect':'reveal'),i*150))}
 function rfGo(uid){if(RF.busy)return;if(!rfRoll(uid))return;const el=document.querySelector('#modal .rfl.lk');RF.busy=1;rfSnd('charge');
