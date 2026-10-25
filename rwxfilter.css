@@ -1,0 +1,7 @@
+/* 符文之语图鉴：排序行 + 「可合成·有底材」复选框，手机竖屏单行 */
+.rwxch.rwfrow{flex-wrap:nowrap;gap:3px;overflow:hidden}
+.rwxch.rwfrow>span.dim{flex:0 0 auto;font-size:11px}
+.rwxch.rwfrow button{padding:2px 5px;font-size:11px;flex:0 1 auto;min-width:0;white-space:nowrap}
+.rwfck{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;margin-left:auto;font-size:11px;color:#c8b48a;white-space:nowrap;min-height:30px;cursor:pointer}
+.rwfck input{width:15px;height:15px;margin:0;accent-color:#c8a050}.rwfck.on{color:#ffe8a8}
+.rwfempty{padding:10px 2px;text-align:center}
