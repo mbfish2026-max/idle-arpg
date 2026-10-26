@@ -228,3 +228,4 @@
 - [x] 暗渊弱势流派补偿（uber_bal.js，只调技能数值不削首领）：对首领伤害系数 召唤死灵 3.5/召唤德 5/风德 1.7/锤骑 7/拳骑 9/战吼野蛮人 2；流派未成套时对首领 ×(1+0.25×缺件)；召唤流派首领战「替死」（牺牲召唤物，冷却 1s）、机制伤害按召唤物数减免、白骨统帅首领战每 2.5s 凝骸骨；火德/未选流派德鲁伊对首领火焰穿透 20（解秘境之主火免卡层）；build_manual.js 选流派确认框按自动/手动显示；?v=20261021e
 - [x] 「淬锋精铸」重铸界面 UI 素材（美术）：assets/ui2/reforge/ bg（780×1688 压暗）、equip_frame、panel_old/panel_new（内区半透明暗底，9-slice：old 31 39 36 39、new 48 50 47 49，2x 图 px）、btn/btn_down（600×434）、spark（512）；tools/art/gen_reforge.py；预览 art_preview/p_reforge_sheet.png、p_reforge_mock.png；待系统开发接入
 - [x] 符文之语图鉴「可合成·有底材」复选框（rwxfilter.js/css，运行时包装 rwxList/rwxPanel）：勾选只列符文足够（不计锁定）且有合适底材（复用 rwcCands，不计锁定）的符文之语；空列表提示「暂无可合成的符文之语」；状态存 S.rwf.ok；排序行手机单行；tests/rwxfilter_test.js；?v=20261021n、sw 20261021n
+- [x] 装备提升绿箭头（upgarrow.js/css，运行时包装 cell0）：物品战力 power() 高于当前查看对象（佣兵页=佣兵，否则英雄）同部位即右上角绿色↑；空槽显示、戒指比较较弱一只（空=最弱）、不能穿戴不显示；按版本号缓存已穿戴战力，calc/equip/unequip/mercEquip/mercUnequip/switchChar/doSock/load 失效；tests/upgarrow_test.js；?v=20261021o
