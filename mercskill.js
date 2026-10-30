@@ -8,13 +8,13 @@
 const MSK_PLV=8,MSK_ALV=15;
 const MSK={
  archer:{p:{n:'林影身法',d:r=>`防御 +${15+5*r}%，物理减伤 +${2+r}%`,f:(ms,r)=>{ms.def=Math.round(ms.def*(1+(15+5*r)/100));ms.pdr=(ms.pdr||0)+2+r}},
-         a:{n:'流星散矢',cd:12,ic:'✶',d:r=>`向至多 4 个敌人各射出一支元素箭，造成平均伤害 ${15+3*r}% 的${'火焰/冰冷'}伤害`}},
+         a:{n:'流星散矢',cd:12,ic:'✶',d:r=>`向至多 4 个敌人各射出一支元素箭，造成平均伤害 ${12+2*r}% 的${'火焰/冰冷'}伤害`}},
  guard:{p:{n:'铁卫姿态',d:r=>`全抗性 +${6+3*r}，生命 +${4+2*r}%`,f:(ms,r)=>{for(const e in ms.res)ms.res[e]+=6+3*r;ms.avgres=(ms.avgres||0)+6+3*r;ms.life=Math.round(ms.life*(1+(4+2*r)/100))}},
-        a:{n:'守望号角',cd:15,ic:'⟲',d:r=>`吹响号角，为角色、召唤物与自身回复 ${8+2*r}% 最大生命，并使全部敌人减速 2 秒`}},
+        a:{n:'破阵枪啸',cd:15,ic:'⟲',d:r=>`长枪突刺前方至多 2 名敌人，造成平均伤害 ${10+2*r}% 的物理伤害；附带全部敌人减速 2 秒，并为角色、召唤物与自身回复 ${8+2*r}% 最大生命`}},
  mage:{p:{n:'法纹护幕',d:r=>`全抗性 +${8+4*r}，每秒回复生命 +${r}×等级/10`,f:(ms,r)=>{for(const e in ms.res)ms.res[e]+=8+4*r;ms.avgres=(ms.avgres||0)+8+4*r;ms.regen=(ms.regen||0)+r*ms.L/10}},
-       a:{n:'星潮迸发',cd:14,ic:'✺',d:r=>`以自身元素冲击全部敌人，造成平均伤害 ${15+3*r}% 的元素伤害`}},
+       a:{n:'星潮迸发',cd:14,ic:'✺',d:r=>`以自身元素冲击全部敌人，造成平均伤害 ${12+2*r}% 的元素伤害`}},
  barb:{p:{n:'岩骨之躯',d:r=>`生命 +${6+3*r}%，物理减伤 +${2+r}%`,f:(ms,r)=>{ms.life=Math.round(ms.life*(1+(6+3*r)/100));ms.pdr=(ms.pdr||0)+2+r}},
-       a:{n:'裂地战嚎',cd:18,ic:'✊',d:r=>`怒吼回复自身 ${15+5*r}% 最大生命，并震晕全部非首领敌人`}},
+       a:{n:'裂地震击',cd:18,ic:'✊',d:r=>`重锤砸地，对全部敌人造成平均伤害 ${6+2*r}% 的物理伤害；附带回复自身 ${15+5*r}% 最大生命，并震晕全部非首领敌人`}},
 };
 const MSKX={cd:0,fire:0};
 function mskRank(L,need){return L>=need?Math.min(4,1+Math.floor((L-need)/20)):0}
@@ -26,10 +26,10 @@ const _msk_ms=mercStats;mercStats=function(){const ms=_msk_ms.apply(this,argumen
 if(typeof attackerMods==='function'){const _msk_am=attackerMods;attackerMods=function(src){return MSKX.raw?{}:_msk_am.apply(this,arguments)}}
 function mskCast(a,ms,mons){MSKX.raw=1;try{return mskCast0(a,ms,mons)}finally{MSKX.raw=0}}
 function mskCast0(a,ms,mons){const M=S.merc,I=mskInfo(M.t,M.lvl),r=I.ar,avg=(ms.dmg[0]+ms.dmg[1])/2,el=M.t==='archer'?(M.v==='fire'?'fire':'cold'):M.v;let n=0;
- if(M.t==='archer'){for(const m of mons.slice(0,4)){hitMon(m,{[el]:avg*(15+3*r)/100},a,ELC[el]);if(typeof fxLine==='function')fxLine(a.uid,m.uid,ELC[el]);n++}}
- else if(M.t==='guard'){for(const x of ALLY)if(x.hp>0&&x.kind!=='wall')x.hp=Math.min(x.max,x.hp+x.max*(8+2*r)/100);if(typeof H!=='undefined'&&typeof ST!=='undefined'&&ST&&H.life>0)H.life=Math.min(ST.life,H.life+ST.life*(8+2*r)/100);for(const m of mons){m.slow=GT+2;n++}if(typeof fx==='function')fx('shield',mons)}
- else if(M.t==='mage'){const e=ELC[el]?el:'fire';for(const m of mons){hitMon(m,{[e]:avg*(15+3*r)/100},a,ELC[e]);n++}if(typeof fx==='function')fx('nova',mons)}
- else if(M.t==='barb'){a.hp=Math.min(a.max,a.hp+a.max*(15+5*r)/100);for(const m of mons)if(!m.boss){m.stun=1;n++}if(typeof fx==='function')fx('boom',mons)}
+ if(M.t==='archer'){for(const m of mons.slice(0,4)){hitMon(m,{[el]:avg*(12+2*r)/100},a,ELC[el]);if(typeof fxLine==='function')fxLine(a.uid,m.uid,ELC[el]);n++}}
+ else if(M.t==='guard'){for(const x of ALLY)if(x.hp>0&&x.kind!=='wall')x.hp=Math.min(x.max,x.hp+x.max*(8+2*r)/100);if(typeof H!=='undefined'&&typeof ST!=='undefined'&&ST&&H.life>0)H.life=Math.min(ST.life,H.life+ST.life*(8+2*r)/100);for(const m of mons.slice(0,2)){hitMon(m,{phys:avg*(10+2*r)/100},a,'#ffe7a0')}for(const m of mons){m.slow=GT+2;n++}if(typeof fx==='function')fx('slash',mons)}
+ else if(M.t==='mage'){const e=ELC[el]?el:'fire';for(const m of mons){hitMon(m,{[e]:avg*(12+2*r)/100},a,ELC[e]);n++}if(typeof fx==='function')fx('nova',mons)}
+ else if(M.t==='barb'){for(const m of mons)hitMon(m,{phys:avg*(6+2*r)/100},a,'#ffb070');a.hp=Math.min(a.max,a.hp+a.max*(15+5*r)/100);for(const m of mons)if(m.hp>0&&!m.boss){m.stun=1;n++}if(typeof fx==='function')fx('boom',mons)}
  MSKX.fire++;try{if(typeof document!=='undefined'&&!window.__NOUI&&TAB==='fight'){floatNum('a'+a.uid,I.D.a.ic+' '+I.D.a.n,'#7dffb0');const el=document.getElementById('ca'+a.uid);if(el){el.classList.add('mskcast');setTimeout(()=>el.classList.remove('mskcast'),700)}}}catch(e){}return n}
 const _msk_tick=mercTick;mercTick=function(dt){_msk_tick.apply(this,arguments);try{if(!S||!S.merc||!mercUp()||S.merc.dead)return;const a=ALLY.find(x=>x.kind==='merc');if(!a||a.hp<=0)return;
  const ms=a.ms||mercStats(),I=mskInfo(S.merc.t,S.merc.lvl);if(!I||!I.ar)return;MSKX.cd-=dt;if(MSKX.cd>0)return;const mons=liveMon();if(!mons.length){MSKX.cd=Math.max(MSKX.cd,0);return}

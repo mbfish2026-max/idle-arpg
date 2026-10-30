@@ -24,8 +24,8 @@ G("hireMerc('barb',null,1,{lvl:40,hd:0});calc()");ok(G("mercStats().life")>G("_m
 ok(G("JSON.stringify(_msk_ms().dmg)")===G("JSON.stringify(mercStats().dmg)"),'被动不加伤害');
 // 主动 + 冷却：构造战斗
 G(`var mk_a={uid:9001,kind:'merc',hp:100,max:1000,ms:mercStats(),dmg:[10,20]};var mk_ms=[{uid:9101,hp:1e6,max:1e6,lv:40,def:0,res:{}},{uid:9102,hp:1e6,max:1e6,lv:40,def:0,res:{},boss:1}];`);
-G("mskCast(mk_a,mk_a.ms,mk_ms)");ok(G("mk_a.hp")>100&&G("mk_ms[0].stun")===1&&!G("mk_ms[1].stun"),'野蛮人主动：回血+震晕非首领');
-G("hireMerc('guard',null,1,{lvl:40,hd:0});calc();mk_a.ms=mercStats()");G("mk_a.hp=100;ALLY.length=0;ALLY.push(mk_a);H.life=1");const h0=G("mk_ms[0].hp");G("mskCast(mk_a,mk_a.ms,mk_ms)");ok(G("mk_a.hp")>100&&G("H.life")>1&&G("mk_ms[0].hp")===h0&&G("mk_ms[0].slow")>G("GT"),'守卫主动：全队回血+减速，无伤害');
+const b0=G("mk_ms[1].hp");G("mskCast(mk_a,mk_a.ms,mk_ms)");ok(G("mk_ms[1].hp")<b0,'野蛮人主动：对全体（含首领）造成伤害');ok(G("mk_a.hp")>100&&G("mk_ms[0].stun")===1&&!G("mk_ms[1].stun"),'野蛮人主动：回血+震晕非首领');
+G("hireMerc('guard',null,1,{lvl:40,hd:0});calc();mk_a.ms=mercStats()");G("mk_a.hp=100;ALLY.length=0;ALLY.push(mk_a);H.life=1");const h0=G("mk_ms[0].hp");G("mskCast(mk_a,mk_a.ms,mk_ms)");ok(G("mk_a.hp")>100&&G("H.life")>1&&G("mk_ms[0].hp")<h0&&G("mk_ms[0].slow")>G("GT"),'守卫主动：前方伤害+全队回血+减速');
 G("hireMerc('mage',null,1,{lvl:40,hd:0});calc();mk_a.ms=mercStats()");const h1=G("mk_ms[0].hp");G("mskCast(mk_a,mk_a.ms,mk_ms)");ok(G("mk_ms[0].hp")<h1&&G("mk_ms[1].hp")<1e6,'法师主动：全体元素伤害');
 G("hireMerc('guard',null,1,{lvl:40,hd:0});calc();mk_a.ms=mercStats()");
 // 冷却：通过 mercTick 驱动
