@@ -1,0 +1,6 @@
+.mskp .mskx{border:1px solid #3d5a40;border-radius:6px;padding:6px 8px;margin:6px 0;background:rgba(40,80,50,.18);cursor:pointer}
+.mskp .mskx.off{opacity:.5;border-color:#444}
+.mskp .mskh{display:flex;justify-content:space-between;gap:6px;white-space:nowrap}
+.mskp .mskh b{color:#9fe8b0;overflow:hidden;text-overflow:ellipsis}
+.mskd{font-size:12px;color:#ddd;margin-top:3px}.mskd.big{font-size:13px;margin:6px 0;color:#9fe8b0}
+.mskcast{box-shadow:0 0 10px 3px #5fe08a!important;transition:box-shadow .2s}
